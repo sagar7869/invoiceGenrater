@@ -3,440 +3,439 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perry Radios - Invoice Generator</title>
+    <title>Invoice Generator</title>
     <style>
         :root {
             --primary: #333;
             --border: #ccc;
-            --paid-green: rgba(76, 175, 80, 0.3);
-            --unpaid-red: rgba(244, 67, 54, 0.2);
+            --bg: #f4f4f9;
+            --paid: rgba(76, 175, 80, 0.3);
+            --paid-text: #4CAF50;
         }
         body {
             font-family: Arial, sans-serif;
-            background: #f4f4f4;
             margin: 0;
+            background: var(--bg);
+            color: #333;
+        }
+        /* Navigation Tabs */
+        .tabs {
             display: flex;
-            height: 100vh;
-            overflow: hidden;
+            background: #222;
+            padding: 10px 20px;
         }
-        /* Sidebar Dashboard */
-        #sidebar {
-            width: 350px;
-            background: #fff;
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-            padding: 15px;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-        }
-        #sidebar h2 { font-size: 18px; margin-bottom: 10px; border-bottom: 2px solid #333; padding-bottom: 5px;}
-        .saved-bill {
-            border: 1px solid var(--border);
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-            background: #fafafa;
-        }
-        .saved-bill button {
-            margin-top: 5px;
-            padding: 5px;
+        .tab-btn {
+            background: none;
+            color: white;
+            border: none;
+            padding: 10px 20px;
             cursor: pointer;
-            width: 100%;
+            font-size: 16px;
+            margin-right: 10px;
+            border-radius: 5px;
         }
+        .tab-btn.active { background: #555; }
         
-        /* Main Content */
-        #main-content {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            overflow-y: auto;
-            padding: 20px;
-        }
-        
-        /* Controls (Add Item) */
-        .controls {
-            width: 210mm;
-            background: #fff;
-            padding: 15px;
-            margin-bottom: 20px;
-            border: 1px solid var(--border);
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        .controls input { padding: 8px; border: 1px solid #ccc; }
-        .controls input[type="text"] { flex-grow: 1; }
-        .controls button {
-            padding: 8px 15px; background: #333; color: white; border: none; cursor: pointer;
-        }
+        .container { padding: 20px; max-width: 1200px; margin: auto; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
 
-        /* A4 Invoice Page */
-        .invoice-page {
-            width: 210mm;
-            min-height: 297mm;
+        /* Form Area */
+        .form-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label { font-size: 12px; margin-bottom: 5px; font-weight: bold; }
+        .form-group input { padding: 8px; border: 1px solid var(--border); border-radius: 4px; }
+        
+        /* Item Entry */
+        .item-entry {
+            display: flex; gap: 10px; align-items: flex-end;
+            background: #f9f9f9; padding: 15px; border-radius: 5px; border: 1px solid #eee;
+        }
+        .item-entry input { padding: 8px; border: 1px solid var(--border); }
+        .btn-add { background: #333; color: white; border: none; padding: 9px 15px; cursor: pointer; border-radius: 4px; }
+
+        /* Editable Table */
+        .edit-table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; }
+        .edit-table th, .edit-table td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
+        .edit-table input { width: 80px; padding: 5px; border: 1px solid #ccc; }
+        .edit-table input.desc { width: 100%; }
+        .btn-del { color: red; cursor: pointer; border: none; background: none; font-weight: bold; }
+
+        /* Print Preview Box */
+        .preview-box {
             background: white;
             padding: 40mm 20mm;
-            box-sizing: border-box;
+            width: 210mm;
+            min-height: 297mm;
+            margin: 20px auto;
             box-shadow: 0 0 10px rgba(0,0,0,0.2);
             position: relative;
+            box-sizing: border-box;
             overflow: hidden;
         }
-        
-        /* Editable areas */
-        [contenteditable="true"] {
-            border-bottom: 1px dashed transparent;
-            min-width: 50px;
-            display: inline-block;
-        }
-        [contenteditable="true"]:hover, [contenteditable="true"]:focus {
-            border-bottom: 1px dashed #999;
-            outline: none;
-            background: #f9f9f9;
-        }
-
-        /* Header */
         .header { display: flex; justify-content: space-between; margin-bottom: 40px; }
-        .header h1 { font-size: 40px; letter-spacing: 2px; margin: 0; }
-        .meta-data table { text-align: right; font-size: 14px; border-collapse: collapse; }
+        .header h1 { font-size: 40px; margin: 0; }
+        .meta-data table { text-align: right; font-size: 14px; }
         .meta-data td { padding: 2px 5px; }
         .meta-data td:first-child { font-weight: bold; text-align: left; }
-
-        /* Addresses */
         .addresses { display: flex; justify-content: space-between; margin-bottom: 30px; border-top: 1px solid var(--border); padding-top: 20px;}
         .address-box h3 { font-size: 14px; margin: 0 0 5px 0; color: #666; }
         .address-box div { font-weight: bold; font-size: 16px; }
+        .print-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .print-table th, .print-table td { padding: 10px 5px; text-align: right; border-bottom: 1px solid #eee; }
+        .print-table th { font-weight: bold; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        .print-table th:first-child, .print-table td:first-child { text-align: left; }
+        .totals { display: flex; justify-content: flex-end; margin-top: 20px; border-top: 1px solid #333; padding-top: 10px;}
+        .totals h2 { margin: 0; display: flex; justify-content: space-between; width: 250px; }
 
-        /* Items Table */
-        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        .items-table th, .items-table td { padding: 10px 5px; text-align: right; border-bottom: 1px solid #eee; }
-        .items-table th { font-weight: bold; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-        .items-table th:first-child, .items-table td:first-child { text-align: left; }
-        
-        .delete-btn { color: red; cursor: pointer; font-size: 12px; margin-left: 10px; user-select: none; }
-
-        /* Totals */
-        .totals { display: flex; justify-content: flex-end; margin-top: 20px; border-top: 1px solid var(--primary); padding-top: 10px;}
-        .totals h2 { margin: 0; font-size: 20px; display: flex; justify-content: space-between; width: 250px; }
-
-        /* Payment Method */
+        /* Watermark & Payment */
+        .watermark {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg);
+            font-size: 100px; font-weight: bold; border: 5px solid; padding: 10px 40px; opacity: 0; pointer-events: none;
+        }
+        .watermark.PAID { color: var(--paid); border-color: var(--paid); opacity: 1; }
         .payment-info { margin-top: 50px; display: none; }
         .payment-info h3 { font-size: 14px; margin: 0 0 5px 0; color: #666; }
-        
-        /* Watermark */
-        .watermark {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotate(-30deg);
-            font-size: 100px;
-            font-weight: bold;
-            border: 5px solid;
-            padding: 10px 40px;
-            opacity: 0;
-            pointer-events: none;
-        }
-        .watermark.paid { color: var(--paid-green); border-color: var(--paid-green); opacity: 1; }
-        .watermark.unpaid { color: var(--unpaid-red); border-color: var(--unpaid-red); opacity: 1; content: "UNPAID"; }
 
-        /* Print Styles */
+        /* List Tab */
+        .search-bar { width: 100%; padding: 10px; margin-bottom: 20px; font-size: 16px; box-sizing: border-box; }
+        .list-table { width: 100%; background: white; border-collapse: collapse; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .list-table th, .list-table td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
+        .badge { padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+        .badge.PAID { background: #e8f5e9; color: #2e7d32; }
+        .badge.UNPAID { background: #ffebee; color: #c62828; }
+        .action-btn { padding: 5px 10px; cursor: pointer; border: none; border-radius: 4px; margin-right: 5px; }
+        .btn-view { background: #2196F3; color: white; }
+        .btn-pay { background: #4CAF50; color: white; }
+        .btn-del-inv { background: #f44336; color: white; }
+        .load-more { display: block; width: 100%; padding: 10px; margin-top: 15px; cursor: pointer; }
+
+        /* Modal */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000;
+        }
+        .modal-content { background: white; padding: 20px; border-radius: 8px; width: 300px; }
+        .modal-content select, .modal-content input { width: 100%; padding: 8px; margin: 10px 0; box-sizing: border-box; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px; }
+
+        /* Print Rules */
         @media print {
-            body { background: white; margin: 0; padding: 0; display: block; height: auto; }
-            #sidebar, .controls { display: none !important; }
-            #main-content { padding: 0; }
-            .invoice-page { box-shadow: none; padding: 20mm; width: 100%; height: auto; }
-            .delete-btn { display: none; }
-            [contenteditable="true"] { border: none !important; background: transparent !important; }
+            body * { visibility: hidden; }
+            .preview-box, .preview-box * { visibility: visible; }
+            .preview-box { position: absolute; left: 0; top: 0; margin: 0; box-shadow: none; padding: 10mm; }
+            .tabs, .form-panel, button { display: none !important; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Sidebar Dashboard -->
-    <div id="sidebar">
-        <h2>Saved Invoices</h2>
-        <button onclick="createNewInvoice()" style="margin-bottom:15px; padding:8px; background:#4CAF50; color:white; border:none; cursor:pointer;">+ Create New Bill</button>
-        <div id="invoice-list"></div>
+    <!-- Navigation -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('create-tab')">Create Bill</button>
+        <button class="tab-btn" onclick="switchTab('list-tab')">Customer List</button>
     </div>
 
-    <!-- Main Editor -->
-    <div id="main-content">
-        <!-- Add Item Controls -->
-        <div class="controls">
-            <input type="text" id="itemName" placeholder="Item Description (e.g., 25 watt iron soldron)">
-            <input type="number" id="itemQty" placeholder="QTY" style="width: 70px;">
-            <input type="number" id="itemPrice" placeholder="Price" style="width: 100px;">
-            <button onclick="addItem()">Add Item</button>
-            <button onclick="window.print()" style="margin-left: auto; background: #2196F3;">🖨 Print Invoice</button>
+    <!-- CREATE BILL TAB -->
+    <div id="create-tab" class="tab-content active container">
+        <div class="form-panel">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>FROM (Shop Name)</label>
+                    <input type="text" id="f_from" placeholder="Enter your shop name" value="Perry radios">
+                </div>
+                <div class="form-group">
+                    <label>BILL TO (Cx Name/Shop)</label>
+                    <input type="text" id="f_to" placeholder="Enter Cx name/shop name">
+                </div>
+                <div class="form-group">
+                    <label>Invoice #</label>
+                    <input type="text" id="f_inv">
+                </div>
+                <div class="form-group">
+                    <label>Creation Date</label>
+                    <input type="date" id="f_cdate">
+                </div>
+                <div class="form-group">
+                    <label>Due Date</label>
+                    <input type="date" id="f_ddate">
+                </div>
+            </div>
+
+            <div class="item-entry">
+                <input type="text" id="i_desc" placeholder="Item Description" style="flex-grow:1;">
+                <input type="number" id="i_qty" placeholder="QTY" style="width:80px;">
+                <input type="number" id="i_price" placeholder="Price" style="width:100px;">
+                <button class="btn-add" onclick="addItem()">Add Item</button>
+            </div>
+
+            <!-- Editable Items Table Before Print -->
+            <table class="edit-table">
+                <thead><tr><th>Description</th><th>QTY</th><th>Price</th><th>Amount</th><th>Action</th></tr></thead>
+                <tbody id="edit-items-body"></tbody>
+            </table>
+
+            <div style="margin-top: 20px; text-align: right;">
+                <button onclick="saveInvoiceAndRender()" style="padding: 10px 20px; background:#ff9800; color:white; border:none; cursor:pointer;">Save Draft</button>
+                <button onclick="window.print()" style="padding: 10px 20px; background:#2196F3; color:white; border:none; cursor:pointer; margin-left:10px;">🖨 Print Invoice</button>
+            </div>
         </div>
 
-        <!-- A4 Page Layout -->
-        <div class="invoice-page" id="invoice">
-            <div id="watermark" class="watermark"></div>
-
+        <!-- Live Print Preview Box -->
+        <div class="preview-box" id="print-area">
+            <div id="p_watermark" class="watermark"></div>
             <div class="header">
                 <h1>INVOICE</h1>
                 <div class="meta-data">
                     <table>
-                        <tr><td>INVOICE #</td><td id="invNumber" contenteditable="true">INV00001</td></tr>
-                        <tr><td>CREATION DATE</td><td id="invDate" contenteditable="true"></td></tr>
-                        <tr><td>DUE DATE</td><td id="dueDate" contenteditable="true"></td></tr>
+                        <tr><td>INVOICE #</td><td id="p_inv"></td></tr>
+                        <tr><td>CREATION DATE</td><td id="p_cdate"></td></tr>
+                        <tr><td>DUE DATE</td><td id="p_ddate"></td></tr>
                     </table>
                 </div>
             </div>
-
             <div class="addresses">
                 <div class="address-box">
                     <h3>FROM</h3>
-                    <div id="fromName" contenteditable="true">Perry radios</div>
+                    <div id="p_from"></div>
                 </div>
                 <div class="address-box">
                     <h3>BILL TO</h3>
-                    <div id="toName" contenteditable="true">raju uncle</div>
+                    <div id="p_to"></div>
                 </div>
             </div>
-
-            <table class="items-table">
-                <thead>
-                    <tr>
-                        <th>Description</th>
-                        <th>QTY</th>
-                        <th>Price</th>
-                        <th>Amount</th>
-                    </tr>
-                </thead>
-                <tbody id="items-body">
-                    <!-- Items will be injected here -->
-                </tbody>
+            <table class="print-table">
+                <thead><tr><th>Description</th><th>QTY</th><th>Price</th><th>Amount</th></tr></thead>
+                <tbody id="p_items"></tbody>
             </table>
-
             <div class="totals">
-                <h2><span>Total</span> <span id="grandTotal">₹0.00</span></h2>
+                <h2><span>Total</span> <span id="p_total">₹0.00</span></h2>
             </div>
-
-            <div class="payment-info" id="paymentSection">
+            <div class="payment-info" id="p_payment_section">
                 <h3>PAYMENT METHOD</h3>
-                <div id="paymentDetails" contenteditable="true">Payment clear via UPI</div>
+                <div id="p_payment_text"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LIST TAB -->
+    <div id="list-tab" class="tab-content container">
+        <input type="text" id="search-box" class="search-bar" placeholder="Search by Cx Name, Date or Invoice #..." onkeyup="renderList(true)">
+        
+        <table class="list-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Invoice #</th>
+                    <th>Customer Name</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="list-body"></tbody>
+        </table>
+        <button class="load-more" id="btn-load-more" onclick="loadMore()">Load More (Showing 30)</button>
+    </div>
+
+    <!-- Payment Modal -->
+    <div class="modal" id="payment-modal">
+        <div class="modal-content">
+            <h3>Mark as Paid</h3>
+            <label>Payment Mode</label>
+            <select id="pay-mode">
+                <option value="Online">Online</option>
+                <option value="Cash">Cash</option>
+            </select>
+            <label>Amount Received</label>
+            <input type="number" id="pay-amount" placeholder="Total amount">
+            <div class="modal-actions">
+                <button onclick="closeModal()" style="padding:8px; cursor:pointer;">Cancel</button>
+                <button onclick="confirmPayment()" style="padding:8px; background:#4CAF50; color:white; border:none; cursor:pointer;">Save Payment</button>
             </div>
         </div>
     </div>
 
     <script>
-        // State Management
-        let currentInvoiceId = null;
-        let invoices = JSON.parse(localStorage.getItem('perryInvoices')) || [];
+        let invoices = JSON.parse(localStorage.getItem('myInvoices')) || [];
+        let currentInvId = null;
         let currentItems = [];
+        let listLimit = 30;
+        let activePayId = null;
 
-        // Format Currency
-        const formatMoney = (amount) => '₹' + parseFloat(amount).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-        const getTodayDate = () => {
-            const d = new Date();
-            return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
-        };
-
-        // Initialize App
-        function init() {
-            if(invoices.length > 0) {
-                loadInvoice(invoices[invoices.length - 1].id);
-            } else {
-                createNewInvoice();
-            }
-            renderDashboard();
-            setupAutoSave();
-        }
-
-        // Add Event Listeners for ContentEditable Fields to Auto Save
-        function setupAutoSave() {
-            const editables = ['invNumber', 'invDate', 'dueDate', 'fromName', 'toName', 'paymentDetails'];
-            editables.forEach(id => {
-                document.getElementById(id).addEventListener('blur', saveCurrentInvoice);
+        const formatMoney = (amt) => '₹' + parseFloat(amt).toLocaleString('en-IN', {minimumFractionDigits: 2});
+        
+        // Init logic
+        function initApp() {
+            document.getElementById('f_cdate').valueAsDate = new Date();
+            // Listeners for auto updating preview
+            ['f_from', 'f_to', 'f_inv', 'f_cdate', 'f_ddate'].forEach(id => {
+                document.getElementById(id).addEventListener('input', updatePreview);
             });
+            startNewInvoice();
         }
 
-        // Create New Invoice
-        function createNewInvoice() {
-            currentInvoiceId = Date.now().toString();
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+            
+            if(tabId === 'list-tab') renderList(true);
+        }
+
+        function generateSequence() {
+            const dateStr = new Date().toISOString().slice(2,10).replace(/-/g, '');
+            const count = invoices.filter(i => i.date === document.getElementById('f_cdate').value).length + 1;
+            return `INV-${dateStr}-${String(count).padStart(3, '0')}`;
+        }
+
+        function startNewInvoice() {
+            currentInvId = Date.now().toString();
             currentItems = [];
-            
-            document.getElementById('invNumber').innerText = `INV${String(invoices.length + 1).padStart(5, '0')}`;
-            document.getElementById('invDate').innerText = getTodayDate();
-            document.getElementById('dueDate').innerText = getTodayDate();
-            document.getElementById('fromName').innerText = "Perry radios";
-            document.getElementById('toName').innerText = "New Customer";
-            document.getElementById('paymentDetails').innerText = "payment clear";
-            
-            renderItems();
-            saveCurrentInvoice();
+            document.getElementById('f_to').value = '';
+            document.getElementById('f_inv').value = generateSequence();
+            document.getElementById('f_cdate').valueAsDate = new Date();
+            document.getElementById('f_ddate').value = '';
+            updatePreview();
+            renderEditTable();
         }
 
-        // Add Item
+        // Add & Edit Items
         function addItem() {
-            const name = document.getElementById('itemName').value;
-            const qty = document.getElementById('itemQty').value;
-            const price = document.getElementById('itemPrice').value;
+            const desc = document.getElementById('i_desc').value;
+            const qty = document.getElementById('i_qty').value;
+            const price = document.getElementById('i_price').value;
+            if(!desc || !qty || !price) return alert("Fill all item fields");
 
-            if(!name || !qty || !price) {
-                alert("Please fill all item details!");
-                return;
+            currentItems.push({ id: Date.now(), desc, qty: parseFloat(qty), price: parseFloat(price) });
+            document.getElementById('i_desc').value = '';
+            document.getElementById('i_qty').value = '';
+            document.getElementById('i_price').value = '';
+            renderEditTable();
+        }
+
+        function updateItem(id, field, value) {
+            const item = currentItems.find(i => i.id == id);
+            if(item) {
+                if(field === 'desc') item.desc = value;
+                else item[field] = parseFloat(value) || 0;
+                renderEditTable();
             }
-
-            currentItems.push({
-                id: Date.now(),
-                name: name,
-                qty: parseFloat(qty),
-                price: parseFloat(price)
-            });
-
-            document.getElementById('itemName').value = '';
-            document.getElementById('itemQty').value = '';
-            document.getElementById('itemPrice').value = '';
-
-            renderItems();
-            saveCurrentInvoice();
         }
 
-        // Remove Item
-        function removeItem(id) {
-            currentItems = currentItems.filter(item => item.id !== id);
-            renderItems();
-            saveCurrentInvoice();
+        function deleteItem(id) {
+            currentItems = currentItems.filter(i => i.id != id);
+            renderEditTable();
         }
 
-        // Render Items on Invoice
-        function renderItems() {
-            const tbody = document.getElementById('items-body');
+        function renderEditTable() {
+            const tbody = document.getElementById('edit-items-body');
             tbody.innerHTML = '';
-            let total = 0;
-
             currentItems.forEach(item => {
-                const amount = item.qty * item.price;
-                total += amount;
-                
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${item.name} <span class="delete-btn" onclick="removeItem(${item.id})">✖</span></td>
-                    <td>${item.qty}</td>
-                    <td>${formatMoney(item.price)}</td>
-                    <td>${formatMoney(amount)}</td>
+                    <td><input type="text" class="desc" value="${item.desc}" onchange="updateItem(${item.id}, 'desc', this.value)"></td>
+                    <td><input type="number" value="${item.qty}" onchange="updateItem(${item.id}, 'qty', this.value)"></td>
+                    <td><input type="number" value="${item.price}" onchange="updateItem(${item.id}, 'price', this.value)"></td>
+                    <td>${formatMoney(item.qty * item.price)}</td>
+                    <td><button class="btn-del" onclick="deleteItem(${item.id})">✖</button></td>
                 `;
                 tbody.appendChild(tr);
             });
-
-            document.getElementById('grandTotal').innerText = formatMoney(total);
+            updatePreview();
         }
 
-        // Save Current State to Local Storage
-        function saveCurrentInvoice() {
-            const invoiceData = {
-                id: currentInvoiceId,
-                number: document.getElementById('invNumber').innerText,
-                date: document.getElementById('invDate').innerText,
-                dueDate: document.getElementById('dueDate').innerText,
-                from: document.getElementById('fromName').innerText,
-                to: document.getElementById('toName').innerText,
+        // Preview rendering
+        function updatePreview() {
+            document.getElementById('p_from').innerText = document.getElementById('f_from').value || 'Enter Shop Name';
+            document.getElementById('p_to').innerText = document.getElementById('f_to').value || 'Enter Cx Name';
+            document.getElementById('p_inv').innerText = document.getElementById('f_inv').value;
+            
+            // Format Dates
+            const cd = document.getElementById('f_cdate').value;
+            const dd = document.getElementById('f_ddate').value;
+            document.getElementById('p_cdate').innerText = cd ? new Date(cd).toLocaleDateString('en-GB') : '';
+            document.getElementById('p_ddate').innerText = dd ? new Date(dd).toLocaleDateString('en-GB') : '';
+
+            const pbody = document.getElementById('p_items');
+            pbody.innerHTML = '';
+            let total = 0;
+            currentItems.forEach(item => {
+                const amt = item.qty * item.price;
+                total += amt;
+                pbody.innerHTML += `<tr><td>${item.desc}</td><td>${item.qty}</td><td>${formatMoney(item.price)}</td><td>${formatMoney(amt)}</td></tr>`;
+            });
+            document.getElementById('p_total').innerText = formatMoney(total);
+        }
+
+        // Save Logic
+        function saveInvoiceAndRender() {
+            if(currentItems.length === 0) return alert("Add at least one item");
+            
+            const existing = invoices.find(i => i.id === currentInvId);
+            const status = existing ? existing.status : 'UNPAID';
+            const payDetails = existing ? existing.paymentDetails : null;
+
+            const invData = {
+                id: currentInvId,
+                from: document.getElementById('f_from').value,
+                to: document.getElementById('f_to').value,
+                invNo: document.getElementById('f_inv').value,
+                date: document.getElementById('f_cdate').value,
+                dueDate: document.getElementById('f_ddate').value,
                 items: currentItems,
-                status: getStatusFromDOM(), 
-                paymentMethod: document.getElementById('paymentDetails').innerText
+                status: status,
+                paymentDetails: payDetails
             };
 
-            const existingIndex = invoices.findIndex(inv => inv.id === currentInvoiceId);
-            if(existingIndex >= 0) {
-                invoices[existingIndex] = invoiceData;
+            if(existing) {
+                Object.assign(existing, invData);
             } else {
-                invoices.push(invoiceData);
+                invoices.push(invData);
             }
-
-            localStorage.setItem('perryInvoices', JSON.stringify(invoices));
-            renderDashboard();
-        }
-
-        function getStatusFromDOM() {
-            const wm = document.getElementById('watermark');
-            if (wm.classList.contains('paid')) return 'PAID';
-            return 'UNPAID';
-        }
-
-        // Load Invoice from Dashboard
-        function loadInvoice(id) {
-            const invoice = invoices.find(inv => inv.id === id);
-            if(!invoice) return;
-
-            currentInvoiceId = invoice.id;
-            currentItems = invoice.items || [];
-
-            document.getElementById('invNumber').innerText = invoice.number;
-            document.getElementById('invDate').innerText = invoice.date;
-            document.getElementById('dueDate').innerText = invoice.dueDate;
-            document.getElementById('fromName').innerText = invoice.from;
-            document.getElementById('toName').innerText = invoice.to;
-            document.getElementById('paymentDetails').innerText = invoice.paymentMethod || "payment clear";
-
-            renderItems();
-            applyStatus(invoice.status || 'UNPAID');
-        }
-
-        // Toggle Paid Status
-        function toggleStatus(id) {
-            const invoice = invoices.find(inv => inv.id === id);
-            if(invoice) {
-                invoice.status = invoice.status === 'PAID' ? 'UNPAID' : 'PAID';
-                if(currentInvoiceId === id) {
-                    applyStatus(invoice.status);
-                    saveCurrentInvoice();
-                } else {
-                    localStorage.setItem('perryInvoices', JSON.stringify(invoices));
-                    renderDashboard();
-                }
-            }
-        }
-
-        // Apply Status UI changes
-        function applyStatus(status) {
-            const watermark = document.getElementById('watermark');
-            const paymentSection = document.getElementById('paymentSection');
             
-            watermark.className = 'watermark'; // reset
-            if(status === 'PAID') {
-                watermark.classList.add('paid');
-                watermark.innerText = 'Paid';
-                paymentSection.style.display = 'block';
-            } else {
-                watermark.classList.add('unpaid');
-                watermark.innerText = 'UNPAID';
-                paymentSection.style.display = 'none';
-            }
+            localStorage.setItem('myInvoices', JSON.stringify(invoices));
+            renderList(true);
+            alert("Saved successfully!");
         }
 
-        // Render Dashboard Sidebar
-        function renderDashboard() {
-            const list = document.getElementById('invoice-list');
-            list.innerHTML = '';
+        // List Tab Logic
+        function renderList(resetLimit = false) {
+            if(resetLimit) listLimit = 30;
             
-            // Reverse so newest is on top
-            [...invoices].reverse().forEach(inv => {
-                const totalAmt = (inv.items || []).reduce((sum, item) => sum + (item.qty * item.price), 0);
+            const term = document.getElementById('search-box').value.toLowerCase();
+            const filtered = [...invoices].reverse().filter(inv => 
+                (inv.to || '').toLowerCase().includes(term) || 
+                (inv.invNo || '').toLowerCase().includes(term) ||
+                (inv.date || '').includes(term)
+            );
+
+            const tbody = document.getElementById('list-body');
+            tbody.innerHTML = '';
+            
+            const toShow = filtered.slice(0, listLimit);
+            toShow.forEach(inv => {
+                const total = inv.items.reduce((s, i) => s + (i.qty * i.price), 0);
                 const isPaid = inv.status === 'PAID';
-                
-                const div = document.createElement('div');
-                div.className = 'saved-bill';
-                div.innerHTML = `
-                    <strong>${inv.to}</strong><br>
-                    <small>${inv.date} | ${inv.number}</small><br>
-                    <strong>Amount:</strong> ${formatMoney(totalAmt)}<br>
-                    <span style="color:${isPaid ? 'green' : 'red'}; font-weight:bold;">${inv.status || 'UNPAID'}</span>
-                    <button onclick="loadInvoice('${inv.id}')" style="background:#2196F3; color:white; border:none;">View/Edit</button>
-                    <button onclick="toggleStatus('${inv.id}')" style="background:${isPaid ? '#ff9800' : '#4CAF50'}; color:white; border:none;">
-                        Mark as ${isPaid ? 'Unpaid' : 'Paid'}
-                    </button>
-                `;
-                list.appendChild(div);
-            });
-        }
-
-        // Boot the app
-        init();
-    </script>
-</body>
-</html>
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${inv.date ? new Date(inv.date).toLocaleDateString('en-GB') : '-'}</td>
+                        <td>${inv.invNo}</td>
+                        <td>${inv.to}</td>
+                        <td>${formatMoney(total)}</td>
+                        <td><span class="badge ${inv.status}">${inv.status}</span></td>
+                        <td>
+                            <button class="action-btn btn-
