@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perry Radios - Invoice Generator</title>
+    <style>
+        :root {
+            --primary: #333;
+            --border: #ccc;
+            --paid-green: rgba(76, 175, 80, 0.3);
+            --unpaid-red: rgba(244, 67, 54, 0.2);
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        /* Sidebar Dashboard */
+        #sidebar {
+            width: 350px;
+            background: #fff;
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            padding: 15px;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        #sidebar h2 { font-size: 18px; margin-bottom: 10px; border-bottom: 2px solid #333; padding-bottom: 5px;}
+        .saved-bill {
+            border: 1px solid var(--border);
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            background: #fafafa;
+        }
+        .saved-bill button {
+            margin-top: 5px;
+            padding: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        /* Main Content */
+        #main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        
+        /* Controls (Add Item) */
+        .controls {
+            width: 210mm;
+            background: #fff;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .controls input { padding: 8px; border: 1px solid #ccc; }
+        .controls input[type="text"] { flex-grow: 1; }
+        .controls button {
+            padding: 8px 15px; background: #333; color: white; border: none; cursor: pointer;
+        }
+
+        /* A4 Invoice Page */
+        .invoice-page {
+            width: 210mm;
+            min-height: 297mm;
+            background: white;
+            padding: 40mm 20mm;
+            box-sizing: border-box;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Editable areas */
+        [contenteditable="true"] {
+            border-bottom: 1px dashed transparent;
+            min-width: 50px;
+            display: inline-block;
+        }
+        [contenteditable="true"]:hover, [contenteditable="true"]:focus {
+            border-bottom: 1px dashed #999;
+            outline: none;
+            background: #f9f9f9;
+        }
+
+        /* Header */
+        .header { display: flex; justify-content: space-between; margin-bottom: 40px; }
+        .header h1 { font-size: 40px; letter-spacing: 2px; margin: 0; }
+        .meta-data table { text-align: right; font-size: 14px; border-collapse: collapse; }
+        .meta-data td { padding: 2px 5px; }
+        .meta-data td:first-child { font-weight: bold; text-align: left; }
+
+        /* Addresses */
+        .addresses { display: flex; justify-content: space-between; margin-bottom: 30px; border-top: 1px solid var(--border); padding-top: 20px;}
+        .address-box h3 { font-size: 14px; margin: 0 0 5px 0; color: #666; }
+        .address-box div { font-weight: bold; font-size: 16px; }
+
+        /* Items Table */
+        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        .items-table th, .items-table td { padding: 10px 5px; text-align: right; border-bottom: 1px solid #eee; }
+        .items-table th { font-weight: bold; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        .items-table th:first-child, .items-table td:first-child { text-align: left; }
+        
+        .delete-btn { color: red; cursor: pointer; font-size: 12px; margin-left: 10px; user-select: none; }
+
+        /* Totals */
+        .totals { display: flex; justify-content: flex-end; margin-top: 20px; border-top: 1px solid var(--primary); padding-top: 10px;}
+        .totals h2 { margin: 0; font-size: 20px; display: flex; justify-content: space-between; width: 250px; }
+
+        /* Payment Method */
+        .payment-info { margin-top: 50px; display: none; }
+        .payment-info h3 { font-size: 14px; margin: 0 0 5px 0; color: #666; }
+        
+        /* Watermark */
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-30deg);
+            font-size: 100px;
+            font-weight: bold;
+            border: 5px solid;
+            padding: 10px 40px;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .watermark.paid { color: var(--paid-green); border-color: var(--paid-green); opacity: 1; }
+        .watermark.unpaid { color: var(--unpaid-red); border-color: var(--unpaid-red); opacity: 1; content: "UNPAID"; }
+
+        /* Print Styles */
+        @media print {
+            body { background: white; margin: 0; padding: 0; display: block; height: auto; }
+            #sidebar, .controls { display: none !important; }
+            #main-content { padding: 0; }
+            .invoice-page { box-shadow: none; padding: 20mm; width: 100%; height: auto; }
+            .delete-btn { display: none; }
+            [contenteditable="true"] { border: none !important; background: transparent !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Dashboard -->
+    <div id="sidebar">
+        <h2>Saved Invoices</h2>
+        <button onclick="createNewInvoice()" style="margin-bottom:15px; padding:8px; background:#4CAF50; color:white; border:none; cursor:pointer;">+ Create New Bill</button>
+        <div id="invoice-list"></div>
+    </div>
+
+    <!-- Main Editor -->
+    <div id="main-content">
+        <!-- Add Item Controls -->
+        <div class="controls">
+            <input type="text" id="itemName" placeholder="Item Description (e.g., 25 watt iron soldron)">
+            <input type="number" id="itemQty" placeholder="QTY" style="width: 70px;">
+            <input type="number" id="itemPrice" placeholder="Price" style="width: 100px;">
+            <button onclick="addItem()">Add Item</button>
+            <button onclick="window.print()" style="margin-left: auto; background: #2196F3;">🖨 Print Invoice</button>
+        </div>
+
+        <!-- A4 Page Layout -->
+        <div class="invoice-page" id="invoice">
+            <div id="watermark" class="watermark"></div>
+
+            <div class="header">
+                <h1>INVOICE</h1>
+                <div class="meta-data">
+                    <table>
+                        <tr><td>INVOICE #</td><td id="invNumber" contenteditable="true">INV00001</td></tr>
+                        <tr><td>CREATION DATE</td><td id="invDate" contenteditable="true"></td></tr>
+                        <tr><td>DUE DATE</td><td id="dueDate" contenteditable="true"></td></tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="addresses">
+                <div class="address-box">
+                    <h3>FROM</h3>
+                    <div id="fromName" contenteditable="true">Perry radios</div>
+                </div>
+                <div class="address-box">
+                    <h3>BILL TO</h3>
+                    <div id="toName" contenteditable="true">raju uncle</div>
+                </div>
+            </div>
+
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>QTY</th>
+                        <th>Price</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody id="items-body">
+                    <!-- Items will be injected here -->
+                </tbody>
+            </table>
+
+            <div class="totals">
+                <h2><span>Total</span> <span id="grandTotal">₹0.00</span></h2>
+            </div>
+
+            <div class="payment-info" id="paymentSection">
+                <h3>PAYMENT METHOD</h3>
+                <div id="paymentDetails" contenteditable="true">Payment clear via UPI</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State Management
+        let currentInvoiceId = null;
+        let invoices = JSON.parse(localStorage.getItem('perryInvoices')) || [];
+        let currentItems = [];
+
+        // Format Currency
+        const formatMoney = (amount) => '₹' + parseFloat(amount).toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        const getTodayDate = () => {
+            const d = new Date();
+            return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+        };
+
+        // Initialize App
+        function init() {
+            if(invoices.length > 0) {
+                loadInvoice(invoices[invoices.length - 1].id);
+            } else {
+                createNewInvoice();
+            }
+            renderDashboard();
+            setupAutoSave();
+        }
+
+        // Add Event Listeners for ContentEditable Fields to Auto Save
+        function setupAutoSave() {
+            const editables = ['invNumber', 'invDate', 'dueDate', 'fromName', 'toName', 'paymentDetails'];
+            editables.forEach(id => {
+                document.getElementById(id).addEventListener('blur', saveCurrentInvoice);
+            });
+        }
+
+        // Create New Invoice
+        function createNewInvoice() {
+            currentInvoiceId = Date.now().toString();
+            currentItems = [];
+            
+            document.getElementById('invNumber').innerText = `INV${String(invoices.length + 1).padStart(5, '0')}`;
+            document.getElementById('invDate').innerText = getTodayDate();
+            document.getElementById('dueDate').innerText = getTodayDate();
+            document.getElementById('fromName').innerText = "Perry radios";
+            document.getElementById('toName').innerText = "New Customer";
+            document.getElementById('paymentDetails').innerText = "payment clear";
+            
+            renderItems();
+            saveCurrentInvoice();
+        }
+
+        // Add Item
+        function addItem() {
+            const name = document.getElementById('itemName').value;
+            const qty = document.getElementById('itemQty').value;
+            const price = document.getElementById('itemPrice').value;
+
+            if(!name || !qty || !price) {
+                alert("Please fill all item details!");
+                return;
+            }
+
+            currentItems.push({
+                id: Date.now(),
+                name: name,
+                qty: parseFloat(qty),
+                price: parseFloat(price)
+            });
+
+            document.getElementById('itemName').value = '';
+            document.getElementById('itemQty').value = '';
+            document.getElementById('itemPrice').value = '';
+
+            renderItems();
+            saveCurrentInvoice();
+        }
+
+        // Remove Item
+        function removeItem(id) {
+            currentItems = currentItems.filter(item => item.id !== id);
+            renderItems();
+            saveCurrentInvoice();
+        }
+
+        // Render Items on Invoice
+        function renderItems() {
+            const tbody = document.getElementById('items-body');
+            tbody.innerHTML = '';
+            let total = 0;
+
+            currentItems.forEach(item => {
+                const amount = item.qty * item.price;
+                total += amount;
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${item.name} <span class="delete-btn" onclick="removeItem(${item.id})">✖</span></td>
+                    <td>${item.qty}</td>
+                    <td>${formatMoney(item.price)}</td>
+                    <td>${formatMoney(amount)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('grandTotal').innerText = formatMoney(total);
+        }
+
+        // Save Current State to Local Storage
+        function saveCurrentInvoice() {
+            const invoiceData = {
+                id: currentInvoiceId,
+                number: document.getElementById('invNumber').innerText,
+                date: document.getElementById('invDate').innerText,
+                dueDate: document.getElementById('dueDate').innerText,
+                from: document.getElementById('fromName').innerText,
+                to: document.getElementById('toName').innerText,
+                items: currentItems,
+                status: getStatusFromDOM(), 
+                paymentMethod: document.getElementById('paymentDetails').innerText
+            };
+
+            const existingIndex = invoices.findIndex(inv => inv.id === currentInvoiceId);
+            if(existingIndex >= 0) {
+                invoices[existingIndex] = invoiceData;
+            } else {
+                invoices.push(invoiceData);
+            }
+
+            localStorage.setItem('perryInvoices', JSON.stringify(invoices));
+            renderDashboard();
+        }
+
+        function getStatusFromDOM() {
+            const wm = document.getElementById('watermark');
+            if (wm.classList.contains('paid')) return 'PAID';
+            return 'UNPAID';
+        }
+
+        // Load Invoice from Dashboard
+        function loadInvoice(id) {
+            const invoice = invoices.find(inv => inv.id === id);
+            if(!invoice) return;
+
+            currentInvoiceId = invoice.id;
+            currentItems = invoice.items || [];
+
+            document.getElementById('invNumber').innerText = invoice.number;
+            document.getElementById('invDate').innerText = invoice.date;
+            document.getElementById('dueDate').innerText = invoice.dueDate;
+            document.getElementById('fromName').innerText = invoice.from;
+            document.getElementById('toName').innerText = invoice.to;
+            document.getElementById('paymentDetails').innerText = invoice.paymentMethod || "payment clear";
+
+            renderItems();
+            applyStatus(invoice.status || 'UNPAID');
+        }
+
+        // Toggle Paid Status
+        function toggleStatus(id) {
+            const invoice = invoices.find(inv => inv.id === id);
+            if(invoice) {
+                invoice.status = invoice.status === 'PAID' ? 'UNPAID' : 'PAID';
+                if(currentInvoiceId === id) {
+                    applyStatus(invoice.status);
+                    saveCurrentInvoice();
+                } else {
+                    localStorage.setItem('perryInvoices', JSON.stringify(invoices));
+                    renderDashboard();
+                }
+            }
+        }
+
+        // Apply Status UI changes
+        function applyStatus(status) {
+            const watermark = document.getElementById('watermark');
+            const paymentSection = document.getElementById('paymentSection');
+            
+            watermark.className = 'watermark'; // reset
+            if(status === 'PAID') {
+                watermark.classList.add('paid');
+                watermark.innerText = 'Paid';
+                paymentSection.style.display = 'block';
+            } else {
+                watermark.classList.add('unpaid');
+                watermark.innerText = 'UNPAID';
+                paymentSection.style.display = 'none';
+            }
+        }
+
+        // Render Dashboard Sidebar
+        function renderDashboard() {
+            const list = document.getElementById('invoice-list');
+            list.innerHTML = '';
+            
+            // Reverse so newest is on top
+            [...invoices].reverse().forEach(inv => {
+                const totalAmt = (inv.items || []).reduce((sum, item) => sum + (item.qty * item.price), 0);
+                const isPaid = inv.status === 'PAID';
+                
+                const div = document.createElement('div');
+                div.className = 'saved-bill';
+                div.innerHTML = `
+                    <strong>${inv.to}</strong><br>
+                    <small>${inv.date} | ${inv.number}</small><br>
+                    <strong>Amount:</strong> ${formatMoney(totalAmt)}<br>
+                    <span style="color:${isPaid ? 'green' : 'red'}; font-weight:bold;">${inv.status || 'UNPAID'}</span>
+                    <button onclick="loadInvoice('${inv.id}')" style="background:#2196F3; color:white; border:none;">View/Edit</button>
+                    <button onclick="toggleStatus('${inv.id}')" style="background:${isPaid ? '#ff9800' : '#4CAF50'}; color:white; border:none;">
+                        Mark as ${isPaid ? 'Unpaid' : 'Paid'}
+                    </button>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        // Boot the app
+        init();
+    </script>
+</body>
+</html>
