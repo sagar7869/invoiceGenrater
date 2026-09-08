@@ -7,6 +7,8 @@
     <!-- PDF & Image Generation Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --bg: #f4f4f9; --border: #ccc;
@@ -40,7 +42,7 @@
         .btn-del { color: red; cursor: pointer; border: none; background: none; font-weight: bold; }
 
         .action-bar { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; }
-        .btn { padding: 10px 15px; color: white; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; }
+        .btn { padding: 10px 15px; color: white; border: none; cursor: pointer; border-radius: 4px; font-weight: bold; display:inline-flex; align-items:center; gap:5px; }
         .btn-save { background: #ff9800; }
         .btn-print { background: #2196F3; }
         .btn-pdf { background: #9c27b0; }
@@ -49,35 +51,74 @@
         .btn-new { background: #4CAF50; }
         .btn-close { background: #607D8B; display: none; }
 
-        .preview-box { background: white; padding: 40mm 20mm; width: 210mm; min-height: 297mm; margin: 0 auto; box-shadow: 0 0 10px rgba(0,0,0,0.2); position: relative; box-sizing: border-box; overflow: hidden; }
-        .header { display: flex; justify-content: space-between; margin-bottom: 40px; }
-        .header h1 { font-size: 40px; margin: 0; }
+        /* =========================================================
+           ENHANCED INVOICE PREVIEW / PRINT DESIGN
+           ========================================================= */
+        .preview-box { 
+            background: white; 
+            padding: 25mm 20mm; /* Adjusted padding */
+            width: 210mm; 
+            min-height: 297mm; 
+            margin: 0 auto; 
+            box-shadow: 0 0 15px rgba(0,0,0,0.15); 
+            position: relative; 
+            box-sizing: border-box; 
+            overflow: hidden;
+            
+            /* Professional Borders */
+            border-top: 15px solid #222;
+            border-bottom: 15px solid #222;
+            border-left: 1px solid #ddd;
+            border-right: 1px solid #ddd;
+        }
+        .header { display: flex; justify-content: space-between; margin-bottom: 40px; border-bottom: 2px solid #eee; padding-bottom: 20px; }
+        .header h1 { font-size: 45px; margin: 0; color: #222; letter-spacing: 2px; }
         .meta-data table { text-align: right; font-size: 14px; }
-        .meta-data td { padding: 2px 5px; }
-        .meta-data td:first-child { font-weight: bold; text-align: left; }
-        .addresses { display: flex; justify-content: space-between; margin-bottom: 30px; border-top: 1px solid var(--border); padding-top: 20px;}
-        .address-box h3 { font-size: 14px; margin: 0 0 5px 0; color: #666; }
-        .address-box div { font-weight: bold; font-size: 16px; }
-        .print-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        .print-table th, .print-table td { padding: 10px 5px; text-align: right; border-bottom: 1px solid #eee; }
-        .print-table th { font-weight: bold; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        .meta-data td { padding: 4px 8px; }
+        .meta-data td:first-child { font-weight: bold; text-align: left; color: #555; }
+        
+        .addresses { display: flex; justify-content: space-between; margin-bottom: 30px; }
+        .address-box h3 { font-size: 13px; margin: 0 0 8px 0; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        .address-box div { font-weight: bold; font-size: 18px; color: #333; }
+        
+        .print-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 1px solid #eee; }
+        .print-table th, .print-table td { padding: 12px 10px; text-align: right; border-bottom: 1px solid #eee; }
+        .print-table th { 
+            background: #f4f4f4; 
+            font-weight: bold; 
+            border-top: 2px solid #333; 
+            border-bottom: 2px solid #333; 
+            color: #111; 
+            text-transform: uppercase;
+            font-size: 12px;
+        }
         .print-table th:first-child, .print-table td:first-child { text-align: left; }
         
-        .totals-container { display: flex; justify-content: flex-end; margin-top: 10px; }
-        .totals-box { width: 300px; font-size: 14px; }
-        .tot-row { display: flex; justify-content: space-between; padding: 5px 0; }
-        .tot-row.bold { font-weight: bold; font-size: 16px; border-top: 1px solid #000; margin-top: 5px; padding-top: 10px; }
+        .totals-container { display: flex; justify-content: flex-end; margin-top: 20px; }
+        .totals-box { 
+            width: 320px; 
+            font-size: 15px; 
+            background: #fdfdfd; 
+            padding: 15px 20px; 
+            border-radius: 6px; 
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        .tot-row { display: flex; justify-content: space-between; padding: 6px 0; color: #555; }
+        .tot-row.bold { font-weight: bold; font-size: 18px; border-top: 1px solid #ccc; margin-top: 8px; padding-top: 12px; color: #111; }
 
-        .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 100px; font-weight: bold; border: 5px solid; padding: 10px 40px; opacity: 0; pointer-events: none; z-index: 0; }
+        .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 120px; font-weight: bold; border: 8px solid; padding: 10px 50px; opacity: 0; pointer-events: none; z-index: 0; border-radius: 10px; }
         .watermark.PAID { color: var(--paid); border-color: var(--paid); opacity: 1; }
         .watermark.PARTIAL { color: var(--partial); border-color: var(--partial); opacity: 1; }
         .watermark.UNPAID { color: var(--unpaid); border-color: var(--unpaid); opacity: 1; }
         
-        .payment-info { margin-top: 40px; position: relative; z-index: 1; }
-        .payment-info h3 { font-size: 14px; margin: 0 0 5px 0; color: #666; }
-        #p_payment_text { font-weight: bold; font-size: 14px; }
-        .ledger-table { width: 100%; font-size: 12px; margin-top: 10px; border-collapse: collapse; }
-        .ledger-table th, .ledger-table td { padding: 4px; border: 1px solid #eee; }
+        .payment-info { margin-top: 40px; position: relative; z-index: 1; background: #fff; display: inline-block; padding-right: 20px; }
+        .payment-info h3 { font-size: 13px; margin: 0 0 5px 0; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        #p_payment_text { font-weight: bold; font-size: 16px; }
+        .ledger-table { width: 100%; max-width: 400px; font-size: 13px; margin-top: 10px; border-collapse: collapse; }
+        .ledger-table th, .ledger-table td { padding: 6px; border: 1px solid #ddd; text-align: left; }
+        .ledger-table th { background: #f9f9f9; }
+        /* ========================================================= */
 
         .search-bar { width: 100%; padding: 10px; margin-bottom: 20px; font-size: 16px; box-sizing: border-box; }
         .badge { padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }
@@ -85,10 +126,11 @@
         .badge.PARTIAL { background: #fff3e0; color: var(--partial-text); }
         .badge.UNPAID { background: #ffebee; color: var(--unpaid-text); }
         
-        .action-icon { padding: 6px 10px; cursor: pointer; border: none; border-radius: 4px; margin-right: 5px; color: white; font-size: 12px; font-weight: bold;}
+        .action-icon { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: 50px; height: 45px; cursor: pointer; border: none; border-radius: 4px; margin-right: 4px; color: white; font-size: 16px; }
+        .action-icon span { font-size: 9px; margin-top: 4px; font-family: sans-serif; font-weight: bold;}
         .bg-view { background: #607D8B; }
-        .bg-img { background: #e91e63; }
-        .bg-wa { background: #25D366; }
+        .bg-img { background: #25D366; }
+        .bg-wa { background: #128C7E; }
         .bg-pdf { background: #9c27b0; }
         .bg-pay { background: #ff9800; }
         .bg-del { background: #f44336; }
@@ -103,7 +145,7 @@
             body { background: white; }
             body > *:not(#print-holder) { display: none !important; }
             #print-holder, #print-holder * { display: block !important; visibility: visible; }
-            .preview-box { position: absolute; left: 0; top: 0; margin: 0; box-shadow: none; padding: 10mm; width: 100%; height: 100%; }
+            .preview-box { position: absolute; left: 0; top: 0; margin: 0; box-shadow: none; padding: 10mm; width: 100%; height: 100%; border: none; border-top: 15px solid #222; border-bottom: 15px solid #222; }
         }
     </style>
 </head>
@@ -146,7 +188,6 @@
                 <div class="form-group"><label>BILL TO (Customer Name)</label><input type="text" id="f_to" placeholder="Cx name"></div>
                 <div class="form-group"><label>Invoice # (Auto)</label><input type="text" id="f_inv"></div>
                 <div class="form-group"><label>Creation Date</label><input type="date" id="f_cdate"></div>
-                <!-- Due Date (Hidden by default, shown if unpaid) -->
                 <div class="form-group" id="container_ddate" style="display:none;">
                     <label>Due Date <span style="color:red">*</span></label>
                     <input type="date" id="f_ddate">
@@ -185,10 +226,10 @@
             <div class="action-bar">
                 <button class="btn btn-close" id="btn-close-edit" onclick="closeEditModal()">✖ Close</button>
                 <button class="btn btn-new" id="btn-new-bill" onclick="startNewInvoice()">+ New Bill</button>
-                <button class="btn btn-save" onclick="saveInvoice()">💾 Save</button>
-                <button class="btn btn-img" onclick="shareAsImage()">🖼 Share Image</button>
-                <button class="btn btn-pdf" onclick="generatePDF()">📄 PDF</button>
-                <button class="btn btn-wa" onclick="shareWhatsAppDirect()">💬 WA (Text)</button>
+                <button class="btn btn-save" onclick="saveInvoice()"><i class="fas fa-save"></i> Save</button>
+                <button class="btn btn-img" onclick="shareAsImage()"><i class="fab fa-whatsapp"></i> Share Image</button>
+                <button class="btn btn-pdf" onclick="generatePDF()"><i class="fas fa-file-pdf"></i> PDF</button>
+                <button class="btn btn-wa" onclick="shareWhatsAppDirect()"><i class="fab fa-whatsapp"></i> WA (Text)</button>
             </div>
         </div>
 
@@ -251,7 +292,7 @@
                 </table>
             </div>
 
-            <!-- Button to show Add New Payment form -->
+            <!-- Add Payment Button Always Visible initially -->
             <button id="btn-show-new-pay" onclick="showNewPayForm()" style="width:100%; padding:8px; background:#2196F3; color:white; border:none; border-radius:4px; cursor:pointer; margin-bottom: 10px;">+ Add Payment</button>
 
             <!-- Hidden Add New Payment Form -->
@@ -403,13 +444,12 @@
             
             const calc = calculateTotals();
             
-            // SMART DUE DATE LOGIC
             const ddContainer = document.getElementById('container_ddate');
             const ddRow = document.getElementById('row_ddate');
             const f_ddate = document.getElementById('f_ddate');
             
             if (calc.total > 0 && calc.status !== 'PAID') {
-                ddContainer.style.display = 'flex'; // Show Due Date Input
+                ddContainer.style.display = 'flex';
                 if (f_ddate.value) {
                     document.getElementById('p_ddate').innerText = f_ddate.value.split('-').reverse().join('/');
                     ddRow.style.display = 'table-row';
@@ -417,8 +457,8 @@
                     ddRow.style.display = 'none';
                 }
             } else {
-                ddContainer.style.display = 'none'; // Hide Due Date Input if fully paid
-                f_ddate.value = ''; // clear it
+                ddContainer.style.display = 'none';
+                f_ddate.value = ''; 
                 ddRow.style.display = 'none';
             }
 
@@ -447,7 +487,6 @@
             if(currentItems.length === 0) return alert("Add at least one item.");
             const calc = calculateTotals();
             
-            // Check mandatory Due Date if Unpaid
             if (calc.total > 0 && calc.status !== 'PAID') {
                 if (!document.getElementById('f_ddate').value) {
                     return alert("Due Date is mandatory since the bill is not fully paid.");
@@ -472,6 +511,7 @@
             if(isEditMode) { closeEditModal(); renderList(); }
         }
 
+        // ================= LIST RENDER WITH ICONS =================
         function renderList(reset = false) {
             if(reset) listLimit = 30;
             const term = document.getElementById('search-box').value.toLowerCase();
@@ -482,16 +522,30 @@
                 const total = (inv.items||[]).reduce((s, i) => s + (i.qty * i.price), 0);
                 const paid = (inv.payments||[]).reduce((s, p) => s + p.amt, 0);
                 const bal = total - paid;
+                
                 tbody.innerHTML += `<tr>
                     <td>${inv.date ? inv.date.split('-').reverse().join('/') : '-'}</td>
                     <td>${inv.invNo}</td><td>${inv.to}</td><td>${formatMoney(total)}</td><td style="color:${bal>0?'red':'green'};"><b>${formatMoney(bal < 0 ? 0 : bal)}</b></td>
                     <td><span class="badge ${inv.status}">${inv.status}</span></td>
                     <td>
-                        <button class="action-icon bg-view" onclick="openEditModal('${inv.id}')" title="Edit Bill">✎</button>
-                        <button class="action-icon bg-pay" onclick="openQuickPayment('${inv.id}')" title="Manage Payments">₹</button>
-                        <button class="action-icon bg-img" onclick="shareAsImageList('${inv.id}')" title="Share Image on WhatsApp">🖼</button>
-                        <button class="action-icon bg-pdf" onclick="generatePDFList('${inv.id}')" title="Download PDF">📄</button>
-                        <button class="action-icon bg-del" onclick="deleteInvoice('${inv.id}')" title="Delete">✖</button>
+                        <button class="action-icon bg-view" onclick="openEditModal('${inv.id}')" title="Edit Bill">
+                            <i class="fas fa-edit"></i><span>Edit</span>
+                        </button>
+                        <button class="action-icon bg-pay" onclick="openQuickPayment('${inv.id}')" title="Manage Payments">
+                            <i class="fas fa-rupee-sign"></i><span>Pay</span>
+                        </button>
+                        <button class="action-icon bg-img" onclick="shareAsImageList('${inv.id}')" title="Share Image on WhatsApp">
+                            <i class="fab fa-whatsapp"></i><span>WA Img</span>
+                        </button>
+                        <button class="action-icon bg-wa" onclick="shareWhatsAppList('${inv.id}')" title="Share Text on WhatsApp">
+                            <i class="fab fa-whatsapp"></i><span>WA Txt</span>
+                        </button>
+                        <button class="action-icon bg-pdf" onclick="generatePDFList('${inv.id}')" title="Download PDF">
+                            <i class="fas fa-file-pdf"></i><span>PDF</span>
+                        </button>
+                        <button class="action-icon bg-del" onclick="deleteInvoice('${inv.id}')" title="Delete">
+                            <i class="fas fa-trash"></i><span>Del</span>
+                        </button>
                     </td>
                 </tr>`;
             });
@@ -507,16 +561,17 @@
             document.getElementById('pay_amt').value = ''; document.getElementById('payment_controls').style.display = 'none';
             renderTables();
         }
+        
         function openEditModal(id) {
             isEditMode = true; loadDataToForm(invoices.find(i => i.id === id));
             document.getElementById('edit-modal-content').appendChild(document.getElementById('editor-container'));
             document.getElementById('edit-overlay').style.display = 'flex';
-            document.getElementById('btn-close-edit').style.display = 'inline-block';
+            document.getElementById('btn-close-edit').style.display = 'inline-flex';
             document.getElementById('btn-new-bill').style.display = 'none';
         }
         function closeEditModal() { document.getElementById('edit-overlay').style.display = 'none'; renderList(); }
 
-        // ================= MANAGE PAYMENTS MODAL (LIST TAB) =================
+        // ================= MANAGE PAYMENTS MODAL =================
         function showNewPayForm() {
             document.getElementById('new-pay-form').style.display = 'block';
             document.getElementById('btn-show-new-pay').style.display = 'none';
@@ -561,11 +616,8 @@
             document.getElementById('pm_bal').innerText = formatMoney(bal < 0 ? 0 : bal);
             document.getElementById('pm_amount').value = bal > 0 ? bal : '';
 
-            // Hide add button if fully paid
-            if (bal <= 0) {
-                document.getElementById('btn-show-new-pay').style.display = 'none';
-                document.getElementById('new-pay-form').style.display = 'none';
-            } else if (document.getElementById('new-pay-form').style.display === 'none') {
+            // Hamesha add button dikhaye agar form hidden hai (even if bal <= 0)
+            if (document.getElementById('new-pay-form').style.display === 'none') {
                 document.getElementById('btn-show-new-pay').style.display = 'block';
             }
         }
@@ -611,47 +663,69 @@
             inv.status = paid >= total ? 'PAID' : (paid > 0 ? 'PARTIAL' : 'UNPAID');
         }
 
-        async function shareAsImage() {
-            const btn = event.currentTarget; const originalText = btn.innerHTML;
-            btn.innerHTML = "⏳ Processing..."; btn.disabled = true;
+        // ================= OFF-SCREEN CAPTURE LOGIC =================
+        function makeVisibleForExport(callback) {
+            const ct = document.getElementById('create-tab');
+            const orig = ct.style.display;
+            if(orig === 'none' || orig === '') {
+                ct.style.display = 'block';
+                ct.style.position = 'absolute';
+                ct.style.left = '-9999px'; // Render properly but hide it
+                ct.style.zIndex = '-1';
+            }
+            setTimeout(() => {
+                callback();
+                setTimeout(() => {
+                    ct.style.display = orig;
+                    ct.style.position = '';
+                    ct.style.left = '';
+                    ct.style.zIndex = '';
+                }, 1000); 
+            }, 100);
+        }
 
+        async function doShareAsImage() {
             const element = document.getElementById('print-area');
             const invNo = document.getElementById('f_inv').value || 'Bill';
-            
             try {
                 const canvas = await html2canvas(element, { scale: 2, useCORS: true });
                 canvas.toBlob(async (blob) => {
                     const file = new File([blob], `Invoice_${invNo}.png`, { type: 'image/png' });
-                    
                     if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                        try {
-                            await navigator.share({ files: [file], title: `Invoice ${invNo}`, text: 'Here is your invoice.' });
-                        } catch (err) { console.log("Share cancelled"); }
+                        try { await navigator.share({ files: [file], title: `Invoice ${invNo}`, text: 'Here is your invoice.' }); } catch (err) { console.log("Share cancelled"); }
                     } else {
                         alert("Browser doesn't support direct share. Image downloaded.");
                         const url = URL.createObjectURL(blob);
                         const a = document.createElement('a'); a.href = url; a.download = file.name; a.click(); URL.revokeObjectURL(url);
                     }
-                    btn.innerHTML = originalText; btn.disabled = false;
                 }, 'image/png');
-            } catch (e) {
-                alert("Error generating image."); btn.innerHTML = originalText; btn.disabled = false;
-            }
+            } catch (e) { alert("Error generating image."); }
         }
-        function shareAsImageList(id) { loadDataToForm(invoices.find(i => i.id === id)); setTimeout(shareAsImage, 300); }
 
-        function generatePDF() {
+        function shareAsImage() {
+            const btn = event.currentTarget; const originalText = btn.innerHTML;
+            btn.innerHTML = "⏳ Wait..."; btn.disabled = true;
+            doShareAsImage().then(() => { btn.innerHTML = originalText; btn.disabled = false; });
+        }
+        function shareAsImageList(id) { 
+            loadDataToForm(invoices.find(i => i.id === id)); 
+            makeVisibleForExport(doShareAsImage); 
+        }
+
+        function doGeneratePDF() {
             const element = document.getElementById('print-area');
             const invNo = document.getElementById('f_inv').value || 'Bill';
             html2pdf().set({ margin: 0, filename: `${invNo}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }).from(element).save();
         }
-        function generatePDFList(id) { loadDataToForm(invoices.find(i => i.id === id)); setTimeout(generatePDF, 200); }
+        function generatePDF() { doGeneratePDF(); }
+        function generatePDFList(id) { loadDataToForm(invoices.find(i => i.id === id)); makeVisibleForExport(doGeneratePDF); }
 
         function shareWhatsAppDirect() {
             const calc = calculateTotals();
             let text = `*INVOICE: ${document.getElementById('f_inv').value}*\n*To:* ${document.getElementById('f_to').value}\n\n*Total:* ₹${calc.total.toFixed(2)}\n*Paid:* ₹${calc.paid.toFixed(2)}\n*Balance:* ₹${calc.bal.toFixed(2)}\n\n*Status:* ${calc.status}\n\n_Note: Please ask for the PDF/Image bill if required._`;
             window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
         }
+        function shareWhatsAppList(id) { loadDataToForm(invoices.find(i => i.id === id)); setTimeout(shareWhatsAppDirect, 100); }
 
         window.onload = initApp;
     </script>
