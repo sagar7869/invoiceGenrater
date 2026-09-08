@@ -21,9 +21,9 @@
         * { box-sizing: border-box; }
         body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: var(--bg); color: #333; }
         
-        /* Tabs */
+        /* 3 Tabs Layout */
         .tabs { display: flex; background: #fff; border-bottom: 2px solid var(--border); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .tab-btn { flex: 1; background: transparent; color: #555; border: none; padding: 15px 10px; cursor: pointer; font-size: 16px; font-weight: 600; border-bottom: 3px solid transparent; transition: 0.3s; }
+        .tab-btn { flex: 1; background: transparent; color: #555; border: none; padding: 15px 5px; cursor: pointer; font-size: 15px; font-weight: 600; border-bottom: 3px solid transparent; transition: 0.3s; display:flex; align-items:center; justify-content:center; gap:5px;}
         .tab-btn.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
         
         .container { padding: 15px; max-width: 1200px; margin: auto; }
@@ -34,19 +34,17 @@
         /* Forms */
         #editor-container { display: flex; flex-direction: column; gap: 20px; position: relative; }
         .form-panel { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid #eee; position: relative; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .form-group { display: flex; flex-direction: column; }
         .form-group label { font-size: 13px; margin-bottom: 6px; font-weight: 600; color: #555; }
         .form-group input, .form-group select { padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 15px; outline: none; transition: border 0.2s; }
         .form-group input:focus, .form-group select:focus { border-color: var(--primary); }
         
-        /* Add Items & Payments Row */
         .input-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 15px;}
         .input-row input, .input-row select { padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; flex: 1; min-width: 120px; }
         .btn-add { background: #333; color: white; border: none; padding: 11px 15px; cursor: pointer; border-radius: 6px; font-weight: 600; white-space: nowrap; transition: 0.2s; }
         .btn-add:active { transform: scale(0.98); }
         
-        /* Tables Responsiveness */
         .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 15px; border-radius: 8px; border: 1px solid #eee; }
         .data-table { width: 100%; border-collapse: collapse; background: white; min-width: 500px; }
         .data-table th, .data-table td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; }
@@ -64,10 +62,10 @@
         .btn-wa { background: #10b981; }
         .btn-img { background: #ec4899; }
         .btn-new { background: #14b8a6; }
-        .btn-close { background: #64748b; display: none; }
+        .btn-close { background: #64748b; }
 
         /* ================= INVOICE PREVIEW DESIGN ================= */
-        .preview-wrapper { width: 100%; overflow-x: auto; padding: 15px 0; -webkit-overflow-scrolling: touch; }
+        .preview-container { display: flex; justify-content: center; background: #fff; padding: 20px 0; border-radius: 8px; }
         .preview-box { 
             background: white; padding: 20mm; width: 210mm; min-height: 297mm; margin: 0 auto; 
             box-shadow: 0 5px 20px rgba(0,0,0,0.1); position: relative; box-sizing: border-box; overflow: hidden;
@@ -105,12 +103,16 @@
         .ledger-table { width: 100%; max-width: 350px; font-size: 12px; margin-top: 10px; border-collapse: collapse; background: rgba(255,255,255,0.8); }
         .ledger-table th, .ledger-table td { padding: 6px; border: 1px solid #e2e8f0; text-align: left; }
         .ledger-table th { background: rgba(248,250,252,0.9); }
-        /* ========================================================= */
 
+        /* ================= MOBILE Cx LIST DESIGN (CARDS) ================= */
         .search-bar { width: 100%; padding: 12px; margin-bottom: 15px; font-size: 15px; border-radius: 8px; border: 1px solid var(--border); box-sizing: border-box; outline: none; }
         .search-bar:focus { border-color: var(--primary); }
         
-        .badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        .list-table { width: 100%; border-collapse: collapse; }
+        .list-table th, .list-table td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; }
+        .list-table th { background: #f8fafc; color: #475569; font-weight: 600; }
+
+        .badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; text-transform: uppercase; display:inline-block; }
         .badge.PAID { background: #e8f5e9; color: var(--paid-text); }
         .badge.PARTIAL { background: #fff3e0; color: var(--partial-text); }
         .badge.UNPAID { background: #ffebee; color: var(--unpaid-text); }
@@ -128,21 +130,12 @@
         
         /* Modals */
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; z-index: 1000; overflow-y: auto; padding: 15px; }
-        
-        /* Edit Modal Top Cross Button */
-        #btn-close-edit-top {
-            display: none; position: absolute; top: 5px; right: 5px;
-            background: #ef4444; color: white; border: none; border-radius: 50%;
-            width: 35px; height: 35px; font-size: 18px; cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2); z-index: 1001;
-            align-items: center; justify-content: center;
-        }
-
         .modal-sm { background: white; padding: 20px; border-radius: 12px; width: 100%; max-width: 450px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-        .modal-lg { background: transparent; padding: 10px; width: 100%; max-width: 900px; margin: auto; position: relative;}
         .modal-sm input, .modal-sm select { width: 100%; padding: 10px; margin: 8px 0 15px 0; border: 1px solid var(--border); border-radius: 6px; font-size: 15px; }
 
+        /* ================= RESPONSIVE MOBILE ADJUSTMENTS ================= */
         @media (max-width: 768px) {
+            /* Input Forms Adjustments */
             .input-row { flex-direction: column; align-items: stretch; }
             .input-row input, .input-row select { width: 100%; flex: none; }
             .btn-add { width: 100%; padding: 12px; }
@@ -151,60 +144,68 @@
             .btn { width: 100%; min-width: auto; }
             .btn-close, .btn-new { grid-column: span 2; }
             .modal-sm { padding: 15px; }
+
+            /* Customer List Cards Format (NO SCROLLING) */
+            .list-table thead { display: none; }
+            .list-table, .list-table tbody, .list-table tr, .list-table td { display: block; width: 100%; }
+            .list-table tr { margin-bottom: 15px; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+            .list-table td { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f8fafc; padding: 8px 5px; text-align: right; }
+            .list-table td::before { content: attr(data-label); font-weight: 600; color: #64748b; font-size: 13px; }
+            /* Grid for action buttons inside Card */
+            .list-table td.actions-cell { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; justify-content: center; border-bottom: none; margin-top: 5px; padding: 10px 0 0 0;}
+            .list-table td.actions-cell::before { display: none; }
+            .action-icon { width: 100%; height: 50px; margin: 0; }
+
+            /* Preview A4 Perfect Scaling */
+            .preview-container {
+                padding: 0;
+                display: block;
+                width: 100%;
+                /* Height of A4 ratio based on width (width x 1.414) */
+                height: calc((100vw - 30px) * 1.414); 
+                overflow: hidden;
+                position: relative;
+                border-radius: 8px;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+                background: white;
+            }
+            .preview-container .preview-box {
+                position: absolute;
+                top: 0; left: 0;
+                /* Force A4 Size */
+                width: 794px !important; 
+                min-height: 1123px !important;
+                transform-origin: top left;
+                /* Scale dynamically to fit the screen padding */
+                transform: scale(calc((100vw - 30px) / 794));
+                border: none;
+                box-shadow: none;
+            }
         }
 
+        /* Print Override */
         @media print {
             body { background: white; }
             body > *:not(#print-holder) { display: none !important; }
             #print-holder, #print-holder * { display: block !important; visibility: visible; }
-            .preview-wrapper { overflow: visible; padding: 0; }
-            .preview-box { position: absolute; left: 0; top: 0; margin: 0; box-shadow: none; padding: 10mm; width: 100%; height: 100%; border: none; border-top: 15px solid #1e293b; border-bottom: 15px solid #1e293b; }
+            .preview-container { overflow: visible; padding: 0; height: auto; display: block; }
+            .preview-box { position: absolute; left: 0; top: 0; margin: 0; box-shadow: none; padding: 10mm; width: 100%; height: 100%; border: none; border-top: 15px solid #1e293b; border-bottom: 15px solid #1e293b; transform: none !important; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Hidden holder for printing -->
+    <!-- Hidden holder for printing/export -->
     <div id="print-holder"></div>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('create-tab')">Create Bill</button>
-        <button class="tab-btn" onclick="switchTab('list-tab')">Customer List</button>
+        <button class="tab-btn active" onclick="switchTab('create-tab')"><i class="fas fa-edit"></i> Edit Bill</button>
+        <button class="tab-btn" onclick="switchTab('preview-tab')"><i class="fas fa-eye"></i> Preview</button>
+        <button class="tab-btn" onclick="switchTab('list-tab')"><i class="fas fa-list"></i> Cx List</button>
     </div>
 
-    <!-- CREATE TAB -->
+    <!-- TAB 1: CREATE BILL -->
     <div id="create-tab" class="tab-content active container">
-        <div id="create-tab-body"></div>
-    </div>
-
-    <!-- LIST TAB -->
-    <div id="list-tab" class="tab-content container">
-        <input type="text" id="search-box" class="search-bar" placeholder="🔍 Search by Name, Date or Invoice #..." onkeyup="renderList(true)">
-        
-        <div class="table-responsive">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Invoice #</th>
-                        <th>Customer</th>
-                        <th>Total</th>
-                        <th>Balance</th>
-                        <th>Status</th>
-                        <th style="min-width: 280px;">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="list-body"></tbody>
-            </table>
-        </div>
-        <button id="btn-load-more" onclick="loadMore()" style="display:block; width:100%; padding:12px; margin-top:10px; cursor:pointer; background:#fff; border:1px solid #ccc; border-radius:8px; font-weight:bold;">Load More</button>
-    </div>
-
-    <!-- SHARED EDITOR CONTAINER -->
-    <div id="editor-container">
-        <!-- Top X button for Edit Modal (Hidden by default) -->
-        <button id="btn-close-edit-top" onclick="closeEditModal()"><i class="fas fa-times"></i></button>
-
         <div class="form-panel">
             <div class="form-grid">
                 <div class="form-group"><label>FROM (Shop Name)</label><input type="text" id="f_from" value="Perry radios"></div>
@@ -252,17 +253,17 @@
             </div>
 
             <div class="action-bar">
-                <button class="btn btn-close" id="btn-close-edit" onclick="closeEditModal()"><i class="fas fa-times"></i> Close</button>
+                <button class="btn btn-close" id="btn-close-edit" style="display:none;" onclick="cancelEditMode()"><i class="fas fa-times"></i> Cancel Edit</button>
                 <button class="btn btn-new" id="btn-new-bill" onclick="startNewInvoice()"><i class="fas fa-file-invoice"></i> New Bill</button>
-                <button class="btn btn-save" onclick="saveInvoice()"><i class="fas fa-save"></i> Save</button>
-                <button class="btn btn-img" onclick="shareAsImage()"><i class="fab fa-whatsapp"></i> WA Image</button>
-                <button class="btn btn-pdf" onclick="generatePDF()"><i class="fas fa-file-pdf"></i> PDF</button>
-                <button class="btn btn-wa" onclick="shareWhatsAppDirect()"><i class="fab fa-whatsapp"></i> WA Text</button>
+                <button class="btn btn-save" onclick="saveInvoice()"><i class="fas fa-save"></i> Save Invoice</button>
+                <button class="btn" style="background:#6366f1; grid-column:span 2;" onclick="switchTab('preview-tab')">See Preview <i class="fas fa-arrow-right"></i></button>
             </div>
         </div>
+    </div>
 
-        <!-- Print Preview -->
-        <div class="preview-wrapper">
+    <!-- TAB 2: INVOICE PREVIEW -->
+    <div id="preview-tab" class="tab-content container">
+        <div class="preview-container">
             <div class="preview-box" id="print-area">
                 <div id="p_watermark" class="watermark UNPAID">UNPAID</div>
                 <div class="header">
@@ -302,12 +303,41 @@
                 </div>
             </div>
         </div>
+
+        <div class="form-panel" style="margin-top:20px;">
+            <div class="action-bar" style="margin-top:0; padding-top:0; border-top:none;">
+                <button class="btn btn-close" style="display:inline-flex;" onclick="switchTab('create-tab')"><i class="fas fa-edit"></i> Edit Bill</button>
+                <button class="btn btn-img" onclick="shareAsImageFromPreview()"><i class="fab fa-whatsapp"></i> WA Image</button>
+                <button class="btn btn-pdf" onclick="generatePDFFromPreview()"><i class="fas fa-file-pdf"></i> Download PDF</button>
+                <button class="btn btn-wa" onclick="shareWhatsAppDirectFromPreview()"><i class="fab fa-whatsapp"></i> WA Text</button>
+            </div>
+        </div>
     </div>
 
-    <!-- Modals -->
-    <div class="overlay" id="edit-overlay"><div class="modal-lg" id="edit-modal-content"></div></div>
-    
-    <!-- Manage Payment Modal -->
+    <!-- TAB 3: CUSTOMER LIST -->
+    <div id="list-tab" class="tab-content container">
+        <input type="text" id="search-box" class="search-bar" placeholder="🔍 Search by Name, Date or Invoice #..." onkeyup="renderList(true)">
+        
+        <!-- Mobile adaptive list-table -->
+        <table class="list-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Invoice #</th>
+                    <th>Customer</th>
+                    <th>Total</th>
+                    <th>Balance</th>
+                    <th>Status</th>
+                    <th style="min-width: 280px; text-align:center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="list-body"></tbody>
+        </table>
+        
+        <button id="btn-load-more" onclick="loadMore()" style="display:block; width:100%; padding:12px; margin-top:10px; cursor:pointer; background:#fff; border:1px solid #ccc; border-radius:8px; font-weight:bold;">Load More</button>
+    </div>
+
+    <!-- Manage Payment Modal (For Customer List Tab) -->
     <div class="overlay" id="payment-modal">
         <div class="modal-sm">
             <h3 style="margin-top:0; color:#333;">Manage Payments</h3>
@@ -344,20 +374,27 @@
         let invoices = JSON.parse(localStorage.getItem('myInvoicesPro')) || [];
         invoices.forEach(inv => { if(inv.paidAmount !== undefined && !inv.payments) { inv.payments = inv.paidAmount > 0 ? [{id: Date.now(), amt: inv.paidAmount, mode: 'Cash', date: inv.date}] : []; delete inv.paidAmount; } });
 
-        let currentInvId = null, currentItems = [], currentPayments = [], listLimit = 30, activePayId = null, isEditMode = false;
+        let currentInvId = null, currentItems = [], currentPayments = [], listLimit = 30, activePayId = null;
+        let isEditMode = false;
+        
+        // UNSAVED CHANGES LOGIC (Save before Export)
+        let hasUnsavedChanges = false;
+        function markUnsaved() { hasUnsavedChanges = true; }
+
         const formatMoney = (amt) => '₹' + parseFloat(amt).toLocaleString('en-IN', {minimumFractionDigits: 2});
         
         function initApp() {
-            ['f_from', 'f_inv', 'f_cdate', 'f_ddate'].forEach(id => document.getElementById(id).addEventListener('input', updatePreview));
-            document.getElementById('f_to').addEventListener('input', () => { autoGenerateInvoice(); updatePreview(); });
-            document.getElementById('f_cdate').addEventListener('change', () => { autoGenerateInvoice(); updatePreview(); });
+            const allInputs = document.querySelectorAll('#create-tab input, #create-tab select');
+            allInputs.forEach(el => el.addEventListener('input', () => { markUnsaved(); updatePreview(); }));
+            
+            document.getElementById('f_to').addEventListener('input', () => { autoGenerateInvoice(); });
+            document.getElementById('f_cdate').addEventListener('change', () => { autoGenerateInvoice(); });
             
             document.getElementById('pay_amt').addEventListener('input', function() {
                 const val = parseFloat(this.value);
                 document.getElementById('payment_controls').style.display = (val > 0) ? 'flex' : 'none';
             });
 
-            document.getElementById('create-tab-body').appendChild(document.getElementById('editor-container'));
             startNewInvoice();
         }
 
@@ -375,15 +412,13 @@
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content, .tab-btn').forEach(t => t.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
-            event.currentTarget.classList.add('active');
-            if(tabId === 'create-tab') {
-                document.getElementById('create-tab-body').appendChild(document.getElementById('editor-container'));
-                document.getElementById('btn-close-edit').style.display = 'none';
-                document.getElementById('btn-close-edit-top').style.display = 'none';
-                document.getElementById('btn-new-bill').style.display = 'inline-flex';
-                if(isEditMode) startNewInvoice();
-                isEditMode = false;
-            } else renderList(true);
+            
+            const btnIndex = tabId === 'create-tab' ? 0 : (tabId === 'preview-tab' ? 1 : 2);
+            document.querySelectorAll('.tab-btn')[btnIndex].classList.add('active');
+            
+            if(tabId === 'list-tab') renderList(true);
+            // Updating Preview manually just in case
+            if(tabId === 'preview-tab') updatePreview();
         }
 
         function startNewInvoice() {
@@ -391,7 +426,12 @@
             document.getElementById('f_to').value = ''; document.getElementById('f_inv').value = '';
             document.getElementById('f_ddate').value = '';
             document.getElementById('pay_amt').value = ''; document.getElementById('payment_controls').style.display = 'none';
-            setTodayDate(); renderTables();
+            isEditMode = false;
+            document.getElementById('btn-close-edit').style.display = 'none';
+            document.getElementById('btn-new-bill').style.display = 'inline-flex';
+            setTodayDate(); 
+            renderTables();
+            hasUnsavedChanges = true; // New empty draft is unsaved
         }
 
         function addItem() {
@@ -399,10 +439,13 @@
             if(!desc || !qty || !price) return alert("Fill Item details.");
             currentItems.push({ id: Date.now(), desc, qty, price });
             document.getElementById('i_desc').value = ''; document.getElementById('i_qty').value = ''; document.getElementById('i_price').value = '';
-            renderTables();
+            markUnsaved(); renderTables();
         }
-        function updateItem(id, field, val) { const item = currentItems.find(i => i.id == id); if(item) { item[field] = field === 'desc' ? val : (parseFloat(val)||0); renderTables(); } }
-        function deleteItem(id) { currentItems = currentItems.filter(i => i.id != id); renderTables(); }
+        function updateItem(id, field, val) { 
+            const item = currentItems.find(i => i.id == id); 
+            if(item) { item[field] = field === 'desc' ? val : (parseFloat(val)||0); markUnsaved(); renderTables(); } 
+        }
+        function deleteItem(id) { currentItems = currentItems.filter(i => i.id != id); markUnsaved(); renderTables(); }
 
         function addPaymentRecord() {
             const amt = parseFloat(document.getElementById('pay_amt').value), mode = document.getElementById('pay_mode').value;
@@ -417,10 +460,18 @@
             
             document.getElementById('pay_amt').value = '';
             document.getElementById('payment_controls').style.display = 'none';
-            renderTables();
+            markUnsaved(); renderTables();
         }
         
-        function deletePayment(id) { currentPayments = currentPayments.filter(p => p.id != id); renderTables(); }
+        function updatePayment(id, field, val) {
+            const p = currentPayments.find(x => x.id == id);
+            if(p) {
+                if(field === 'amt') p.amt = parseFloat(val) || 0;
+                else p.mode = val;
+                markUnsaved(); renderTables();
+            }
+        }
+        function deletePayment(id) { currentPayments = currentPayments.filter(p => p.id != id); markUnsaved(); renderTables(); }
 
         function renderTables() {
             const iBody = document.getElementById('edit-items-body'), pBody = document.getElementById('edit-payments-body');
@@ -431,8 +482,13 @@
             currentPayments.forEach(p => {
                 pBody.innerHTML += `<tr>
                     <td>${p.date}</td>
-                    <td>${p.mode}</td>
-                    <td>${formatMoney(p.amt)}</td>
+                    <td>
+                        <select onchange="updatePayment(${p.id}, 'mode', this.value)">
+                            <option value="Cash" ${p.mode==='Cash'?'selected':''}>Cash</option>
+                            <option value="Online" ${p.mode==='Online'?'selected':''}>Online</option>
+                        </select>
+                    </td>
+                    <td><input type="number" value="${p.amt}" onchange="updatePayment(${p.id}, 'amt', this.value)"></td>
                     <td><button class="btn-del" onclick="deletePayment(${p.id})"><i class="fas fa-trash"></i></button></td>
                 </tr>`;
             });
@@ -472,7 +528,6 @@
                 }
             } else {
                 ddContainer.style.display = 'none';
-                // f_ddate.value = ''; // DO NOT CLEAR IT, just hide it so data isn't lost if they made a mistake
                 ddRow.style.display = 'none';
             }
 
@@ -498,12 +553,12 @@
         }
 
         function saveInvoice() {
-            if(currentItems.length === 0) return alert("Add at least one item.");
+            if(currentItems.length === 0) return alert("Kripya kam se kam ek item add karein.");
             const calc = calculateTotals();
             
             if (calc.total > 0 && calc.status !== 'PAID') {
                 if (!document.getElementById('f_ddate').value) {
-                    return alert("Due Date is mandatory since the bill is not fully paid.");
+                    return alert("Due Date zaroori hai kyonki bill ka payment pura nahi hua hai.");
                 }
             }
 
@@ -521,11 +576,27 @@
             const idx = invoices.findIndex(i => i.id === currentInvId);
             if(idx > -1) invoices[idx] = invData; else invoices.push(invData);
             localStorage.setItem('myInvoicesPro', JSON.stringify(invoices));
-            alert("Bill Saved!");
-            if(isEditMode) { closeEditModal(); renderList(); }
+            
+            hasUnsavedChanges = false; // Successfully saved
+            alert("Bill successfully save ho gaya hai!");
+            
+            if(isEditMode) { 
+                cancelEditMode(); 
+            } else {
+                switchTab('preview-tab'); // Show preview automatically after saving new
+            }
         }
 
-        // ================= LIST TAB =================
+        function checkRequireSave() {
+            if(hasUnsavedChanges) {
+                alert("Rukiye! Kripya pehle bill ko 'Save Invoice' button dabakar Save karein tabhi aap isse share kar payenge.");
+                switchTab('create-tab');
+                return true;
+            }
+            return false;
+        }
+
+        // ================= LIST TAB RENDERING =================
         function renderList(reset = false) {
             if(reset) listLimit = 30;
             const term = document.getElementById('search-box').value.toLowerCase();
@@ -538,24 +609,24 @@
                 const bal = total - paid;
                 
                 tbody.innerHTML += `<tr>
-                    <td>${inv.date ? inv.date.split('-').reverse().join('/') : '-'}</td>
-                    <td><b>${inv.invNo}</b></td>
-                    <td>${inv.to}</td>
-                    <td>${formatMoney(total)}</td>
-                    <td style="color:${bal>0?'#dc2626':'#16a34a'}; font-weight:600;">${formatMoney(bal < 0 ? 0 : bal)}</td>
-                    <td><span class="badge ${inv.status}">${inv.status}</span></td>
-                    <td style="white-space: nowrap;">
-                        <button class="action-icon bg-view" onclick="openEditModal('${inv.id}')" title="Edit Bill">
+                    <td data-label="Date">${inv.date ? inv.date.split('-').reverse().join('/') : '-'}</td>
+                    <td data-label="Invoice #"><b>${inv.invNo}</b></td>
+                    <td data-label="Customer">${inv.to}</td>
+                    <td data-label="Total">${formatMoney(total)}</td>
+                    <td data-label="Balance" style="color:${bal>0?'#dc2626':'#16a34a'}; font-weight:600;">${formatMoney(bal < 0 ? 0 : bal)}</td>
+                    <td data-label="Status"><span class="badge ${inv.status}">${inv.status}</span></td>
+                    <td class="actions-cell">
+                        <button class="action-icon bg-view" onclick="openEditMode('${inv.id}')" title="Edit Bill">
                             <i class="fas fa-edit"></i><span>EDIT</span>
                         </button>
                         <button class="action-icon bg-pay" onclick="openQuickPayment('${inv.id}')" title="Manage Payments">
                             <i class="fas fa-rupee-sign"></i><span>PAY</span>
                         </button>
                         <button class="action-icon bg-img" onclick="shareAsImageList('${inv.id}')" title="Share Image on WhatsApp">
-                            <i class="fab fa-whatsapp"></i><span>WA IMG</span>
+                            <i class="fab fa-whatsapp"></i><span>IMG</span>
                         </button>
                         <button class="action-icon bg-wa" onclick="shareWhatsAppList('${inv.id}')" title="Share Text on WhatsApp">
-                            <i class="fab fa-whatsapp"></i><span>WA TXT</span>
+                            <i class="fab fa-whatsapp"></i><span>TXT</span>
                         </button>
                         <button class="action-icon bg-pdf" onclick="generatePDFList('${inv.id}')" title="Download PDF">
                             <i class="fas fa-file-pdf"></i><span>PDF</span>
@@ -571,30 +642,27 @@
         function deleteInvoice(id) { if(confirm("Permanently delete this invoice?")) { invoices = invoices.filter(i => i.id !== id); localStorage.setItem('myInvoicesPro', JSON.stringify(invoices)); renderList(); } }
 
         function loadDataToForm(inv) {
-            currentInvId = inv.id; 
-            document.getElementById('f_from').value = inv.from; 
-            document.getElementById('f_to').value = inv.to;
-            document.getElementById('f_inv').value = inv.invNo; 
-            document.getElementById('f_cdate').value = inv.date;
+            currentInvId = inv.id; document.getElementById('f_from').value = inv.from; document.getElementById('f_to').value = inv.to;
+            document.getElementById('f_inv').value = inv.invNo; document.getElementById('f_cdate').value = inv.date;
             document.getElementById('f_ddate').value = inv.dueDate || '';
-            currentItems = inv.items || []; 
-            currentPayments = inv.payments || [];
-            document.getElementById('pay_amt').value = ''; 
-            document.getElementById('payment_controls').style.display = 'none';
+            currentItems = JSON.parse(JSON.stringify(inv.items || [])); // Clone
+            currentPayments = JSON.parse(JSON.stringify(inv.payments || [])); // Clone
+            document.getElementById('pay_amt').value = ''; document.getElementById('payment_controls').style.display = 'none';
             renderTables();
+            hasUnsavedChanges = false; // Just loaded, so saved
         }
         
-        function openEditModal(id) {
-            isEditMode = true; loadDataToForm(invoices.find(i => i.id === id));
-            document.getElementById('edit-modal-content').appendChild(document.getElementById('editor-container'));
-            document.getElementById('edit-overlay').style.display = 'flex';
+        function openEditMode(id) {
+            isEditMode = true; 
+            loadDataToForm(invoices.find(i => i.id === id));
+            switchTab('create-tab');
             document.getElementById('btn-close-edit').style.display = 'inline-flex';
-            document.getElementById('btn-close-edit-top').style.display = 'flex'; // Show floating X
             document.getElementById('btn-new-bill').style.display = 'none';
         }
-        function closeEditModal() { 
-            document.getElementById('edit-overlay').style.display = 'none'; 
-            renderList(); 
+        
+        function cancelEditMode() {
+            startNewInvoice(); 
+            switchTab('list-tab');
         }
 
         // ================= MANAGE PAYMENTS MODAL =================
@@ -644,6 +712,10 @@
             document.getElementById('pm_total').innerText = formatMoney(total); 
             document.getElementById('pm_bal').innerText = formatMoney(bal < 0 ? 0 : bal);
             document.getElementById('pm_amount').value = bal > 0 ? bal : '';
+
+            if (document.getElementById('new-pay-form').style.display === 'none') {
+                document.getElementById('btn-show-new-pay').style.display = 'block';
+            }
         }
 
         function saveQMPayment(event, pid) {
@@ -655,13 +727,11 @@
                 recalcInvStatus(inv);
                 localStorage.setItem('myInvoicesPro', JSON.stringify(invoices));
                 
-                // Visual feedback
                 const btn = event.currentTarget;
                 btn.innerHTML = '<i class="fas fa-check"></i>';
                 setTimeout(() => { btn.innerHTML = '<i class="fas fa-save"></i>'; }, 1000);
                 
-                renderQuickPaymentsList(); 
-                renderList();
+                renderQuickPaymentsList(); renderList();
             }
         }
         
@@ -686,6 +756,11 @@
                 hideNewPayForm();
                 renderQuickPaymentsList(); 
                 renderList();
+                
+                // Update active preview if it's currently open
+                if(currentInvId === inv.id) {
+                    loadDataToForm(inv);
+                }
             } else alert("Invalid Amount");
         }
 
@@ -695,13 +770,12 @@
             inv.status = paid >= total ? 'PAID' : (paid > 0 ? 'PARTIAL' : 'UNPAID');
         }
 
-        // ================= OFF-SCREEN CAPTURE LOGIC =================
+        // ================= EXPORT LOGIC =================
         function makeVisibleForExport(callback) {
             const printArea = document.getElementById('print-area');
             const originalParent = printArea.parentNode;
             const originalSibling = printArea.nextSibling;
             
-            // Move temporarily to body to bypass hidden tabs
             document.body.appendChild(printArea);
             const origStyle = printArea.getAttribute('style') || '';
             printArea.style.position = 'absolute';
@@ -712,7 +786,6 @@
             
             setTimeout(() => {
                 callback().then(() => {
-                    // Restore to original location
                     printArea.setAttribute('style', origStyle);
                     if(originalSibling) { originalParent.insertBefore(printArea, originalSibling); } 
                     else { originalParent.appendChild(printArea); }
@@ -749,7 +822,8 @@
             });
         }
 
-        function shareAsImage() {
+        function shareAsImageFromPreview() {
+            if(checkRequireSave()) return;
             const btn = event.currentTarget; const originalText = btn.innerHTML;
             btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Processing..."; btn.disabled = true;
             doShareAsImage().then(() => { btn.innerHTML = originalText; btn.disabled = false; });
@@ -766,15 +840,22 @@
                 html2pdf().set({ margin: 0, filename: `${invNo}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }).from(element).save().then(resolve);
             });
         }
-        function generatePDF() { doGeneratePDF(); }
+        function generatePDFFromPreview() {
+            if(checkRequireSave()) return;
+            doGeneratePDF();
+        }
         function generatePDFList(id) { loadDataToForm(invoices.find(i => i.id === id)); makeVisibleForExport(doGeneratePDF); }
 
-        function shareWhatsAppDirect() {
+        function shareWhatsAppDirectFromPreview() {
+            if(checkRequireSave()) return;
+            triggerWhatsAppDirect();
+        }
+        function triggerWhatsAppDirect() {
             const calc = calculateTotals();
             let text = `*INVOICE: ${document.getElementById('f_inv').value}*\n*To:* ${document.getElementById('f_to').value}\n\n*Total:* ₹${calc.total.toFixed(2)}\n*Paid:* ₹${calc.paid.toFixed(2)}\n*Balance:* ₹${calc.bal.toFixed(2)}\n\n*Status:* ${calc.status}\n\n_Note: Please ask for the PDF/Image bill if required._`;
             window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
         }
-        function shareWhatsAppList(id) { loadDataToForm(invoices.find(i => i.id === id)); setTimeout(shareWhatsAppDirect, 100); }
+        function shareWhatsAppList(id) { loadDataToForm(invoices.find(i => i.id === id)); setTimeout(triggerWhatsAppDirect, 100); }
 
         window.onload = initApp;
     </script>
