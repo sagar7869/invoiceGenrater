@@ -65,7 +65,7 @@
         .btn-close { background: #64748b; }
 
         /* ================= INVOICE PREVIEW DESIGN ================= */
-        .preview-container { display: flex; justify-content: center; background: #fff; padding: 20px 0; border-radius: 8px; }
+        .preview-wrapper { width: 100%; overflow: hidden; background: #fff; border-radius: 8px; }
         .preview-box { 
             background: white; padding: 20mm; width: 210mm; min-height: 297mm; margin: 0 auto; 
             box-shadow: 0 5px 20px rgba(0,0,0,0.1); position: relative; box-sizing: border-box; overflow: hidden;
@@ -104,7 +104,7 @@
         .ledger-table th, .ledger-table td { padding: 6px; border: 1px solid #e2e8f0; text-align: left; }
         .ledger-table th { background: rgba(248,250,252,0.9); }
 
-        /* ================= MOBILE Cx LIST DESIGN (CARDS) ================= */
+        /* ================= MOBILE Cx LIST DESIGN ================= */
         .search-bar { width: 100%; padding: 12px; margin-bottom: 15px; font-size: 15px; border-radius: 8px; border: 1px solid var(--border); box-sizing: border-box; outline: none; }
         .search-bar:focus { border-color: var(--primary); }
         
@@ -133,9 +133,8 @@
         .modal-sm { background: white; padding: 20px; border-radius: 12px; width: 100%; max-width: 450px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
         .modal-sm input, .modal-sm select { width: 100%; padding: 10px; margin: 8px 0 15px 0; border: 1px solid var(--border); border-radius: 6px; font-size: 15px; }
 
-        /* ================= RESPONSIVE MOBILE ADJUSTMENTS ================= */
+        /* ================= RESPONSIVE ADJUSTMENTS ================= */
         @media (max-width: 768px) {
-            /* Input Forms Adjustments */
             .input-row { flex-direction: column; align-items: stretch; }
             .input-row input, .input-row select { width: 100%; flex: none; }
             .btn-add { width: 100%; padding: 12px; }
@@ -145,39 +144,25 @@
             .btn-close, .btn-new { grid-column: span 2; }
             .modal-sm { padding: 15px; }
 
-            /* Customer List Cards Format (NO SCROLLING) */
+            /* Customer List Cards Format */
             .list-table thead { display: none; }
             .list-table, .list-table tbody, .list-table tr, .list-table td { display: block; width: 100%; }
             .list-table tr { margin-bottom: 15px; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
             .list-table td { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f8fafc; padding: 8px 5px; text-align: right; }
             .list-table td::before { content: attr(data-label); font-weight: 600; color: #64748b; font-size: 13px; }
-            /* Grid for action buttons inside Card */
             .list-table td.actions-cell { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; justify-content: center; border-bottom: none; margin-top: 5px; padding: 10px 0 0 0;}
             .list-table td.actions-cell::before { display: none; }
             .action-icon { width: 100%; height: 50px; margin: 0; }
 
-            /* Preview A4 Perfect Scaling */
-            .preview-container {
-                padding: 0;
-                display: block;
+            /* Preview Wrapper Mobile Reset */
+            .preview-wrapper {
                 width: 100%;
-                /* Height of A4 ratio based on width (width x 1.414) */
-                height: calc((100vw - 30px) * 1.414); 
-                overflow: hidden;
-                position: relative;
-                border-radius: 8px;
+                overflow: hidden; /* No scrollbars */
                 box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-                background: white;
             }
-            .preview-container .preview-box {
-                position: absolute;
-                top: 0; left: 0;
-                /* Force A4 Size */
-                width: 794px !important; 
-                min-height: 1123px !important;
-                transform-origin: top left;
-                /* Scale dynamically to fit the screen padding */
-                transform: scale(calc((100vw - 30px) / 794));
+            .preview-wrapper .preview-box {
+                /* Transform properties will be applied by Javascript for pixel-perfect fitting */
+                margin: 0;
                 border: none;
                 box-shadow: none;
             }
@@ -188,8 +173,8 @@
             body { background: white; }
             body > *:not(#print-holder) { display: none !important; }
             #print-holder, #print-holder * { display: block !important; visibility: visible; }
-            .preview-container { overflow: visible; padding: 0; height: auto; display: block; }
-            .preview-box { position: absolute; left: 0; top: 0; margin: 0; box-shadow: none; padding: 10mm; width: 100%; height: 100%; border: none; border-top: 15px solid #1e293b; border-bottom: 15px solid #1e293b; transform: none !important; }
+            .preview-wrapper { overflow: visible; padding: 0; height: auto !important; }
+            .preview-box { position: absolute; left: 0; top: 0; margin: 0; box-shadow: none; padding: 10mm; width: 100% !important; height: 100%; border: none; border-top: 15px solid #1e293b; border-bottom: 15px solid #1e293b; transform: none !important; }
         }
     </style>
 </head>
@@ -206,7 +191,7 @@
 
     <!-- TAB 1: CREATE BILL -->
     <div id="create-tab" class="tab-content active container">
-        <div class="form-panel">
+        <div class="form-panel" id="editor-container">
             <div class="form-grid">
                 <div class="form-group"><label>FROM (Shop Name)</label><input type="text" id="f_from" value="Perry radios"></div>
                 <div class="form-group"><label>BILL TO (Customer Name)</label><input type="text" id="f_to" placeholder="Enter Customer Name"></div>
@@ -263,7 +248,7 @@
 
     <!-- TAB 2: INVOICE PREVIEW -->
     <div id="preview-tab" class="tab-content container">
-        <div class="preview-container">
+        <div class="preview-wrapper" id="preview-wrapper">
             <div class="preview-box" id="print-area">
                 <div id="p_watermark" class="watermark UNPAID">UNPAID</div>
                 <div class="header">
@@ -318,21 +303,22 @@
     <div id="list-tab" class="tab-content container">
         <input type="text" id="search-box" class="search-bar" placeholder="🔍 Search by Name, Date or Invoice #..." onkeyup="renderList(true)">
         
-        <!-- Mobile adaptive list-table -->
-        <table class="list-table">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Invoice #</th>
-                    <th>Customer</th>
-                    <th>Total</th>
-                    <th>Balance</th>
-                    <th>Status</th>
-                    <th style="min-width: 280px; text-align:center;">Actions</th>
-                </tr>
-            </thead>
-            <tbody id="list-body"></tbody>
-        </table>
+        <div class="table-responsive" style="border:none;">
+            <table class="list-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Invoice #</th>
+                        <th>Customer</th>
+                        <th>Total</th>
+                        <th>Balance</th>
+                        <th>Status</th>
+                        <th style="text-align:center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="list-body"></tbody>
+            </table>
+        </div>
         
         <button id="btn-load-more" onclick="loadMore()" style="display:block; width:100%; padding:12px; margin-top:10px; cursor:pointer; background:#fff; border:1px solid #ccc; border-radius:8px; font-weight:bold;">Load More</button>
     </div>
@@ -372,28 +358,34 @@
 
     <script>
         let invoices = JSON.parse(localStorage.getItem('myInvoicesPro')) || [];
+        // Compatibility for old format
         invoices.forEach(inv => { if(inv.paidAmount !== undefined && !inv.payments) { inv.payments = inv.paidAmount > 0 ? [{id: Date.now(), amt: inv.paidAmount, mode: 'Cash', date: inv.date}] : []; delete inv.paidAmount; } });
 
         let currentInvId = null, currentItems = [], currentPayments = [], listLimit = 30, activePayId = null;
         let isEditMode = false;
         
-        // UNSAVED CHANGES LOGIC (Save before Export)
+        // UNSAVED CHANGES LOGIC
         let hasUnsavedChanges = false;
         function markUnsaved() { hasUnsavedChanges = true; }
 
         const formatMoney = (amt) => '₹' + parseFloat(amt).toLocaleString('en-IN', {minimumFractionDigits: 2});
         
         function initApp() {
+            // Track unsaved changes
             const allInputs = document.querySelectorAll('#create-tab input, #create-tab select');
             allInputs.forEach(el => el.addEventListener('input', () => { markUnsaved(); updatePreview(); }));
             
             document.getElementById('f_to').addEventListener('input', () => { autoGenerateInvoice(); });
             document.getElementById('f_cdate').addEventListener('change', () => { autoGenerateInvoice(); });
             
+            // Smart Payment Control
             document.getElementById('pay_amt').addEventListener('input', function() {
                 const val = parseFloat(this.value);
                 document.getElementById('payment_controls').style.display = (val > 0) ? 'flex' : 'none';
             });
+
+            // Re-scale preview on resize
+            window.addEventListener('resize', adjustPreviewScale);
 
             startNewInvoice();
         }
@@ -409,6 +401,7 @@
             document.getElementById('f_inv').value = (name.replace(/[^a-zA-Z0-9]/g, '').toUpperCase() + "XXXX").substring(0, 4) + (date ? (date.split('-')[2] + date.split('-')[1]) : "0000");
         }
 
+        // ================= TAB SWITCHING =================
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content, .tab-btn').forEach(t => t.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
@@ -417,10 +410,35 @@
             document.querySelectorAll('.tab-btn')[btnIndex].classList.add('active');
             
             if(tabId === 'list-tab') renderList(true);
-            // Updating Preview manually just in case
-            if(tabId === 'preview-tab') updatePreview();
+            if(tabId === 'preview-tab') {
+                updatePreview();
+                setTimeout(adjustPreviewScale, 100); // Fit exactly to screen when tab opens
+            }
         }
 
+        // ================= MOBILE PERFECT SCALING FOR PREVIEW =================
+        function adjustPreviewScale() {
+            const wrapper = document.getElementById('preview-wrapper');
+            const box = document.getElementById('print-area');
+            
+            if(window.innerWidth <= 768) {
+                // Determine available width
+                const wrapperWidth = wrapper.clientWidth || (window.innerWidth - 30);
+                const a4WidthPx = 794; // approx A4 width 210mm in standard CSS pixels
+                const scale = wrapperWidth / a4WidthPx;
+                
+                box.style.transform = `scale(${scale})`;
+                box.style.transformOrigin = 'top left';
+                // Adjust height of wrapper so it doesn't clip or leave empty space
+                wrapper.style.height = `${1123 * scale}px`; 
+            } else {
+                // Desktop: original size
+                box.style.transform = 'none';
+                wrapper.style.height = 'auto';
+            }
+        }
+
+        // ================= CREATE / EDIT BILL =================
         function startNewInvoice() {
             currentInvId = Date.now().toString(); currentItems = []; currentPayments = [];
             document.getElementById('f_to').value = ''; document.getElementById('f_inv').value = '';
@@ -583,7 +601,7 @@
             if(isEditMode) { 
                 cancelEditMode(); 
             } else {
-                switchTab('preview-tab'); // Show preview automatically after saving new
+                switchTab('preview-tab');
             }
         }
 
@@ -596,7 +614,7 @@
             return false;
         }
 
-        // ================= LIST TAB RENDERING =================
+        // ================= CUSTOMER LIST =================
         function renderList(reset = false) {
             if(reset) listLimit = 30;
             const term = document.getElementById('search-box').value.toLowerCase();
@@ -645,11 +663,11 @@
             currentInvId = inv.id; document.getElementById('f_from').value = inv.from; document.getElementById('f_to').value = inv.to;
             document.getElementById('f_inv').value = inv.invNo; document.getElementById('f_cdate').value = inv.date;
             document.getElementById('f_ddate').value = inv.dueDate || '';
-            currentItems = JSON.parse(JSON.stringify(inv.items || [])); // Clone
-            currentPayments = JSON.parse(JSON.stringify(inv.payments || [])); // Clone
+            currentItems = JSON.parse(JSON.stringify(inv.items || []));
+            currentPayments = JSON.parse(JSON.stringify(inv.payments || []));
             document.getElementById('pay_amt').value = ''; document.getElementById('payment_controls').style.display = 'none';
             renderTables();
-            hasUnsavedChanges = false; // Just loaded, so saved
+            hasUnsavedChanges = false; // Loaded from saved data
         }
         
         function openEditMode(id) {
@@ -756,11 +774,6 @@
                 hideNewPayForm();
                 renderQuickPaymentsList(); 
                 renderList();
-                
-                // Update active preview if it's currently open
-                if(currentInvId === inv.id) {
-                    loadDataToForm(inv);
-                }
             } else alert("Invalid Amount");
         }
 
@@ -773,8 +786,17 @@
         // ================= EXPORT LOGIC =================
         function makeVisibleForExport(callback) {
             const printArea = document.getElementById('print-area');
+            const wrapper = document.getElementById('preview-wrapper');
             const originalParent = printArea.parentNode;
             const originalSibling = printArea.nextSibling;
+            
+            // Save current transform state
+            const origTransform = printArea.style.transform;
+            const origTransformOrigin = printArea.style.transformOrigin;
+            
+            // Remove Mobile Scale before capture
+            printArea.style.transform = 'none';
+            printArea.style.transformOrigin = 'initial';
             
             document.body.appendChild(printArea);
             const origStyle = printArea.getAttribute('style') || '';
@@ -787,10 +809,15 @@
             setTimeout(() => {
                 callback().then(() => {
                     printArea.setAttribute('style', origStyle);
+                    printArea.style.transform = origTransform;
+                    printArea.style.transformOrigin = origTransformOrigin;
+                    
                     if(originalSibling) { originalParent.insertBefore(printArea, originalSibling); } 
                     else { originalParent.appendChild(printArea); }
                 }).catch(err => {
                     printArea.setAttribute('style', origStyle);
+                    printArea.style.transform = origTransform;
+                    printArea.style.transformOrigin = origTransformOrigin;
                     originalParent.appendChild(printArea);
                 });
             }, 300);
@@ -802,6 +829,7 @@
             
             return new Promise(async (resolve, reject) => {
                 try {
+                    // Force scale=2 for High Res capture irrespective of screen
                     const canvas = await html2canvas(element, { scale: 2, useCORS: true, logging: false });
                     canvas.toBlob(async (blob) => {
                         const file = new File([blob], `Invoice_${invNo}.png`, { type: 'image/png' });
@@ -825,9 +853,10 @@
         function shareAsImageFromPreview() {
             if(checkRequireSave()) return;
             const btn = event.currentTarget; const originalText = btn.innerHTML;
-            btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Processing..."; btn.disabled = true;
-            doShareAsImage().then(() => { btn.innerHTML = originalText; btn.disabled = false; });
+            btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Wait..."; btn.disabled = true;
+            makeVisibleForExport(doShareAsImage).then(() => { btn.innerHTML = originalText; btn.disabled = false; });
         }
+        
         function shareAsImageList(id) { 
             loadDataToForm(invoices.find(i => i.id === id)); 
             makeVisibleForExport(doShareAsImage); 
@@ -842,9 +871,12 @@
         }
         function generatePDFFromPreview() {
             if(checkRequireSave()) return;
-            doGeneratePDF();
+            makeVisibleForExport(doGeneratePDF);
         }
-        function generatePDFList(id) { loadDataToForm(invoices.find(i => i.id === id)); makeVisibleForExport(doGeneratePDF); }
+        function generatePDFList(id) { 
+            loadDataToForm(invoices.find(i => i.id === id)); 
+            makeVisibleForExport(doGeneratePDF); 
+        }
 
         function shareWhatsAppDirectFromPreview() {
             if(checkRequireSave()) return;
