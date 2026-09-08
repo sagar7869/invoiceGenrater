@@ -306,3 +306,444 @@
             
             <div class="table-responsive" style="max-height:160px; margin-bottom:15px;">
                 <table class="data-table" style="font-size:12px; margin-bottom:0; min-width:auto;">
+                    <tbody id="qm-payments-body"></tbody>
+                </table>
+            </div>
+
+            <button id="btn-show-new-pay" onclick="showNewPayForm()" style="width:100%; padding:12px; background:#3b82f6; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold; margin-bottom: 10px;"><i class="fas fa-plus"></i> Add Payment</button>
+
+            <div id="new-pay-form" style="display:none; background:#f0fdf4; padding:15px; border-radius:8px; border:1px solid #bbf7d0; margin-bottom:10px;">
+                <label style="font-size:13px; font-weight:bold; color:#166534;">Amount Received</label>
+                <input type="number" id="pm_amount" placeholder="e.g. 500" style="margin-bottom:10px;">
+                <label style="font-size:13px; font-weight:bold; color:#166534;">Mode</label>
+                <select id="pm_mode"><option value="Cash">Cash</option><option value="Online">Online</option></select>
+                
+                <div style="display:flex; gap:10px; margin-top:15px;">
+                    <button onclick="hideNewPayForm()" style="flex:1; padding:10px; background:#fff; border:1px solid #ccc; border-radius:6px; cursor:pointer;">Cancel</button>
+                    <button onclick="confirmQuickPayment()" style="flex:1; padding:10px; background:#10b981; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">Save</button>
+                </div>
+            </div>
+            
+            <button onclick="document.getElementById('payment-modal').style.display='none'" style="width:100%; padding:12px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer; font-weight:bold; color:#475569; margin-top:10px;">Close Window</button>
+        </div>
+    </div>
+
+    <script>
+        let invoices = JSON.parse(localStorage.getItem('myInvoicesPro')) || [];
+        invoices.forEach(inv => { if(inv.paidAmount !== undefined && !inv.payments) { inv.payments = inv.paidAmount > 0 ? [{id: Date.now(), amt: inv.paidAmount, mode: 'Cash', date: inv.date}] : []; delete inv.paidAmount; } });
+
+        let currentInvId = null, currentItems = [], currentPayments = [], listLimit = 30, activePayId = null, isEditMode = false;
+        const formatMoney = (amt) => '₹' + parseFloat(amt).toLocaleString('en-IN', {minimumFractionDigits: 2});
+        
+        function initApp() {
+            ['f_from', 'f_inv', 'f_cdate', 'f_ddate'].forEach(id => document.getElementById(id).addEventListener('input', updatePreview));
+            document.getElementById('f_to').addEventListener('input', () => { autoGenerateInvoice(); updatePreview(); });
+            document.getElementById('f_cdate').addEventListener('change', () => { autoGenerateInvoice(); updatePreview(); });
+            
+            document.getElementById('pay_amt').addEventListener('input', function() {
+                const val = parseFloat(this.value);
+                document.getElementById('payment_controls').style.display = (val > 0) ? 'flex' : 'none';
+            });
+
+            document.getElementById('create-tab-body').appendChild(document.getElementById('editor-container'));
+            startNewInvoice();
+        }
+
+        function setTodayDate() {
+            const d = new Date();
+            document.getElementById('f_cdate').value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        }
+
+        function autoGenerateInvoice() {
+            const name = document.getElementById('f_to').value, date = document.getElementById('f_cdate').value;
+            if(!name) return document.getElementById('f_inv').value = '';
+            document.getElementById('f_inv').value = (name.replace(/[^a-zA-Z0-9]/g, '').toUpperCase() + "XXXX").substring(0, 4) + (date ? (date.split('-')[2] + date.split('-')[1]) : "0000");
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content, .tab-btn').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+            if(tabId === 'create-tab') {
+                document.getElementById('create-tab-body').appendChild(document.getElementById('editor-container'));
+                document.getElementById('btn-close-edit').style.display = 'none';
+                document.getElementById('btn-new-bill').style.display = 'inline-flex';
+                if(isEditMode) startNewInvoice();
+                isEditMode = false;
+            } else renderList(true);
+        }
+
+        function startNewInvoice() {
+            currentInvId = Date.now().toString(); currentItems = []; currentPayments = [];
+            document.getElementById('f_to').value = ''; document.getElementById('f_inv').value = '';
+            document.getElementById('f_ddate').value = '';
+            document.getElementById('pay_amt').value = ''; document.getElementById('payment_controls').style.display = 'none';
+            setTodayDate(); renderTables();
+        }
+
+        function addItem() {
+            const desc = document.getElementById('i_desc').value.trim(), qty = parseFloat(document.getElementById('i_qty').value), price = parseFloat(document.getElementById('i_price').value);
+            if(!desc || !qty || !price) return alert("Fill Item details.");
+            currentItems.push({ id: Date.now(), desc, qty, price });
+            document.getElementById('i_desc').value = ''; document.getElementById('i_qty').value = ''; document.getElementById('i_price').value = '';
+            renderTables();
+        }
+        function updateItem(id, field, val) { const item = currentItems.find(i => i.id == id); if(item) { item[field] = field === 'desc' ? val : (parseFloat(val)||0); renderTables(); } }
+        function deleteItem(id) { currentItems = currentItems.filter(i => i.id != id); renderTables(); }
+
+        function addPaymentRecord() {
+            const amt = parseFloat(document.getElementById('pay_amt').value), mode = document.getElementById('pay_mode').value;
+            const total = currentItems.reduce((s, i) => s + (i.qty * i.price), 0);
+            const paidSofar = currentPayments.reduce((s, p) => s + p.amt, 0);
+            if(!amt || amt <= 0) return alert("Enter valid payment amount.");
+            if(amt > (total - paidSofar)) return alert("Payment exceeds balance amount!");
+            
+            const now = new Date();
+            const dateStr = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`;
+            currentPayments.push({ id: Date.now(), amt, mode, date: dateStr });
+            
+            document.getElementById('pay_amt').value = '';
+            document.getElementById('payment_controls').style.display = 'none';
+            renderTables();
+        }
+        
+        function updatePayment(id, field, val) {
+            const p = currentPayments.find(x => x.id == id);
+            if(p) {
+                if(field === 'amt') p.amt = parseFloat(val) || 0;
+                else p.mode = val;
+                renderTables();
+            }
+        }
+        function deletePayment(id) { currentPayments = currentPayments.filter(p => p.id != id); renderTables(); }
+
+        function renderTables() {
+            const iBody = document.getElementById('edit-items-body'), pBody = document.getElementById('edit-payments-body');
+            iBody.innerHTML = ''; pBody.innerHTML = '';
+            
+            currentItems.forEach(i => iBody.innerHTML += `<tr><td><input type="text" class="desc" value="${i.desc}" onchange="updateItem(${i.id}, 'desc', this.value)"></td><td><input type="number" value="${i.qty}" onchange="updateItem(${i.id}, 'qty', this.value)"></td><td><input type="number" value="${i.price}" onchange="updateItem(${i.id}, 'price', this.value)"></td><td>${formatMoney(i.qty * i.price)}</td><td><button class="btn-del" onclick="deleteItem(${i.id})"><i class="fas fa-trash"></i></button></td></tr>`);
+            
+            currentPayments.forEach(p => {
+                pBody.innerHTML += `<tr>
+                    <td>${p.date}</td>
+                    <td>
+                        <select onchange="updatePayment(${p.id}, 'mode', this.value)">
+                            <option value="Cash" ${p.mode==='Cash'?'selected':''}>Cash</option>
+                            <option value="Online" ${p.mode==='Online'?'selected':''}>Online</option>
+                        </select>
+                    </td>
+                    <td><input type="number" value="${p.amt}" onchange="updatePayment(${p.id}, 'amt', this.value)"></td>
+                    <td><button class="btn-del" onclick="deletePayment(${p.id})"><i class="fas fa-trash"></i></button></td>
+                </tr>`;
+            });
+            updatePreview();
+        }
+
+        function calculateTotals() {
+            const total = currentItems.reduce((s, i) => s + (i.qty * i.price), 0);
+            const paid = currentPayments.reduce((s, p) => s + p.amt, 0);
+            const bal = total - paid;
+            let status = 'UNPAID';
+            if (total > 0) { if (paid >= total) status = 'PAID'; else if (paid > 0) status = 'PARTIAL'; }
+            return { total, paid, bal: bal < 0 ? 0 : bal, status };
+        }
+
+        function updatePreview() {
+            document.getElementById('p_from').innerText = document.getElementById('f_from').value;
+            document.getElementById('p_to').innerText = document.getElementById('f_to').value;
+            document.getElementById('p_inv').innerText = document.getElementById('f_inv').value;
+            
+            const cd = document.getElementById('f_cdate').value;
+            document.getElementById('p_cdate').innerText = cd ? cd.split('-').reverse().join('/') : '';
+            
+            const calc = calculateTotals();
+            
+            const ddContainer = document.getElementById('container_ddate');
+            const ddRow = document.getElementById('row_ddate');
+            const f_ddate = document.getElementById('f_ddate');
+            
+            if (calc.total > 0 && calc.status !== 'PAID') {
+                ddContainer.style.display = 'flex';
+                if (f_ddate.value) {
+                    document.getElementById('p_ddate').innerText = f_ddate.value.split('-').reverse().join('/');
+                    ddRow.style.display = 'table-row';
+                } else {
+                    ddRow.style.display = 'none';
+                }
+            } else {
+                ddContainer.style.display = 'none';
+                f_ddate.value = ''; 
+                ddRow.style.display = 'none';
+            }
+
+            const pbody = document.getElementById('p_items'); pbody.innerHTML = '';
+            currentItems.forEach(i => pbody.innerHTML += `<tr><td>${i.desc}</td><td>${i.qty}</td><td>${formatMoney(i.price)}</td><td>${formatMoney(i.qty * i.price)}</td></tr>`);
+
+            document.getElementById('p_total').innerText = formatMoney(calc.total);
+            document.getElementById('p_paid_amt').innerText = formatMoney(calc.paid);
+            document.getElementById('p_balance').innerText = formatMoney(calc.bal);
+
+            const wm = document.getElementById('p_watermark'), pTxt = document.getElementById('p_payment_text'), pLdg = document.getElementById('p_ledger'), pLdgBody = document.getElementById('p_ledger_body');
+            wm.className = `watermark ${calc.status}`; wm.innerText = calc.status;
+            
+            pLdgBody.innerHTML = '';
+            if(currentPayments.length > 0) {
+                pLdg.style.display = 'table';
+                currentPayments.forEach(p => pLdgBody.innerHTML += `<tr><td>${p.date}</td><td>${p.mode}</td><td>${formatMoney(p.amt)}</td></tr>`);
+            } else pLdg.style.display = 'none';
+
+            if (calc.status === 'PAID') { pTxt.innerText = "Payment Complete"; pTxt.style.color = "var(--paid-text)"; } 
+            else if (calc.status === 'PARTIAL') { pTxt.innerText = "Partially Paid"; pTxt.style.color = "var(--partial-text)"; } 
+            else { pTxt.innerText = "Unpaid / Pending"; pTxt.style.color = "var(--unpaid-text)"; }
+        }
+
+        function saveInvoice() {
+            if(currentItems.length === 0) return alert("Add at least one item.");
+            const calc = calculateTotals();
+            
+            if (calc.total > 0 && calc.status !== 'PAID') {
+                if (!document.getElementById('f_ddate').value) {
+                    return alert("Due Date is mandatory since the bill is not fully paid.");
+                }
+            }
+
+            const invData = { 
+                id: currentInvId, 
+                from: document.getElementById('f_from').value, 
+                to: document.getElementById('f_to').value, 
+                invNo: document.getElementById('f_inv').value, 
+                date: document.getElementById('f_cdate').value, 
+                dueDate: document.getElementById('f_ddate').value,
+                items: currentItems, 
+                payments: currentPayments, 
+                status: calc.status 
+            };
+            const idx = invoices.findIndex(i => i.id === currentInvId);
+            if(idx > -1) invoices[idx] = invData; else invoices.push(invData);
+            localStorage.setItem('myInvoicesPro', JSON.stringify(invoices));
+            alert("Bill Saved!");
+            if(isEditMode) { closeEditModal(); renderList(); }
+        }
+
+        function renderList(reset = false) {
+            if(reset) listLimit = 30;
+            const term = document.getElementById('search-box').value.toLowerCase();
+            const filtered = [...invoices].reverse().filter(i => (i.to||'').toLowerCase().includes(term) || (i.invNo||'').toLowerCase().includes(term));
+            const tbody = document.getElementById('list-body'); tbody.innerHTML = '';
+            
+            filtered.slice(0, listLimit).forEach(inv => {
+                const total = (inv.items||[]).reduce((s, i) => s + (i.qty * i.price), 0);
+                const paid = (inv.payments||[]).reduce((s, p) => s + p.amt, 0);
+                const bal = total - paid;
+                
+                tbody.innerHTML += `<tr>
+                    <td>${inv.date ? inv.date.split('-').reverse().join('/') : '-'}</td>
+                    <td><b>${inv.invNo}</b></td>
+                    <td>${inv.to}</td>
+                    <td>${formatMoney(total)}</td>
+                    <td style="color:${bal>0?'#dc2626':'#16a34a'}; font-weight:600;">${formatMoney(bal < 0 ? 0 : bal)}</td>
+                    <td><span class="badge ${inv.status}">${inv.status}</span></td>
+                    <td style="white-space: nowrap;">
+                        <button class="action-icon bg-view" onclick="openEditModal('${inv.id}')" title="Edit Bill">
+                            <i class="fas fa-edit"></i><span>EDIT</span>
+                        </button>
+                        <button class="action-icon bg-pay" onclick="openQuickPayment('${inv.id}')" title="Manage Payments">
+                            <i class="fas fa-rupee-sign"></i><span>PAY</span>
+                        </button>
+                        <button class="action-icon bg-img" onclick="shareAsImageList('${inv.id}')" title="Share Image on WhatsApp">
+                            <i class="fab fa-whatsapp"></i><span>WA IMG</span>
+                        </button>
+                        <button class="action-icon bg-wa" onclick="shareWhatsAppList('${inv.id}')" title="Share Text on WhatsApp">
+                            <i class="fab fa-whatsapp"></i><span>WA TXT</span>
+                        </button>
+                        <button class="action-icon bg-pdf" onclick="generatePDFList('${inv.id}')" title="Download PDF">
+                            <i class="fas fa-file-pdf"></i><span>PDF</span>
+                        </button>
+                        <button class="action-icon bg-del" onclick="deleteInvoice('${inv.id}')" title="Delete">
+                            <i class="fas fa-trash"></i><span>DEL</span>
+                        </button>
+                    </td>
+                </tr>`;
+            });
+        }
+        function loadMore() { listLimit += 30; renderList(); }
+        function deleteInvoice(id) { if(confirm("Permanently delete this invoice?")) { invoices = invoices.filter(i => i.id !== id); localStorage.setItem('myInvoicesPro', JSON.stringify(invoices)); renderList(); } }
+
+        function loadDataToForm(inv) {
+            currentInvId = inv.id; document.getElementById('f_from').value = inv.from; document.getElementById('f_to').value = inv.to;
+            document.getElementById('f_inv').value = inv.invNo; document.getElementById('f_cdate').value = inv.date;
+            document.getElementById('f_ddate').value = inv.dueDate || '';
+            currentItems = inv.items || []; currentPayments = inv.payments || [];
+            document.getElementById('pay_amt').value = ''; document.getElementById('payment_controls').style.display = 'none';
+            renderTables();
+        }
+        
+        function openEditModal(id) {
+            isEditMode = true; loadDataToForm(invoices.find(i => i.id === id));
+            document.getElementById('edit-modal-content').appendChild(document.getElementById('editor-container'));
+            document.getElementById('edit-overlay').style.display = 'flex';
+            document.getElementById('btn-close-edit').style.display = 'inline-flex';
+            document.getElementById('btn-new-bill').style.display = 'none';
+        }
+        function closeEditModal() { document.getElementById('edit-overlay').style.display = 'none'; renderList(); }
+
+        // ================= MANAGE PAYMENTS MODAL =================
+        function showNewPayForm() {
+            document.getElementById('new-pay-form').style.display = 'block';
+            document.getElementById('btn-show-new-pay').style.display = 'none';
+        }
+        function hideNewPayForm() {
+            document.getElementById('new-pay-form').style.display = 'none';
+            document.getElementById('btn-show-new-pay').style.display = 'block';
+            document.getElementById('pm_amount').value = ''; 
+        }
+
+        function openQuickPayment(id) {
+            activePayId = id; 
+            hideNewPayForm(); // reset state
+            renderQuickPaymentsList();
+            document.getElementById('payment-modal').style.display = 'flex';
+        }
+
+        function renderQuickPaymentsList() {
+            const inv = invoices.find(i => i.id === activePayId);
+            const tbody = document.getElementById('qm-payments-body');
+            tbody.innerHTML = '';
+            
+            (inv.payments || []).forEach(p => {
+                tbody.innerHTML += `<tr>
+                    <td style="padding:8px;">${p.date}</td>
+                    <td style="padding:8px;">
+                        <select style="width:100%; border:none; background:transparent;" onchange="updateQMPayment(${p.id}, 'mode', this.value)">
+                            <option value="Cash" ${p.mode==='Cash'?'selected':''}>Cash</option>
+                            <option value="Online" ${p.mode==='Online'?'selected':''}>Online</option>
+                        </select>
+                    </td>
+                    <td style="padding:8px;"><input type="number" style="width:100%; border:none; background:transparent; border-bottom:1px solid #ccc; border-radius:0;" value="${p.amt}" onchange="updateQMPayment(${p.id}, 'amt', this.value)"></td>
+                    <td style="padding:8px; text-align:center;"><button style="color:#ef4444;border:none;background:none;cursor:pointer;font-size:16px;" onclick="deleteQMPayment(${p.id})"><i class="fas fa-trash"></i></button></td>
+                </tr>`;
+            });
+            
+            const total = (inv.items||[]).reduce((s, i) => s + (i.qty * i.price), 0);
+            const paid = (inv.payments||[]).reduce((s, p) => s + p.amt, 0);
+            const bal = total - paid;
+            
+            document.getElementById('pm_total').innerText = formatMoney(total); 
+            document.getElementById('pm_bal').innerText = formatMoney(bal < 0 ? 0 : bal);
+            document.getElementById('pm_amount').value = bal > 0 ? bal : '';
+
+            // Ensure Add button is always visible when form is hidden
+            if (document.getElementById('new-pay-form').style.display === 'none') {
+                document.getElementById('btn-show-new-pay').style.display = 'block';
+            }
+        }
+
+        function updateQMPayment(pid, field, val) {
+            const inv = invoices.find(i => i.id === activePayId);
+            const p = inv.payments.find(x => x.id == pid);
+            if(p) {
+                if(field==='amt') p.amt = parseFloat(val) || 0;
+                else p.mode = val;
+                recalcInvStatus(inv);
+                localStorage.setItem('myInvoicesPro', JSON.stringify(invoices));
+                renderQuickPaymentsList(); renderList();
+            }
+        }
+        function deleteQMPayment(pid) {
+            const inv = invoices.find(i => i.id === activePayId);
+            inv.payments = inv.payments.filter(x => x.id != pid);
+            recalcInvStatus(inv);
+            localStorage.setItem('myInvoicesPro', JSON.stringify(invoices));
+            renderQuickPaymentsList(); renderList();
+        }
+
+        function confirmQuickPayment() {
+            const amt = parseFloat(document.getElementById('pm_amount').value), mode = document.getElementById('pm_mode').value;
+            const inv = invoices.find(i => i.id === activePayId);
+            if(inv && amt > 0) {
+                const now = new Date();
+                if(!inv.payments) inv.payments = [];
+                inv.payments.push({ id: Date.now(), amt, mode, date: `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}` });
+                recalcInvStatus(inv);
+                localStorage.setItem('myInvoicesPro', JSON.stringify(invoices));
+                
+                hideNewPayForm(); // Hide form after saving
+                renderQuickPaymentsList(); 
+                renderList();
+            } else alert("Invalid Amount");
+        }
+
+        function recalcInvStatus(inv) {
+            const total = (inv.items||[]).reduce((s, i) => s + (i.qty * i.price), 0);
+            const paid = (inv.payments||[]).reduce((s, p) => s + p.amt, 0);
+            inv.status = paid >= total ? 'PAID' : (paid > 0 ? 'PARTIAL' : 'UNPAID');
+        }
+
+        // ================= OFF-SCREEN CAPTURE LOGIC =================
+        function makeVisibleForExport(callback) {
+            const ct = document.getElementById('create-tab');
+            const orig = ct.style.display;
+            if(orig === 'none' || orig === '') {
+                ct.style.display = 'block';
+                ct.style.position = 'absolute';
+                ct.style.left = '-9999px'; // Move out of view but keep rendered
+                ct.style.zIndex = '-1';
+            }
+            // Add a small delay so browser has time to render it before capturing
+            setTimeout(() => {
+                callback();
+                setTimeout(() => {
+                    ct.style.display = orig;
+                    ct.style.position = '';
+                    ct.style.left = '';
+                    ct.style.zIndex = '';
+                }, 1000); 
+            }, 300);
+        }
+
+        async function doShareAsImage() {
+            const element = document.getElementById('print-area');
+            const invNo = document.getElementById('f_inv').value || 'Bill';
+            try {
+                const canvas = await html2canvas(element, { scale: 2, useCORS: true, logging: false });
+                canvas.toBlob(async (blob) => {
+                    const file = new File([blob], `Invoice_${invNo}.png`, { type: 'image/png' });
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        try { await navigator.share({ files: [file], title: `Invoice ${invNo}`, text: 'Here is your invoice.' }); } catch (err) { console.log("Share cancelled"); }
+                    } else {
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a'); a.href = url; a.download = file.name; a.click(); URL.revokeObjectURL(url);
+                    }
+                }, 'image/png');
+            } catch (e) { alert("Error generating image."); }
+        }
+
+        function shareAsImage() {
+            const btn = event.currentTarget; const originalText = btn.innerHTML;
+            btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Processing..."; btn.disabled = true;
+            doShareAsImage().then(() => { btn.innerHTML = originalText; btn.disabled = false; });
+        }
+        function shareAsImageList(id) { 
+            loadDataToForm(invoices.find(i => i.id === id)); 
+            makeVisibleForExport(doShareAsImage); 
+        }
+
+        function doGeneratePDF() {
+            const element = document.getElementById('print-area');
+            const invNo = document.getElementById('f_inv').value || 'Bill';
+            html2pdf().set({ margin: 0, filename: `${invNo}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }).from(element).save();
+        }
+        function generatePDF() { doGeneratePDF(); }
+        function generatePDFList(id) { loadDataToForm(invoices.find(i => i.id === id)); makeVisibleForExport(doGeneratePDF); }
+
+        function shareWhatsAppDirect() {
+            const calc = calculateTotals();
+            let text = `*INVOICE: ${document.getElementById('f_inv').value}*\n*To:* ${document.getElementById('f_to').value}\n\n*Total:* ₹${calc.total.toFixed(2)}\n*Paid:* ₹${calc.paid.toFixed(2)}\n*Balance:* ₹${calc.bal.toFixed(2)}\n\n*Status:* ${calc.status}\n\n_Note: Please ask for the PDF/Image bill if required._`;
+            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        }
+        function shareWhatsAppList(id) { loadDataToForm(invoices.find(i => i.id === id)); setTimeout(shareWhatsAppDirect, 100); }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
