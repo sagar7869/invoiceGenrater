@@ -1,0 +1,16 @@
+{
+  "name": "Smart Invoice App",
+  "short_name": "Invoices",
+  "description": "Generate and manage invoices securely.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2196F3",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/5501/5501360.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
