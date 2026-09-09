@@ -118,16 +118,10 @@
         
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; z-index: 1000; overflow-y: auto; padding: 15px; }
         #btn-close-edit-top { display: none; position: absolute; top: -15px; right: -15px; background: #ef4444; color: white; border: 2px solid white; border-radius: 50%; width: 40px; height: 40px; font-size: 18px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1001; align-items: center; justify-content: center; }
-        .modal-sm { background: white; padding: 20px; border-radius: 12px; width: 100%; max-width: 450px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position:relative;}
+        .modal-sm { background: white; padding: 20px; border-radius: 12px; width: 100%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position:relative;}
         .modal-lg { background: transparent; padding: 10px; width: 100%; max-width: 900px; margin: auto; position: relative;}
         .modal-sm input, .modal-sm select { width: 100%; padding: 10px; margin: 8px 0 15px 0; border: 1px solid var(--border); border-radius: 6px; font-size: 15px; }
         #db-loader { text-align: center; padding: 20px; font-size: 16px; color: #555; }
-
-        /* Login Screen specific */
-        .auth-tab-btn { flex:1; padding:10px; background:none; border:none; border-bottom:2px solid #ccc; font-weight:bold; color:#777; cursor:pointer;}
-        .auth-tab-btn.active { border-bottom:2px solid var(--primary); color:var(--primary);}
-        .auth-section { display:none; padding-top:20px;}
-        .auth-section.active { display:block;}
 
         /* ================= RESPONSIVE MOBILE ADJUSTMENTS ================= */
         @media (max-width: 768px) {
@@ -192,49 +186,33 @@
         <div class="modal-sm" style="text-align: center;">
             <i class="fas fa-file-invoice-dollar" style="font-size: 45px; color: var(--primary); margin-bottom: 10px;"></i>
             <h2 style="margin-top: 0; color: #1e293b; margin-bottom: 5px;">Smart Invoices</h2>
-            <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">Login to access your secure cloud data.</p>
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 25px;">Login securely to access your cloud data.</p>
             
-            <!-- Google Login -->
+            <!-- Google Login Button (Fixed SVG) -->
             <button onclick="loginWithGoogle()" style="width:100%; padding:12px; background:#fff; color:#333; border:1px solid #ccc; border-radius:6px; font-weight:bold; cursor:pointer; font-size:15px; margin-bottom:15px; display:flex; align-items:center; justify-content:center; gap:10px; box-shadow:0 2px 5px rgba(0,0,0,0.05);">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="20"> Continue with Google
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20px" height="20px">
+                    <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
+                    <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/>
+                    <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/>
+                    <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/>
+                </svg>
+                Continue with Google
             </button>
             
-            <div style="display:flex; align-items:center; margin: 15px 0; color:#aaa; font-size:12px;">
-                <hr style="flex:1; border:none; border-top:1px solid #eee;"> <span style="padding:0 10px;">OR</span> <hr style="flex:1; border:none; border-top:1px solid #eee;">
+            <div style="display:flex; align-items:center; margin: 20px 0; color:#aaa; font-size:12px;">
+                <hr style="flex:1; border:none; border-top:1px solid #eee;"> <span style="padding:0 10px;">OR EMAIL LOGIN</span> <hr style="flex:1; border:none; border-top:1px solid #eee;">
             </div>
 
-            <div style="display:flex;">
-                <button class="auth-tab-btn active" onclick="switchAuthTab('email-auth')">Email</button>
-                <button class="auth-tab-btn" onclick="switchAuthTab('phone-auth')">Mobile</button>
-            </div>
-
-            <!-- Email Section -->
-            <div id="email-auth" class="auth-section active">
+            <!-- Email Auth Section Only -->
+            <div>
                 <input type="email" id="auth-email" placeholder="Email Address">
                 <input type="password" id="auth-pass" placeholder="Password">
                 <button onclick="loginWithEmail()" style="width:100%; padding:12px; background:var(--primary); color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:15px; margin-bottom:10px;">Login</button>
-                <div style="display:flex; justify-content:space-between; font-size:12px;">
+                <div style="display:flex; justify-content:space-between; font-size:12px; margin-top:10px;">
                     <a href="#" style="color:var(--primary); text-decoration:none;" onclick="forgotPassword()">Forgot Password?</a>
-                    <a href="#" style="color:#10b981; text-decoration:none; font-weight:bold;" onclick="signUpWithEmail()">Create Account</a>
+                    <a href="#" style="color:#10b981; text-decoration:none; font-weight:bold;" onclick="signUpWithEmail()">Create New Account</a>
                 </div>
             </div>
-
-            <!-- Phone Section -->
-            <div id="phone-auth" class="auth-section">
-                <div id="phone-input-div">
-                    <input type="tel" id="auth-phone" placeholder="Mobile Number (e.g. 9876543210)">
-                    <button onclick="sendOTP()" style="width:100%; padding:12px; background:var(--primary); color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:15px;">Send OTP</button>
-                </div>
-                <div id="otp-input-div" style="display:none;">
-                    <p style="font-size:12px; color:#10b981; margin:0 0 10px 0;">OTP sent to your number!</p>
-                    <input type="text" id="auth-otp" placeholder="Enter 6-digit OTP">
-                    <button onclick="verifyOTP()" style="width:100%; padding:12px; background:#10b981; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:15px;">Verify & Login</button>
-                    <a href="#" style="display:block; margin-top:10px; font-size:12px; color:#ef4444; text-decoration:none;" onclick="resetPhoneUI()">Change Number</a>
-                </div>
-            </div>
-            
-            <!-- Hidden container for reCAPTCHA (required for Phone Auth) -->
-            <div id="recaptcha-container"></div>
         </div>
     </div>
     <!-- ==================================================================== -->
@@ -406,7 +384,7 @@
     </div>
 
     <script>
-        // ================= FIREBASE SETUP =================
+        // ================= FIREBASE SETUP (YOUR CODE) =================
         const firebaseConfig = {
             apiKey: "AIzaSyDI1bnT0cyKVHyH25PbIZqJfWFhuZlc2YA",
             authDomain: "sagar-invoice-app.firebaseapp.com",
@@ -430,14 +408,7 @@
         function markUnsaved() { hasUnsavedChanges = true; }
         const formatMoney = (amt) => '₹' + parseFloat(amt).toLocaleString('en-IN', {minimumFractionDigits: 2});
         
-        // ================= AUTHENTICATION LOGIC =================
-        function switchAuthTab(tabId) {
-            document.querySelectorAll('.auth-tab-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelectorAll('.auth-section').forEach(sec => sec.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-            document.getElementById(tabId).classList.add('active');
-        }
-
+        // ================= AUTHENTICATION LOGIC (NO OTP) =================
         function loginWithGoogle() {
             const provider = new firebase.auth.GoogleAuthProvider();
             auth.signInWithPopup(provider).catch(err => alert("Google Login Failed: " + err.message));
@@ -448,7 +419,7 @@
             const pass = document.getElementById('auth-pass').value;
             if(!email || !pass) return alert("Email and Password needed.");
             auth.createUserWithEmailAndPassword(email, pass)
-                .then(() => alert("Account Created!"))
+                .then(() => alert("Account Created! You can now use the app."))
                 .catch(err => alert(err.message));
         }
 
@@ -467,40 +438,6 @@
                 .catch(err => alert(err.message));
         }
 
-        window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { 'size': 'invisible' });
-        
-        function sendOTP() {
-            const num = document.getElementById('auth-phone').value;
-            if(num.length < 10) return alert("Sahi mobile number dalein.");
-            const fullNum = "+91" + num; 
-            
-            document.querySelector('#phone-input-div button').innerText = "Sending...";
-            
-            auth.signInWithPhoneNumber(fullNum, window.recaptchaVerifier)
-                .then(confirmationResult => {
-                    window.confirmationResult = confirmationResult;
-                    document.getElementById('phone-input-div').style.display = 'none';
-                    document.getElementById('otp-input-div').style.display = 'block';
-                })
-                .catch(err => {
-                    alert("Error: " + err.message);
-                    document.querySelector('#phone-input-div button').innerText = "Send OTP";
-                });
-        }
-
-        function verifyOTP() {
-            const otp = document.getElementById('auth-otp').value;
-            if(!otp) return;
-            window.confirmationResult.confirm(otp).catch(err => alert("Galat OTP!"));
-        }
-
-        function resetPhoneUI() {
-            document.getElementById('phone-input-div').style.display = 'block';
-            document.getElementById('otp-input-div').style.display = 'none';
-            document.querySelector('#phone-input-div button').innerText = "Send OTP";
-            document.getElementById('auth-otp').value = "";
-        }
-
         function logoutApp() {
             if(confirm("Are you sure you want to logout?")) { auth.signOut(); }
         }
@@ -515,7 +452,6 @@
                 invoices = [];
                 renderList();
                 document.getElementById('login-overlay').style.display = 'flex';
-                resetPhoneUI();
             }
         });
 
