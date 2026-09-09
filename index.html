@@ -3,13 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Advanced Invoice Generator</title>
+    <title>Smart Invoice App - Sagar</title>
+    
     <!-- PDF & Image Generation Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
+    <!-- FIREBASE LIBRARIES (V8) - Including Auth & Database -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
     <style>
         :root {
             --bg: #f4f6f9; --border: #dce1e6;
@@ -21,9 +28,8 @@
         * { box-sizing: border-box; }
         body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: var(--bg); color: #333; }
         
-        /* Tabs */
         .tabs { display: flex; background: #fff; border-bottom: 2px solid var(--border); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .tab-btn { flex: 1; background: transparent; color: #555; border: none; padding: 15px 5px; cursor: pointer; font-size: 15px; font-weight: 600; border-bottom: 3px solid transparent; transition: 0.3s; display:flex; align-items:center; justify-content:center; gap:5px;}
+        .tab-btn { flex: 1; background: transparent; color: #555; border: none; padding: 15px 5px; cursor: pointer; font-size: 14px; font-weight: 600; border-bottom: 3px solid transparent; transition: 0.3s; display:flex; align-items:center; justify-content:center; gap:5px;}
         .tab-btn.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
         
         .container { padding: 15px; max-width: 1200px; margin: auto; }
@@ -45,14 +51,12 @@
         .btn-add { background: #333; color: white; border: none; padding: 11px 15px; cursor: pointer; border-radius: 6px; font-weight: 600; white-space: nowrap; transition: 0.2s; }
         .btn-add:active { transform: scale(0.98); }
         
-        /* Desktop Editor Tables */
         .editor-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
         .editor-table th, .editor-table td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; }
         .editor-table th { background: #f8fafc; color: #475569; font-weight: 600; }
         .editor-table input, .editor-table select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
         .btn-del { color: #ef4444; cursor: pointer; border: none; background: rgba(239, 68, 68, 0.1); padding: 5px 10px; border-radius: 4px; font-weight: bold; }
 
-        /* Action Bar */
         .action-bar { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; padding-top: 20px; border-top: 1px solid #eee; }
         .btn { flex: 1; min-width: 140px; padding: 12px 15px; color: white; border: none; cursor: pointer; border-radius: 6px; font-weight: bold; display:inline-flex; align-items:center; justify-content: center; gap: 8px; font-size: 14px; transition: 0.2s; }
         .btn-save { background: #f59e0b; }
@@ -64,36 +68,27 @@
 
         /* ================= INVOICE PREVIEW DESIGN ================= */
         .preview-container { display: flex; justify-content: center; background: #fff; padding: 20px 0; border-radius: 8px; }
-        .preview-box { 
-            background: white; padding: 20mm; width: 210mm; min-height: 297mm; margin: 0 auto; 
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1); position: relative; box-sizing: border-box; overflow: hidden;
-            border-top: 15px solid #1e293b; border-bottom: 15px solid #1e293b; border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0;
-        }
+        .preview-box { background: white; padding: 20mm; width: 210mm; min-height: 297mm; margin: 0 auto; box-shadow: 0 5px 20px rgba(0,0,0,0.1); position: relative; box-sizing: border-box; overflow: hidden; border-top: 15px solid #1e293b; border-bottom: 15px solid #1e293b; border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0;}
         .header { display: flex; justify-content: space-between; margin-bottom: 30px; border-bottom: 2px solid #f1f5f9; padding-bottom: 20px; }
         .header h1 { font-size: 40px; margin: 0; color: #1e293b; letter-spacing: 2px; }
         .meta-data table { text-align: right; font-size: 13px; }
         .meta-data td { padding: 3px 8px; }
         .meta-data td:first-child { font-weight: bold; text-align: left; color: #64748b; }
-        
         .addresses { display: flex; justify-content: space-between; margin-bottom: 30px; }
         .address-box h3 { font-size: 12px; margin: 0 0 6px 0; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
         .address-box div { font-weight: bold; font-size: 16px; color: #334155; }
-        
         .print-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 1px solid #f1f5f9; }
         .print-table th, .print-table td { padding: 12px 10px; text-align: right; border-bottom: 1px solid #f1f5f9; }
         .print-table th { background: #f8fafc; font-weight: bold; border-top: 2px solid #cbd5e1; border-bottom: 2px solid #cbd5e1; color: #334155; text-transform: uppercase; font-size: 12px; }
         .print-table th:first-child, .print-table td:first-child { text-align: left; }
-        
         .totals-container { display: flex; justify-content: flex-end; margin-top: 20px; }
         .totals-box { width: 300px; font-size: 14px; background: #fdfdfd; padding: 15px 20px; border-radius: 6px; border: 1px solid #e2e8f0; }
         .tot-row { display: flex; justify-content: space-between; padding: 5px 0; color: #64748b; }
         .tot-row.bold { font-weight: bold; font-size: 16px; border-top: 1px solid #e2e8f0; margin-top: 8px; padding-top: 10px; color: #0f172a; }
-
         .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 120px; font-weight: bold; border: 6px solid; padding: 10px 40px; opacity: 0; pointer-events: none; z-index: 0; border-radius: 10px; text-transform: uppercase; }
         .watermark.PAID { color: var(--paid); border-color: var(--paid); opacity: 1; }
         .watermark.PARTIAL { color: var(--partial); border-color: var(--partial); opacity: 1; }
         .watermark.UNPAID { color: var(--unpaid); border-color: var(--unpaid); opacity: 1; }
-        
         .payment-info { margin-top: 30px; position: relative; z-index: 1; background: transparent; display: inline-block; padding-right: 20px; }
         .payment-info h3 { font-size: 12px; margin: 0 0 5px 0; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
         #p_payment_text { font-weight: bold; font-size: 15px; }
@@ -104,20 +99,16 @@
         /* ================= DESKTOP Cx LIST ================= */
         .search-bar { width: 100%; padding: 12px; margin-bottom: 15px; font-size: 15px; border-radius: 8px; border: 1px solid var(--border); box-sizing: border-box; outline: none; }
         .search-bar:focus { border-color: var(--primary); }
-        
         .list-table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .list-table th, .list-table td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; }
         .list-table th { background: #f8fafc; color: #475569; font-weight: 600; }
-
         .badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: bold; text-transform: uppercase; display:inline-block; }
         .badge.PAID { background: #e8f5e9; color: var(--paid-text); }
         .badge.PARTIAL { background: #fff3e0; color: var(--partial-text); }
         .badge.UNPAID { background: #ffebee; color: var(--unpaid-text); }
-        
         .action-icon { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: 45px; height: 45px; cursor: pointer; border: none; border-radius: 6px; margin: 2px; color: white; font-size: 14px; transition: 0.2s; }
         .action-icon:active { transform: scale(0.9); }
         .action-icon span { font-size: 9px; margin-top: 3px; font-family: sans-serif; font-weight: bold;}
-        
         .bg-view { background: #3b82f6; } 
         .bg-edit { background: #64748b; } 
         .bg-img { background: #25D366; } 
@@ -125,21 +116,18 @@
         .bg-pay { background: #f59e0b; }
         .bg-del { background: #ef4444; }
         
-        /* Modals Overlay */
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); align-items: center; justify-content: center; z-index: 1000; overflow-y: auto; padding: 15px; }
-        
-        /* X Button for Edit Modal */
-        #btn-close-edit-top {
-            display: none; position: absolute; top: -15px; right: -15px;
-            background: #ef4444; color: white; border: 2px solid white; border-radius: 50%;
-            width: 40px; height: 40px; font-size: 18px; cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1001;
-            align-items: center; justify-content: center;
-        }
-
-        .modal-sm { background: white; padding: 20px; border-radius: 12px; width: 100%; max-width: 450px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        #btn-close-edit-top { display: none; position: absolute; top: -15px; right: -15px; background: #ef4444; color: white; border: 2px solid white; border-radius: 50%; width: 40px; height: 40px; font-size: 18px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1001; align-items: center; justify-content: center; }
+        .modal-sm { background: white; padding: 20px; border-radius: 12px; width: 100%; max-width: 450px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position:relative;}
         .modal-lg { background: transparent; padding: 10px; width: 100%; max-width: 900px; margin: auto; position: relative;}
         .modal-sm input, .modal-sm select { width: 100%; padding: 10px; margin: 8px 0 15px 0; border: 1px solid var(--border); border-radius: 6px; font-size: 15px; }
+        #db-loader { text-align: center; padding: 20px; font-size: 16px; color: #555; }
+
+        /* Login Screen specific */
+        .auth-tab-btn { flex:1; padding:10px; background:none; border:none; border-bottom:2px solid #ccc; font-weight:bold; color:#777; cursor:pointer;}
+        .auth-tab-btn.active { border-bottom:2px solid var(--primary); color:var(--primary);}
+        .auth-section { display:none; padding-top:20px;}
+        .auth-section.active { display:block;}
 
         /* ================= RESPONSIVE MOBILE ADJUSTMENTS ================= */
         @media (max-width: 768px) {
@@ -152,80 +140,40 @@
             .btn-close, .btn-new { grid-column: span 2; }
             .modal-sm { padding: 15px; }
 
-            /* MOBILE EDITOR TABLE (NO HORIZONTAL SCROLL) */
             .editor-table thead { display: none; }
             .editor-table tbody tr { display: flex; flex-wrap: wrap; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 10px; padding: 10px; }
             .editor-table tbody td { border: none; padding: 4px; display: flex; align-items: center; }
-            
-            /* Items */
-            #edit-items-body td:nth-child(1) { width: 100%; } /* Desc */
-            #edit-items-body td:nth-child(2) { width: 35%; } /* Qty */
-            #edit-items-body td:nth-child(3) { width: 35%; } /* Price */
-            #edit-items-body td:nth-child(4) { width: 30%; justify-content: flex-end; font-weight: bold; } /* Amount */
-            #edit-items-body td:nth-child(5) { width: 100%; justify-content: flex-end; border-top: 1px solid #e2e8f0; margin-top: 5px; padding-top: 8px; } /* Action */
-            
-            /* Payments */
+            #edit-items-body td:nth-child(1) { width: 100%; } 
+            #edit-items-body td:nth-child(2) { width: 35%; } 
+            #edit-items-body td:nth-child(3) { width: 35%; } 
+            #edit-items-body td:nth-child(4) { width: 30%; justify-content: flex-end; font-weight: bold; } 
+            #edit-items-body td:nth-child(5) { width: 100%; justify-content: flex-end; border-top: 1px solid #e2e8f0; margin-top: 5px; padding-top: 8px; } 
             #edit-payments-body td:nth-child(1) { width: 100%; font-size: 12px; color: #64748b; font-weight: bold; }
             #edit-payments-body td:nth-child(2) { width: 50%; }
             #edit-payments-body td:nth-child(3) { width: 50%; }
             #edit-payments-body td:nth-child(4) { width: 100%; justify-content: flex-end; border-top: 1px solid #e2e8f0; margin-top: 5px; padding-top: 8px;}
 
-            /* ================= MOBILE Cx LIST (GRID CARDS) ================= */
+            /* MOBILE Cx LIST (GRID CARDS) */
             .list-table thead { display: none; }
             .list-table, .list-table tbody { display: block; width: 100%; }
-            .list-table tr { 
-                display: grid; 
-                grid-template-columns: 1fr 1fr; 
-                gap: 5px; 
-                background: #fff; 
-                margin-bottom: 15px; 
-                border-radius: 12px; 
-                border: 1px solid #e2e8f0; 
-                padding: 15px; 
-                box-shadow: 0 4px 6px rgba(0,0,0,0.05); 
-            }
+            .list-table tr { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; background: #fff; margin-bottom: 15px; border-radius: 12px; border: 1px solid #e2e8f0; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
             .list-table td { padding: 0; border: none; text-align: left; display: block; width: auto; }
             .list-table td::before { display: none; }
-            
-            /* Row 1: Inv (Left) | Cx (Right) */
             .list-table td:nth-child(2) { grid-column: 1 / 2; font-size: 15px; font-weight: bold; color: #1e293b; }
             .list-table td:nth-child(3) { grid-column: 2 / 3; font-size: 15px; font-weight: bold; color: #1e293b; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-            
-            /* Row 2: Date (Left) | Status (Right) */
             .list-table td:nth-child(1) { grid-column: 1 / 2; font-size: 12px; color: #64748b; margin-bottom: 5px; }
             .list-table td:nth-child(6) { grid-column: 2 / 3; text-align: right; margin-bottom: 5px; }
-            
-            /* Row 3: Total (Left) | Balance (Right) */
             .list-table td:nth-child(4) { grid-column: 1 / 2; font-size: 13px; font-weight: 600; padding: 5px; background: #f8fafc; border-radius: 4px; }
             .list-table td:nth-child(4)::before { content: 'Total: '; font-weight: normal; color: #64748b; }
-            
             .list-table td:nth-child(5) { grid-column: 2 / 3; font-size: 13px; font-weight: 600; text-align: right; padding: 5px; background: #f8fafc; border-radius: 4px; }
             .list-table td:nth-child(5)::before { content: 'Bal: '; font-weight: normal; color: #64748b; }
-            
-            /* Row 4: Actions (6 Buttons) */
-            .list-table td:nth-child(7) { 
-                grid-column: 1 / 3; 
-                border-top: 1px solid #e2e8f0; 
-                margin-top: 10px; 
-                padding-top: 12px; 
-                display: grid; 
-                grid-template-columns: repeat(6, 1fr); 
-                gap: 5px; 
-            }
+            .list-table td:nth-child(7) { grid-column: 1 / 3; border-top: 1px solid #e2e8f0; margin-top: 10px; padding-top: 12px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; }
             .action-icon { width: 100%; height: 45px; margin: 0; }
 
-            /* Preview A4 Perfect Scaling */
             .preview-container { padding: 0; display: block; width: 100%; height: calc((100vw - 30px) * 1.414); overflow: hidden; position: relative; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); background: white; }
-            .preview-container .preview-box {
-                position: absolute; top: 0; left: 0;
-                width: 794px !important; min-height: 1123px !important;
-                transform-origin: top left;
-                transform: scale(calc((100vw - 30px) / 794));
-                border: none; box-shadow: none;
-            }
+            .preview-container .preview-box { position: absolute; top: 0; left: 0; width: 794px !important; min-height: 1123px !important; transform-origin: top left; transform: scale(calc((100vw - 30px) / 794)); border: none; box-shadow: none; }
         }
 
-        /* Print Override */
         @media print {
             body { background: white; }
             body > *:not(#print-holder) { display: none !important; }
@@ -237,13 +185,65 @@
 </head>
 <body>
 
-    <!-- Hidden holder for export -->
     <div id="print-holder"></div>
+
+    <!-- ================= LOGIN & AUTHENTICATION OVERLAY ================= -->
+    <div class="overlay" id="login-overlay" style="background: rgba(244, 246, 249, 1); z-index: 99999; display:flex;">
+        <div class="modal-sm" style="text-align: center;">
+            <i class="fas fa-file-invoice-dollar" style="font-size: 45px; color: var(--primary); margin-bottom: 10px;"></i>
+            <h2 style="margin-top: 0; color: #1e293b; margin-bottom: 5px;">Smart Invoices</h2>
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">Login to access your secure cloud data.</p>
+            
+            <!-- Google Login -->
+            <button onclick="loginWithGoogle()" style="width:100%; padding:12px; background:#fff; color:#333; border:1px solid #ccc; border-radius:6px; font-weight:bold; cursor:pointer; font-size:15px; margin-bottom:15px; display:flex; align-items:center; justify-content:center; gap:10px; box-shadow:0 2px 5px rgba(0,0,0,0.05);">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" width="20"> Continue with Google
+            </button>
+            
+            <div style="display:flex; align-items:center; margin: 15px 0; color:#aaa; font-size:12px;">
+                <hr style="flex:1; border:none; border-top:1px solid #eee;"> <span style="padding:0 10px;">OR</span> <hr style="flex:1; border:none; border-top:1px solid #eee;">
+            </div>
+
+            <div style="display:flex;">
+                <button class="auth-tab-btn active" onclick="switchAuthTab('email-auth')">Email</button>
+                <button class="auth-tab-btn" onclick="switchAuthTab('phone-auth')">Mobile</button>
+            </div>
+
+            <!-- Email Section -->
+            <div id="email-auth" class="auth-section active">
+                <input type="email" id="auth-email" placeholder="Email Address">
+                <input type="password" id="auth-pass" placeholder="Password">
+                <button onclick="loginWithEmail()" style="width:100%; padding:12px; background:var(--primary); color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:15px; margin-bottom:10px;">Login</button>
+                <div style="display:flex; justify-content:space-between; font-size:12px;">
+                    <a href="#" style="color:var(--primary); text-decoration:none;" onclick="forgotPassword()">Forgot Password?</a>
+                    <a href="#" style="color:#10b981; text-decoration:none; font-weight:bold;" onclick="signUpWithEmail()">Create Account</a>
+                </div>
+            </div>
+
+            <!-- Phone Section -->
+            <div id="phone-auth" class="auth-section">
+                <div id="phone-input-div">
+                    <input type="tel" id="auth-phone" placeholder="Mobile Number (e.g. 9876543210)">
+                    <button onclick="sendOTP()" style="width:100%; padding:12px; background:var(--primary); color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:15px;">Send OTP</button>
+                </div>
+                <div id="otp-input-div" style="display:none;">
+                    <p style="font-size:12px; color:#10b981; margin:0 0 10px 0;">OTP sent to your number!</p>
+                    <input type="text" id="auth-otp" placeholder="Enter 6-digit OTP">
+                    <button onclick="verifyOTP()" style="width:100%; padding:12px; background:#10b981; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:15px;">Verify & Login</button>
+                    <a href="#" style="display:block; margin-top:10px; font-size:12px; color:#ef4444; text-decoration:none;" onclick="resetPhoneUI()">Change Number</a>
+                </div>
+            </div>
+            
+            <!-- Hidden container for reCAPTCHA (required for Phone Auth) -->
+            <div id="recaptcha-container"></div>
+        </div>
+    </div>
+    <!-- ==================================================================== -->
 
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('create-tab')"><i class="fas fa-edit"></i> Edit Bill</button>
         <button class="tab-btn" onclick="switchTab('preview-tab')"><i class="fas fa-eye"></i> Preview</button>
         <button class="tab-btn" onclick="switchTab('list-tab')"><i class="fas fa-list"></i> Cx List</button>
+        <button class="tab-btn" onclick="logoutApp()" style="flex:0.5; color:#ef4444;" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
     </div>
 
     <!-- TAB 1: CREATE BILL -->
@@ -274,7 +274,6 @@
                     <thead><tr><th>Description</th><th>QTY</th><th>Price</th><th>Amount</th></tr></thead>
                     <tbody id="p_items"></tbody>
                 </table>
-                
                 <div class="totals-container">
                     <div class="totals-box">
                         <div class="tot-row"><span>Total Amount:</span> <span id="p_total">₹0.00</span></div>
@@ -282,7 +281,6 @@
                         <div class="tot-row bold"><span>Balance Due:</span> <span id="p_balance" style="color:#dc2626;">₹0.00</span></div>
                     </div>
                 </div>
-                
                 <div class="payment-info" id="p_payment_section">
                     <h3>PAYMENT STATUS</h3>
                     <div id="p_payment_text">Unpaid</div>
@@ -306,8 +304,9 @@
     <!-- TAB 3: CUSTOMER LIST -->
     <div id="list-tab" class="tab-content container">
         <input type="text" id="search-box" class="search-bar" placeholder="🔍 Search by Name, Date or Invoice #..." onkeyup="renderList(true)">
+        <div id="db-loader" style="display:none;"><i class="fas fa-spinner fa-spin"></i> Loading Data Securely...</div>
         
-        <table class="list-table">
+        <table class="list-table" id="db-table" style="display:none;">
             <thead>
                 <tr>
                     <th>Date</th>
@@ -316,21 +315,17 @@
                     <th>Total</th>
                     <th>Balance</th>
                     <th>Status</th>
-                    <th style="min-width: 320px; text-align:center;">Actions</th>
+                    <th style="text-align:center;">Actions</th>
                 </tr>
             </thead>
             <tbody id="list-body"></tbody>
         </table>
-        
-        <button id="btn-load-more" onclick="loadMore()" style="display:block; width:100%; padding:12px; margin-top:10px; cursor:pointer; background:#fff; border:1px solid #ccc; border-radius:8px; font-weight:bold;">Load More</button>
+        <button id="btn-load-more" onclick="loadMore()" style="display:none; width:100%; padding:12px; margin-top:10px; cursor:pointer; background:#fff; border:1px solid #ccc; border-radius:8px; font-weight:bold;">Load More</button>
     </div>
-
 
     <!-- SHARED EDITOR CONTAINER -->
     <div id="editor-container">
-        <!-- Floating X Button (Shown only when in Modal Overlay) -->
         <button id="btn-close-edit-top" onclick="cancelEditMode()"><i class="fas fa-times"></i></button>
-
         <div class="form-panel">
             <div class="form-grid">
                 <div class="form-group"><label>FROM (Shop Name)</label><input type="text" id="f_from" value="Perry radios"></div>
@@ -350,7 +345,6 @@
                 <input type="number" id="i_price" placeholder="Price (₹)" style="flex:1;" step="0.01">
                 <button class="btn-add" onclick="addItem()"><i class="fas fa-plus"></i> Add Item</button>
             </div>
-            
             <table class="editor-table">
                 <thead><tr><th>Description</th><th>QTY</th><th>Price</th><th>Amount</th><th>Action</th></tr></thead>
                 <tbody id="edit-items-body"></tbody>
@@ -360,14 +354,10 @@
             <div class="input-row">
                 <input type="number" id="pay_amt" placeholder="Amount Deposit (₹)" style="flex:2;" step="0.01">
                 <span id="payment_controls" style="display: none; flex: 2; gap: 10px;">
-                    <select id="pay_mode" style="flex:1;">
-                        <option value="Cash">Cash</option>
-                        <option value="Online">Online</option>
-                    </select>
+                    <select id="pay_mode" style="flex:1;"><option value="Cash">Cash</option><option value="Online">Online</option></select>
                     <button class="btn-add" style="background:#10b981; flex:1;" onclick="addPaymentRecord()"><i class="fas fa-check"></i> Add</button>
                 </span>
             </div>
-            
             <table class="editor-table">
                 <thead><tr><th>Date</th><th>Mode</th><th>Amount Paid</th><th>Action</th></tr></thead>
                 <tbody id="edit-payments-body"></tbody>
@@ -382,12 +372,9 @@
         </div>
     </div>
 
-
     <!-- MODALS OVERLAY -->
-    <!-- 1. Edit Bill Modal -->
     <div class="overlay" id="edit-overlay"><div class="modal-lg" id="edit-modal-content"></div></div>
     
-    <!-- 2. Manage Payment Modal -->
     <div class="overlay" id="payment-modal">
         <div class="modal-sm">
             <h3 style="margin-top:0; color:#333;">Manage Payments</h3>
@@ -409,45 +396,166 @@
                 <input type="number" id="pm_amount" placeholder="e.g. 500" style="margin-bottom:10px;">
                 <label style="font-size:13px; font-weight:bold; color:#166534;">Mode</label>
                 <select id="pm_mode"><option value="Cash">Cash</option><option value="Online">Online</option></select>
-                
                 <div style="display:flex; gap:10px; margin-top:15px;">
                     <button onclick="hideNewPayForm()" style="flex:1; padding:10px; background:#fff; border:1px solid #ccc; border-radius:6px; cursor:pointer;">Cancel</button>
                     <button onclick="confirmQuickPayment()" style="flex:1; padding:10px; background:#10b981; color:white; border:none; border-radius:6px; cursor:pointer; font-weight:bold;">Save</button>
                 </div>
             </div>
-            
             <button onclick="document.getElementById('payment-modal').style.display='none'" style="width:100%; padding:12px; background:#f1f5f9; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer; font-weight:bold; color:#475569; margin-top:10px;">Close Window</button>
         </div>
     </div>
 
     <script>
-        let invoices = JSON.parse(localStorage.getItem('myInvoicesPro')) || [];
-        invoices.forEach(inv => { if(inv.paidAmount !== undefined && !inv.payments) { inv.payments = inv.paidAmount > 0 ? [{id: Date.now(), amt: inv.paidAmount, mode: 'Cash', date: inv.date}] : []; delete inv.paidAmount; } });
+        // ================= FIREBASE SETUP =================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDI1bnT0cyKVHyH25PbIZqJfWFhuZlc2YA",
+            authDomain: "sagar-invoice-app.firebaseapp.com",
+            databaseURL: "https://sagar-invoice-app-default-rtdb.firebaseio.com", 
+            projectId: "sagar-invoice-app",
+            storageBucket: "sagar-invoice-app.firebasestorage.app",
+            messagingSenderId: "733494306894",
+            appId: "1:733494306894:web:cbab88d65b1dbd08bcbb1f"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+        // ==================================================
 
+        let invoices = [];
         let currentInvId = null, currentItems = [], currentPayments = [], listLimit = 30, activePayId = null;
         let isEditMode = false;
-        
         let hasUnsavedChanges = false;
-        function markUnsaved() { hasUnsavedChanges = true; }
+        let activeUserId = null; 
 
+        function markUnsaved() { hasUnsavedChanges = true; }
         const formatMoney = (amt) => '₹' + parseFloat(amt).toLocaleString('en-IN', {minimumFractionDigits: 2});
         
+        // ================= AUTHENTICATION LOGIC =================
+        function switchAuthTab(tabId) {
+            document.querySelectorAll('.auth-tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.auth-section').forEach(sec => sec.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        function loginWithGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider).catch(err => alert("Google Login Failed: " + err.message));
+        }
+
+        function signUpWithEmail() {
+            const email = document.getElementById('auth-email').value;
+            const pass = document.getElementById('auth-pass').value;
+            if(!email || !pass) return alert("Email and Password needed.");
+            auth.createUserWithEmailAndPassword(email, pass)
+                .then(() => alert("Account Created!"))
+                .catch(err => alert(err.message));
+        }
+
+        function loginWithEmail() {
+            const email = document.getElementById('auth-email').value;
+            const pass = document.getElementById('auth-pass').value;
+            if(!email || !pass) return alert("Email and Password needed.");
+            auth.signInWithEmailAndPassword(email, pass).catch(err => alert(err.message));
+        }
+
+        function forgotPassword() {
+            const email = document.getElementById('auth-email').value;
+            if(!email) return alert("Pehle upar box mein apna Email dalein.");
+            auth.sendPasswordResetEmail(email)
+                .then(() => alert("Password reset link aapke email par bhej diya gaya hai!"))
+                .catch(err => alert(err.message));
+        }
+
+        window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { 'size': 'invisible' });
+        
+        function sendOTP() {
+            const num = document.getElementById('auth-phone').value;
+            if(num.length < 10) return alert("Sahi mobile number dalein.");
+            const fullNum = "+91" + num; 
+            
+            document.querySelector('#phone-input-div button').innerText = "Sending...";
+            
+            auth.signInWithPhoneNumber(fullNum, window.recaptchaVerifier)
+                .then(confirmationResult => {
+                    window.confirmationResult = confirmationResult;
+                    document.getElementById('phone-input-div').style.display = 'none';
+                    document.getElementById('otp-input-div').style.display = 'block';
+                })
+                .catch(err => {
+                    alert("Error: " + err.message);
+                    document.querySelector('#phone-input-div button').innerText = "Send OTP";
+                });
+        }
+
+        function verifyOTP() {
+            const otp = document.getElementById('auth-otp').value;
+            if(!otp) return;
+            window.confirmationResult.confirm(otp).catch(err => alert("Galat OTP!"));
+        }
+
+        function resetPhoneUI() {
+            document.getElementById('phone-input-div').style.display = 'block';
+            document.getElementById('otp-input-div').style.display = 'none';
+            document.querySelector('#phone-input-div button').innerText = "Send OTP";
+            document.getElementById('auth-otp').value = "";
+        }
+
+        function logoutApp() {
+            if(confirm("Are you sure you want to logout?")) { auth.signOut(); }
+        }
+
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                activeUserId = user.uid;
+                document.getElementById('login-overlay').style.display = 'none';
+                loadFirebaseData(); 
+            } else {
+                activeUserId = null;
+                invoices = [];
+                renderList();
+                document.getElementById('login-overlay').style.display = 'flex';
+                resetPhoneUI();
+            }
+        });
+
+        // ================= APP LOGIC =================
         function initApp() {
             const allInputs = document.querySelectorAll('#editor-container input, #editor-container select');
             allInputs.forEach(el => el.addEventListener('input', () => { markUnsaved(); updatePreview(); }));
             
             document.getElementById('f_to').addEventListener('input', () => { autoGenerateInvoice(); });
             document.getElementById('f_cdate').addEventListener('change', () => { autoGenerateInvoice(); });
-            
             document.getElementById('pay_amt').addEventListener('input', function() {
-                const val = parseFloat(this.value);
-                document.getElementById('payment_controls').style.display = (val > 0) ? 'flex' : 'none';
+                document.getElementById('payment_controls').style.display = (parseFloat(this.value) > 0) ? 'flex' : 'none';
             });
 
             window.addEventListener('resize', adjustPreviewScale);
             document.getElementById('create-tab-body').appendChild(document.getElementById('editor-container'));
-
             startNewInvoice();
+        }
+
+        function loadFirebaseData() {
+            if(!activeUserId) return;
+            document.getElementById('db-loader').style.display = 'block';
+            document.getElementById('db-table').style.display = 'none';
+            
+            database.ref('user_invoices/' + activeUserId).once('value').then((snapshot) => {
+                document.getElementById('db-loader').style.display = 'none';
+                document.getElementById('db-table').style.display = 'table';
+                
+                const data = snapshot.val();
+                if(data) {
+                    invoices = Array.isArray(data) ? data : Object.values(data);
+                    invoices.forEach(inv => { if(inv.paidAmount !== undefined && !inv.payments) { inv.payments = inv.paidAmount > 0 ? [{id: Date.now(), amt: inv.paidAmount, mode: 'Cash', date: inv.date}] : []; delete inv.paidAmount; } });
+                } else { invoices = []; }
+                renderList(true);
+            }).catch(error => { alert("Database load fail: " + error.message); });
+        }
+
+        function syncToFirebase() {
+            if(!activeUserId) return;
+            database.ref('user_invoices/' + activeUserId).set(invoices);
         }
 
         function setTodayDate() {
@@ -461,56 +569,37 @@
             document.getElementById('f_inv').value = (name.replace(/[^a-zA-Z0-9]/g, '').toUpperCase() + "XXXX").substring(0, 4) + (date ? (date.split('-')[2] + date.split('-')[1]) : "0000");
         }
 
-        // ================= TABS & SCALING =================
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content, .tab-btn').forEach(t => t.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
-            
             const btnIndex = tabId === 'create-tab' ? 0 : (tabId === 'preview-tab' ? 1 : 2);
             document.querySelectorAll('.tab-btn')[btnIndex].classList.add('active');
             
             if(tabId === 'list-tab') renderList(true);
-            if(tabId === 'preview-tab') {
-                updatePreview();
-                setTimeout(adjustPreviewScale, 50); 
-            }
+            if(tabId === 'preview-tab') { updatePreview(); setTimeout(adjustPreviewScale, 50); }
         }
 
         function adjustPreviewScale() {
             const wrapper = document.getElementById('preview-wrapper');
             const box = document.getElementById('print-area');
-            
             if(window.innerWidth <= 768) {
                 const wrapperWidth = wrapper.clientWidth || (window.innerWidth - 30);
                 const scale = wrapperWidth / 794; 
                 box.style.transform = `scale(${scale})`;
                 box.style.transformOrigin = 'top left';
                 wrapper.style.height = `${1123 * scale}px`; 
-            } else {
-                box.style.transform = 'none';
-                wrapper.style.height = 'auto';
-            }
+            } else { box.style.transform = 'none'; wrapper.style.height = 'auto'; }
         }
 
-        // ================= EDITOR LOGIC =================
         function startNewInvoice() {
             currentInvId = Date.now().toString(); currentItems = []; currentPayments = [];
-            document.getElementById('f_to').value = ''; document.getElementById('f_inv').value = '';
-            document.getElementById('f_ddate').value = '';
+            document.getElementById('f_to').value = ''; document.getElementById('f_inv').value = ''; document.getElementById('f_ddate').value = '';
             document.getElementById('pay_amt').value = ''; document.getElementById('payment_controls').style.display = 'none';
             isEditMode = false;
-            
-            // UI Resets
-            document.getElementById('btn-close-edit').style.display = 'none';
-            document.getElementById('btn-close-edit-top').style.display = 'none';
+            document.getElementById('btn-close-edit').style.display = 'none'; document.getElementById('btn-close-edit-top').style.display = 'none';
             document.getElementById('btn-new-bill').style.display = 'inline-flex';
-            if(document.getElementById('editor-container').parentNode.id !== 'create-tab-body') {
-                document.getElementById('create-tab-body').appendChild(document.getElementById('editor-container'));
-            }
-            
-            setTodayDate(); 
-            renderTables();
-            hasUnsavedChanges = true; 
+            if(document.getElementById('editor-container').parentNode.id !== 'create-tab-body') { document.getElementById('create-tab-body').appendChild(document.getElementById('editor-container')); }
+            setTodayDate(); renderTables(); hasUnsavedChanges = true; 
         }
 
         function addItem() {
@@ -520,10 +609,7 @@
             document.getElementById('i_desc').value = ''; document.getElementById('i_qty').value = ''; document.getElementById('i_price').value = '';
             markUnsaved(); renderTables();
         }
-        function updateItem(id, field, val) { 
-            const item = currentItems.find(i => i.id == id); 
-            if(item) { item[field] = field === 'desc' ? val : (parseFloat(val)||0); markUnsaved(); renderTables(); } 
-        }
+        function updateItem(id, field, val) { const item = currentItems.find(i => i.id == id); if(item) { item[field] = field === 'desc' ? val : (parseFloat(val)||0); markUnsaved(); renderTables(); } }
         function deleteItem(id) { currentItems = currentItems.filter(i => i.id != id); markUnsaved(); renderTables(); }
 
         function addPaymentRecord() {
@@ -532,43 +618,19 @@
             const paidSofar = currentPayments.reduce((s, p) => s + p.amt, 0);
             if(!amt || amt <= 0) return alert("Enter valid payment amount.");
             if(amt > (total - paidSofar)) return alert("Payment exceeds balance amount!");
-            
             const now = new Date();
-            const dateStr = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`;
-            currentPayments.push({ id: Date.now(), amt, mode, date: dateStr });
-            
-            document.getElementById('pay_amt').value = '';
-            document.getElementById('payment_controls').style.display = 'none';
+            currentPayments.push({ id: Date.now(), amt, mode, date: `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}` });
+            document.getElementById('pay_amt').value = ''; document.getElementById('payment_controls').style.display = 'none';
             markUnsaved(); renderTables();
         }
-        function updatePayment(id, field, val) {
-            const p = currentPayments.find(x => x.id == id);
-            if(p) { if(field === 'amt') p.amt = parseFloat(val) || 0; else p.mode = val; markUnsaved(); renderTables(); }
-        }
+        function updatePayment(id, field, val) { const p = currentPayments.find(x => x.id == id); if(p) { if(field === 'amt') p.amt = parseFloat(val) || 0; else p.mode = val; markUnsaved(); renderTables(); } }
         function deletePayment(id) { currentPayments = currentPayments.filter(p => p.id != id); markUnsaved(); renderTables(); }
 
         function renderTables() {
             const iBody = document.getElementById('edit-items-body'), pBody = document.getElementById('edit-payments-body');
             iBody.innerHTML = ''; pBody.innerHTML = '';
-            
-            currentItems.forEach(i => {
-                iBody.innerHTML += `<tr>
-                    <td><input type="text" class="desc" placeholder="Desc" value="${i.desc}" onchange="updateItem(${i.id}, 'desc', this.value)"></td>
-                    <td><input type="number" placeholder="Qty" value="${i.qty}" onchange="updateItem(${i.id}, 'qty', this.value)"></td>
-                    <td><input type="number" placeholder="Price" value="${i.price}" onchange="updateItem(${i.id}, 'price', this.value)"></td>
-                    <td>${formatMoney(i.qty * i.price)}</td>
-                    <td><button class="btn-del" onclick="deleteItem(${i.id})"><i class="fas fa-trash"></i></button></td>
-                </tr>`;
-            });
-            
-            currentPayments.forEach(p => {
-                pBody.innerHTML += `<tr>
-                    <td>${p.date}</td>
-                    <td><select onchange="updatePayment(${p.id}, 'mode', this.value)"><option value="Cash" ${p.mode==='Cash'?'selected':''}>Cash</option><option value="Online" ${p.mode==='Online'?'selected':''}>Online</option></select></td>
-                    <td><input type="number" value="${p.amt}" onchange="updatePayment(${p.id}, 'amt', this.value)"></td>
-                    <td><button class="btn-del" onclick="deletePayment(${p.id})"><i class="fas fa-trash"></i></button></td>
-                </tr>`;
-            });
+            currentItems.forEach(i => { iBody.innerHTML += `<tr><td><input type="text" class="desc" placeholder="Desc" value="${i.desc}" onchange="updateItem(${i.id}, 'desc', this.value)"></td><td><input type="number" placeholder="Qty" value="${i.qty}" onchange="updateItem(${i.id}, 'qty', this.value)"></td><td><input type="number" placeholder="Price" value="${i.price}" onchange="updateItem(${i.id}, 'price', this.value)"></td><td>${formatMoney(i.qty * i.price)}</td><td><button class="btn-del" onclick="deleteItem(${i.id})"><i class="fas fa-trash"></i></button></td></tr>`; });
+            currentPayments.forEach(p => { pBody.innerHTML += `<tr><td>${p.date}</td><td><select onchange="updatePayment(${p.id}, 'mode', this.value)"><option value="Cash" ${p.mode==='Cash'?'selected':''}>Cash</option><option value="Online" ${p.mode==='Online'?'selected':''}>Online</option></select></td><td><input type="number" value="${p.amt}" onchange="updatePayment(${p.id}, 'amt', this.value)"></td><td><button class="btn-del" onclick="deletePayment(${p.id})"><i class="fas fa-trash"></i></button></td></tr>`; });
             updatePreview();
         }
 
@@ -576,8 +638,7 @@
             const total = currentItems.reduce((s, i) => s + (i.qty * i.price), 0);
             const paid = currentPayments.reduce((s, p) => s + p.amt, 0);
             const bal = total - paid;
-            let status = 'UNPAID';
-            if (total > 0) { if (paid >= total) status = 'PAID'; else if (paid > 0) status = 'PARTIAL'; }
+            let status = 'UNPAID'; if (total > 0) { if (paid >= total) status = 'PAID'; else if (paid > 0) status = 'PARTIAL'; }
             return { total, paid, bal: bal < 0 ? 0 : bal, status };
         }
 
@@ -585,28 +646,15 @@
             document.getElementById('p_from').innerText = document.getElementById('f_from').value;
             document.getElementById('p_to').innerText = document.getElementById('f_to').value;
             document.getElementById('p_inv').innerText = document.getElementById('f_inv').value;
-            
-            const cd = document.getElementById('f_cdate').value;
-            document.getElementById('p_cdate').innerText = cd ? cd.split('-').reverse().join('/') : '';
-            
+            const cd = document.getElementById('f_cdate').value; document.getElementById('p_cdate').innerText = cd ? cd.split('-').reverse().join('/') : '';
             const calc = calculateTotals();
-            
-            const ddContainer = document.getElementById('container_ddate');
-            const ddRow = document.getElementById('row_ddate');
-            const f_ddate = document.getElementById('f_ddate');
+            const ddContainer = document.getElementById('container_ddate'), ddRow = document.getElementById('row_ddate'), f_ddate = document.getElementById('f_ddate');
             
             if (calc.total > 0 && calc.status !== 'PAID') {
                 ddContainer.style.display = 'flex';
-                if (f_ddate.value) {
-                    document.getElementById('p_ddate').innerText = f_ddate.value.split('-').reverse().join('/');
-                    ddRow.style.display = 'table-row';
-                } else {
-                    ddRow.style.display = 'none';
-                }
-            } else {
-                ddContainer.style.display = 'none';
-                ddRow.style.display = 'none';
-            }
+                if (f_ddate.value) { document.getElementById('p_ddate').innerText = f_ddate.value.split('-').reverse().join('/'); ddRow.style.display = 'table-row'; } 
+                else { ddRow.style.display = 'none'; }
+            } else { ddContainer.style.display = 'none'; ddRow.style.display = 'none'; }
 
             const pbody = document.getElementById('p_items'); pbody.innerHTML = '';
             currentItems.forEach(i => pbody.innerHTML += `<tr><td>${i.desc}</td><td>${i.qty}</td><td>${formatMoney(i.price)}</td><td>${formatMoney(i.qty * i.price)}</td></tr>`);
@@ -617,12 +665,9 @@
 
             const wm = document.getElementById('p_watermark'), pTxt = document.getElementById('p_payment_text'), pLdg = document.getElementById('p_ledger'), pLdgBody = document.getElementById('p_ledger_body');
             wm.className = `watermark ${calc.status}`; wm.innerText = calc.status;
-            
             pLdgBody.innerHTML = '';
-            if(currentPayments.length > 0) {
-                pLdg.style.display = 'table';
-                currentPayments.forEach(p => pLdgBody.innerHTML += `<tr><td>${p.date}</td><td>${p.mode}</td><td>${formatMoney(p.amt)}</td></tr>`);
-            } else pLdg.style.display = 'none';
+            if(currentPayments.length > 0) { pLdg.style.display = 'table'; currentPayments.forEach(p => pLdgBody.innerHTML += `<tr><td>${p.date}</td><td>${p.mode}</td><td>${formatMoney(p.amt)}</td></tr>`); } 
+            else pLdg.style.display = 'none';
 
             if (calc.status === 'PAID') { pTxt.innerText = "Payment Complete"; pTxt.style.color = "var(--paid-text)"; } 
             else if (calc.status === 'PARTIAL') { pTxt.innerText = "Partially Paid"; pTxt.style.color = "var(--partial-text)"; } 
@@ -632,52 +677,24 @@
         function saveInvoice() {
             if(currentItems.length === 0) return alert("Kripya kam se kam ek item add karein.");
             const calc = calculateTotals();
-            
-            if (calc.total > 0 && calc.status !== 'PAID') {
-                if (!document.getElementById('f_ddate').value) {
-                    return alert("Due Date zaroori hai kyonki bill ka payment pura nahi hua hai.");
-                }
-            }
+            if (calc.total > 0 && calc.status !== 'PAID') { if (!document.getElementById('f_ddate').value) { return alert("Due Date zaroori hai kyonki bill ka payment pura nahi hua hai."); } }
 
-            const invData = { 
-                id: currentInvId, 
-                from: document.getElementById('f_from').value, 
-                to: document.getElementById('f_to').value, 
-                invNo: document.getElementById('f_inv').value, 
-                date: document.getElementById('f_cdate').value, 
-                dueDate: document.getElementById('f_ddate').value,
-                items: currentItems, 
-                payments: currentPayments, 
-                status: calc.status 
-            };
+            const invData = { id: currentInvId, from: document.getElementById('f_from').value, to: document.getElementById('f_to').value, invNo: document.getElementById('f_inv').value, date: document.getElementById('f_cdate').value, dueDate: document.getElementById('f_ddate').value, items: currentItems, payments: currentPayments, status: calc.status };
             const idx = invoices.findIndex(i => i.id === currentInvId);
             if(idx > -1) invoices[idx] = invData; else invoices.push(invData);
-            localStorage.setItem('myInvoicesPro', JSON.stringify(invoices));
             
+            syncToFirebase();
             hasUnsavedChanges = false; 
             alert("Bill successfully save ho gaya hai!");
             
-            if(isEditMode) { 
-                cancelEditMode(); 
-            } else {
-                switchTab('preview-tab');
-            }
+            if(isEditMode) { cancelEditMode(); } else { switchTab('preview-tab'); }
         }
 
         function checkRequireSave() {
-            if(hasUnsavedChanges) {
-                alert("Rukiye! Kripya pehle bill ko 'Save Invoice' button dabakar Save karein tabhi aap isse share kar payenge.");
-                if(isEditMode) {
-                    document.getElementById('edit-overlay').style.display = 'flex';
-                } else {
-                    switchTab('create-tab');
-                }
-                return true;
-            }
+            if(hasUnsavedChanges) { alert("Rukiye! Kripya pehle bill ko 'Save Invoice' button dabakar Save karein tabhi aap isse share kar payenge."); if(isEditMode) { document.getElementById('edit-overlay').style.display = 'flex'; } else { switchTab('create-tab'); } return true; }
             return false;
         }
 
-        // ================= CUSTOMER LIST =================
         function renderList(reset = false) {
             if(reset) listLimit = 30;
             const term = document.getElementById('search-box').value.toLowerCase();
@@ -697,256 +714,102 @@
                     <td data-label="Balance" style="color:${bal>0?'#dc2626':'#16a34a'}; font-weight:600;">${formatMoney(bal < 0 ? 0 : bal)}</td>
                     <td data-label="Status"><span class="badge ${inv.status}">${inv.status}</span></td>
                     <td class="actions-cell">
-                        <button class="action-icon bg-view" onclick="openPreviewFromList('${inv.id}')" title="Preview Bill">
-                            <i class="fas fa-eye"></i><span>VIEW</span>
-                        </button>
-                        <button class="action-icon bg-edit" onclick="openEditMode('${inv.id}')" title="Edit Bill">
-                            <i class="fas fa-edit"></i><span>EDIT</span>
-                        </button>
-                        <button class="action-icon bg-pay" onclick="openQuickPayment('${inv.id}')" title="Manage Payments">
-                            <i class="fas fa-rupee-sign"></i><span>PAY</span>
-                        </button>
-                        <button class="action-icon bg-img" onclick="shareAsImageList('${inv.id}')" title="Share Image on WhatsApp">
-                            <i class="fab fa-whatsapp"></i><span>IMG</span>
-                        </button>
-                        <button class="action-icon bg-pdf" onclick="generatePDFList('${inv.id}')" title="Download PDF">
-                            <i class="fas fa-file-pdf"></i><span>PDF</span>
-                        </button>
-                        <button class="action-icon bg-del" onclick="deleteInvoice('${inv.id}')" title="Delete">
-                            <i class="fas fa-trash"></i><span>DEL</span>
-                        </button>
+                        <button class="action-icon bg-view" onclick="openPreviewFromList('${inv.id}')" title="Preview Bill"><i class="fas fa-eye"></i><span>VIEW</span></button>
+                        <button class="action-icon bg-edit" onclick="openEditMode('${inv.id}')" title="Edit Bill"><i class="fas fa-edit"></i><span>EDIT</span></button>
+                        <button class="action-icon bg-pay" onclick="openQuickPayment('${inv.id}')" title="Manage Payments"><i class="fas fa-rupee-sign"></i><span>PAY</span></button>
+                        <button class="action-icon bg-img" onclick="shareAsImageList('${inv.id}')" title="Share Image on WhatsApp"><i class="fab fa-whatsapp"></i><span>WA IMG</span></button>
+                        <button class="action-icon bg-pdf" onclick="generatePDFList('${inv.id}')" title="Download PDF"><i class="fas fa-file-pdf"></i><span>PDF</span></button>
+                        <button class="action-icon bg-del" onclick="deleteInvoice('${inv.id}')" title="Delete"><i class="fas fa-trash"></i><span>DEL</span></button>
                     </td>
                 </tr>`;
             });
+            document.getElementById('btn-load-more').style.display = filtered.length > listLimit ? 'block' : 'none';
         }
         function loadMore() { listLimit += 30; renderList(); }
-        function deleteInvoice(id) { if(confirm("Permanently delete this invoice?")) { invoices = invoices.filter(i => i.id !== id); localStorage.setItem('myInvoicesPro', JSON.stringify(invoices)); renderList(); } }
+        function deleteInvoice(id) { if(confirm("Permanently delete this invoice?")) { invoices = invoices.filter(i => i.id !== id); syncToFirebase(); renderList(); } }
 
         function loadDataToForm(inv) {
             currentInvId = inv.id; document.getElementById('f_from').value = inv.from; document.getElementById('f_to').value = inv.to;
-            document.getElementById('f_inv').value = inv.invNo; document.getElementById('f_cdate').value = inv.date;
-            document.getElementById('f_ddate').value = inv.dueDate || '';
-            currentItems = JSON.parse(JSON.stringify(inv.items || []));
-            currentPayments = JSON.parse(JSON.stringify(inv.payments || []));
+            document.getElementById('f_inv').value = inv.invNo; document.getElementById('f_cdate').value = inv.date; document.getElementById('f_ddate').value = inv.dueDate || '';
+            currentItems = JSON.parse(JSON.stringify(inv.items || [])); currentPayments = JSON.parse(JSON.stringify(inv.payments || []));
             document.getElementById('pay_amt').value = ''; document.getElementById('payment_controls').style.display = 'none';
-            renderTables();
-            hasUnsavedChanges = false; 
+            renderTables(); hasUnsavedChanges = false; 
         }
 
-        function openPreviewFromList(id) {
-            loadDataToForm(invoices.find(i => i.id === id));
-            switchTab('preview-tab');
-        }
+        function openPreviewFromList(id) { loadDataToForm(invoices.find(i => i.id === id)); switchTab('preview-tab'); }
         
         function openEditMode(id) {
-            isEditMode = true; 
-            loadDataToForm(invoices.find(i => i.id === id));
-            
+            isEditMode = true; loadDataToForm(invoices.find(i => i.id === id));
             document.getElementById('edit-modal-content').appendChild(document.getElementById('editor-container'));
             document.getElementById('edit-overlay').style.display = 'flex';
-            
-            document.getElementById('btn-close-edit').style.display = 'inline-flex';
-            document.getElementById('btn-close-edit-top').style.display = 'flex';
-            document.getElementById('btn-new-bill').style.display = 'none';
+            document.getElementById('btn-close-edit').style.display = 'inline-flex'; document.getElementById('btn-close-edit-top').style.display = 'flex'; document.getElementById('btn-new-bill').style.display = 'none';
         }
-        
         function cancelEditMode() {
             document.getElementById('edit-overlay').style.display = 'none'; 
             document.getElementById('create-tab-body').appendChild(document.getElementById('editor-container'));
-            startNewInvoice(); 
-            renderList();
+            startNewInvoice(); renderList();
         }
 
-        // ================= MANAGE PAYMENTS MODAL =================
-        function showNewPayForm() {
-            document.getElementById('new-pay-form').style.display = 'block';
-            document.getElementById('btn-show-new-pay').style.display = 'none';
-        }
-        function hideNewPayForm() {
-            document.getElementById('new-pay-form').style.display = 'none';
-            document.getElementById('btn-show-new-pay').style.display = 'block';
-            document.getElementById('pm_amount').value = ''; 
-        }
+        function showNewPayForm() { document.getElementById('new-pay-form').style.display = 'block'; document.getElementById('btn-show-new-pay').style.display = 'none'; }
+        function hideNewPayForm() { document.getElementById('new-pay-form').style.display = 'none'; document.getElementById('btn-show-new-pay').style.display = 'block'; document.getElementById('pm_amount').value = ''; }
 
-        function openQuickPayment(id) {
-            activePayId = id; 
-            hideNewPayForm(); 
-            renderQuickPaymentsList();
-            document.getElementById('payment-modal').style.display = 'flex';
-        }
+        function openQuickPayment(id) { activePayId = id; hideNewPayForm(); renderQuickPaymentsList(); document.getElementById('payment-modal').style.display = 'flex'; }
 
         function renderQuickPaymentsList() {
             const inv = invoices.find(i => i.id === activePayId);
-            const tbody = document.getElementById('qm-payments-body');
-            tbody.innerHTML = '';
-            
+            const tbody = document.getElementById('qm-payments-body'); tbody.innerHTML = '';
             (inv.payments || []).forEach(p => {
-                tbody.innerHTML += `<tr>
-                    <td style="padding:10px 5px; font-size:11px;">${p.date}</td>
-                    <td style="padding:5px;">
-                        <select id="qm_mode_${p.id}" style="width:100%; border:1px solid #ccc; padding:6px; border-radius:4px; font-size:12px;">
-                            <option value="Cash" ${p.mode==='Cash'?'selected':''}>Cash</option>
-                            <option value="Online" ${p.mode==='Online'?'selected':''}>Online</option>
-                        </select>
-                    </td>
-                    <td style="padding:5px;"><input type="number" id="qm_amt_${p.id}" style="width:100%; border:1px solid #ccc; padding:6px; border-radius:4px; font-size:12px;" value="${p.amt}"></td>
-                    <td style="padding:5px; text-align:center; white-space:nowrap;">
-                        <button style="background:#10b981; color:white; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; margin-right:3px;" onclick="saveQMPayment(event, ${p.id})" title="Save Edit"><i class="fas fa-save"></i></button>
-                        <button style="background:#ef4444; color:white; border:none; padding:6px 10px; border-radius:4px; cursor:pointer;" onclick="deleteQMPayment(${p.id})" title="Delete"><i class="fas fa-trash"></i></button>
-                    </td>
-                </tr>`;
+                tbody.innerHTML += `<tr><td style="padding:10px 5px; font-size:11px;">${p.date}</td><td style="padding:5px;"><select id="qm_mode_${p.id}" style="width:100%; border:1px solid #ccc; padding:6px; border-radius:4px; font-size:12px;"><option value="Cash" ${p.mode==='Cash'?'selected':''}>Cash</option><option value="Online" ${p.mode==='Online'?'selected':''}>Online</option></select></td><td style="padding:5px;"><input type="number" id="qm_amt_${p.id}" style="width:100%; border:1px solid #ccc; padding:6px; border-radius:4px; font-size:12px;" value="${p.amt}"></td><td style="padding:5px; text-align:center; white-space:nowrap;"><button style="background:#10b981; color:white; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; margin-right:3px;" onclick="saveQMPayment(event, ${p.id})" title="Save Edit"><i class="fas fa-save"></i></button><button style="background:#ef4444; color:white; border:none; padding:6px 10px; border-radius:4px; cursor:pointer;" onclick="deleteQMPayment(${p.id})" title="Delete"><i class="fas fa-trash"></i></button></td></tr>`;
             });
-            
             const total = (inv.items||[]).reduce((s, i) => s + (i.qty * i.price), 0);
             const paid = (inv.payments||[]).reduce((s, p) => s + p.amt, 0);
             const bal = total - paid;
-            
-            document.getElementById('pm_total').innerText = formatMoney(total); 
-            document.getElementById('pm_bal').innerText = formatMoney(bal < 0 ? 0 : bal);
-            document.getElementById('pm_amount').value = bal > 0 ? bal : '';
-
-            if (document.getElementById('new-pay-form').style.display === 'none') {
-                document.getElementById('btn-show-new-pay').style.display = 'block';
-            }
+            document.getElementById('pm_total').innerText = formatMoney(total); document.getElementById('pm_bal').innerText = formatMoney(bal < 0 ? 0 : bal); document.getElementById('pm_amount').value = bal > 0 ? bal : '';
+            if (document.getElementById('new-pay-form').style.display === 'none') { document.getElementById('btn-show-new-pay').style.display = 'block'; }
         }
 
         function saveQMPayment(event, pid) {
-            const inv = invoices.find(i => i.id === activePayId);
-            const p = inv.payments.find(x => x.id == pid);
-            if(p) {
-                p.amt = parseFloat(document.getElementById(`qm_amt_${pid}`).value) || 0;
-                p.mode = document.getElementById(`qm_mode_${pid}`).value;
-                recalcInvStatus(inv);
-                localStorage.setItem('myInvoicesPro', JSON.stringify(invoices));
-                
-                const btn = event.currentTarget;
-                btn.innerHTML = '<i class="fas fa-check"></i>';
-                setTimeout(() => { btn.innerHTML = '<i class="fas fa-save"></i>'; }, 1000);
-                
-                renderQuickPaymentsList(); renderList();
-            }
+            const inv = invoices.find(i => i.id === activePayId), p = inv.payments.find(x => x.id == pid);
+            if(p) { p.amt = parseFloat(document.getElementById(`qm_amt_${pid}`).value) || 0; p.mode = document.getElementById(`qm_mode_${pid}`).value; recalcInvStatus(inv); syncToFirebase(); const btn = event.currentTarget; btn.innerHTML = '<i class="fas fa-check"></i>'; setTimeout(() => { btn.innerHTML = '<i class="fas fa-save"></i>'; }, 1000); renderQuickPaymentsList(); renderList(); }
         }
+        function deleteQMPayment(pid) { const inv = invoices.find(i => i.id === activePayId); inv.payments = inv.payments.filter(x => x.id != pid); recalcInvStatus(inv); syncToFirebase(); renderQuickPaymentsList(); renderList(); }
         
-        function deleteQMPayment(pid) {
-            const inv = invoices.find(i => i.id === activePayId);
-            inv.payments = inv.payments.filter(x => x.id != pid);
-            recalcInvStatus(inv);
-            localStorage.setItem('myInvoicesPro', JSON.stringify(invoices));
-            renderQuickPaymentsList(); renderList();
-        }
-
         function confirmQuickPayment() {
             const amt = parseFloat(document.getElementById('pm_amount').value), mode = document.getElementById('pm_mode').value;
             const inv = invoices.find(i => i.id === activePayId);
-            if(inv && amt > 0) {
-                const now = new Date();
-                if(!inv.payments) inv.payments = [];
-                inv.payments.push({ id: Date.now(), amt, mode, date: `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}` });
-                recalcInvStatus(inv);
-                localStorage.setItem('myInvoicesPro', JSON.stringify(invoices));
-                
-                hideNewPayForm();
-                renderQuickPaymentsList(); 
-                renderList();
-            } else alert("Invalid Amount");
+            if(inv && amt > 0) { const now = new Date(); if(!inv.payments) inv.payments = []; inv.payments.push({ id: Date.now(), amt, mode, date: `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}` }); recalcInvStatus(inv); syncToFirebase(); hideNewPayForm(); renderQuickPaymentsList(); renderList(); } else alert("Invalid Amount");
         }
 
-        function recalcInvStatus(inv) {
-            const total = (inv.items||[]).reduce((s, i) => s + (i.qty * i.price), 0);
-            const paid = (inv.payments||[]).reduce((s, p) => s + p.amt, 0);
-            inv.status = paid >= total ? 'PAID' : (paid > 0 ? 'PARTIAL' : 'UNPAID');
-        }
-
-        // ================= EXPORT LOGIC =================
         function makeVisibleForExport(callback) {
-            const printArea = document.getElementById('print-area');
-            const originalParent = printArea.parentNode;
-            const originalSibling = printArea.nextSibling;
-            
-            const origTransform = printArea.style.transform;
-            const origTransformOrigin = printArea.style.transformOrigin;
-            
-            printArea.style.transform = 'none';
-            printArea.style.transformOrigin = 'initial';
-            
-            document.body.appendChild(printArea);
-            const origStyle = printArea.getAttribute('style') || '';
-            printArea.style.position = 'absolute';
-            printArea.style.left = '-9999px';
-            printArea.style.top = '0';
-            printArea.style.display = 'block';
-            printArea.style.zIndex = '-1';
-            
-            setTimeout(() => {
-                callback().then(() => {
-                    printArea.setAttribute('style', origStyle);
-                    printArea.style.transform = origTransform;
-                    printArea.style.transformOrigin = origTransformOrigin;
-                    
-                    if(originalSibling) { originalParent.insertBefore(printArea, originalSibling); } 
-                    else { originalParent.appendChild(printArea); }
-                }).catch(err => {
-                    printArea.setAttribute('style', origStyle);
-                    printArea.style.transform = origTransform;
-                    printArea.style.transformOrigin = origTransformOrigin;
-                    originalParent.appendChild(printArea);
-                });
-            }, 300);
+            const printArea = document.getElementById('print-area'); const originalParent = printArea.parentNode; const originalSibling = printArea.nextSibling;
+            const origTransform = printArea.style.transform; const origTransformOrigin = printArea.style.transformOrigin;
+            printArea.style.transform = 'none'; printArea.style.transformOrigin = 'initial';
+            document.body.appendChild(printArea); const origStyle = printArea.getAttribute('style') || '';
+            printArea.style.position = 'absolute'; printArea.style.left = '-9999px'; printArea.style.top = '0'; printArea.style.display = 'block'; printArea.style.zIndex = '-1';
+            setTimeout(() => { callback().then(() => { printArea.setAttribute('style', origStyle); printArea.style.transform = origTransform; printArea.style.transformOrigin = origTransformOrigin; if(originalSibling) { originalParent.insertBefore(printArea, originalSibling); } else { originalParent.appendChild(printArea); } }).catch(err => { printArea.setAttribute('style', origStyle); printArea.style.transform = origTransform; printArea.style.transformOrigin = origTransformOrigin; originalParent.appendChild(printArea); }); }, 300);
         }
 
         async function doShareAsImage() {
-            const element = document.getElementById('print-area');
-            const invNo = document.getElementById('f_inv').value || 'Bill';
-            
-            return new Promise(async (resolve, reject) => {
+            const element = document.getElementById('print-area'), invNo = document.getElementById('f_inv').value || 'Bill';
+            return new Promise(async (resolve) => {
                 try {
                     const canvas = await html2canvas(element, { scale: 2, useCORS: true, logging: false });
                     canvas.toBlob(async (blob) => {
                         const file = new File([blob], `Invoice_${invNo}.png`, { type: 'image/png' });
-                        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                            try { 
-                                await navigator.share({ files: [file], title: `Invoice ${invNo}`, text: 'Here is your invoice.' }); 
-                            } catch (err) { console.log("Share cancelled"); }
-                        } else {
-                            const url = URL.createObjectURL(blob);
-                            const a = document.createElement('a'); a.href = url; a.download = file.name; a.click(); URL.revokeObjectURL(url);
-                        }
+                        if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: `Invoice ${invNo}`, text: 'Here is your invoice.' }); } catch (err) { } } 
+                        else { const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = file.name; a.click(); URL.revokeObjectURL(url); }
                         resolve();
                     }, 'image/png');
-                } catch (e) {
-                    alert("Error generating image.");
-                    resolve();
-                }
+                } catch (e) { alert("Error generating image."); resolve(); }
             });
         }
 
-        function shareAsImageFromPreview() {
-            if(checkRequireSave()) return;
-            const btn = event.currentTarget; const originalText = btn.innerHTML;
-            btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Wait..."; btn.disabled = true;
-            makeVisibleForExport(doShareAsImage).then(() => { btn.innerHTML = originalText; btn.disabled = false; });
-        }
-        
-        function shareAsImageList(id) { 
-            loadDataToForm(invoices.find(i => i.id === id)); 
-            makeVisibleForExport(doShareAsImage); 
-        }
+        function shareAsImageFromPreview() { if(checkRequireSave()) return; const btn = event.currentTarget; const originalText = btn.innerHTML; btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Wait..."; btn.disabled = true; makeVisibleForExport(doShareAsImage).then(() => { btn.innerHTML = originalText; btn.disabled = false; }); }
+        function shareAsImageList(id) { loadDataToForm(invoices.find(i => i.id === id)); makeVisibleForExport(doShareAsImage); }
 
-        function doGeneratePDF() {
-            const element = document.getElementById('print-area');
-            const invNo = document.getElementById('f_inv').value || 'Bill';
-            return new Promise((resolve) => {
-                html2pdf().set({ margin: 0, filename: `${invNo}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }).from(element).save().then(resolve);
-            });
-        }
-        function generatePDFFromPreview() {
-            if(checkRequireSave()) return;
-            makeVisibleForExport(doGeneratePDF);
-        }
-        function generatePDFList(id) { 
-            loadDataToForm(invoices.find(i => i.id === id)); 
-            makeVisibleForExport(doGeneratePDF); 
-        }
+        function doGeneratePDF() { const element = document.getElementById('print-area'), invNo = document.getElementById('f_inv').value || 'Bill'; return new Promise((resolve) => { html2pdf().set({ margin: 0, filename: `${invNo}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }).from(element).save().then(resolve); }); }
+        function generatePDFFromPreview() { if(checkRequireSave()) return; makeVisibleForExport(doGeneratePDF); }
+        function generatePDFList(id) { loadDataToForm(invoices.find(i => i.id === id)); makeVisibleForExport(doGeneratePDF); }
 
         window.onload = initApp;
     </script>
