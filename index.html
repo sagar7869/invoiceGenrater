@@ -125,7 +125,7 @@
 
         @media (max-width: 768px) {
             body { padding-bottom: 80px; } 
-            .tabs { position: fixed; top: auto; bottom: 0; left: 0; width: 100%; border-top: 1px solid var(--border); border-bottom: none; z-index: 999; display: flex; justify-content: space-around; box-shadow: 0 -4px 15px rgba(0,0,0,0.05); padding-bottom: env(safe-area-inset-bottom); }
+            .tabs { position: fixed; top: auto; bottom: 0; left: 0; width: 100%; border-top: 1px solid var(--border); border-bottom: none; z-index: 999; display: flex; justify-content: space-around; box-shadow: 0 -4px 15px rgba(0,0,0,0.05); padding-bottom: env(safe-area-inset-bottom); background: #fff;}
             .tab-btn { flex-direction: column; font-size: 10px; padding: 12px 5px; gap: 6px; border-bottom: none !important; border-top: 3px solid transparent; }
             .tab-btn.active { border-top: 3px solid var(--primary); background: rgba(33, 150, 243, 0.05); }
             .tab-btn i { font-size: 20px; }
@@ -180,7 +180,6 @@
     <div id="print-holder"></div>
     <div id="toast-container"></div> 
 
-    <!-- ================= CUSTOM CONFIRM MODAL ================= -->
     <div class="overlay" id="confirm-overlay" style="z-index: 1000000;">
         <div class="modal-sm" style="text-align: center; max-width: 320px; padding: 30px 20px;">
             <i class="fas fa-exclamation-circle" style="font-size: 45px; color: #f59e0b; margin-bottom: 15px;"></i>
@@ -193,7 +192,7 @@
         </div>
     </div>
 
-    <!-- ================= LOGIN OVERLAY ================= -->
+    <!-- LOGIN OVERLAY -->
     <div class="overlay" id="login-overlay" style="background: rgba(244, 246, 249, 1); z-index: 999999; display:flex;">
         <div class="modal-sm" style="text-align: center; max-width:380px;">
             <i class="fas fa-file-invoice-dollar" style="font-size: 50px; color: var(--primary); margin-bottom: 15px;"></i>
@@ -221,7 +220,7 @@
         </div>
     </div>
 
-    <!-- ================= SIGNUP (REGISTRATION) MODAL ================= -->
+    <!-- SIGNUP MODAL -->
     <div class="overlay" id="signup-overlay" style="z-index: 999999;">
         <div class="modal-sm">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f1f5f9; padding-bottom:15px; margin-bottom:20px;">
@@ -242,7 +241,7 @@
         </div>
     </div>
 
-    <!-- ================= USER PROFILE MODAL ================= -->
+    <!-- USER PROFILE MODAL -->
     <div class="overlay" id="profile-overlay" style="z-index: 999998;">
         <div class="modal-sm">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f1f5f9; padding-bottom:15px; margin-bottom:20px;">
@@ -265,9 +264,8 @@
             <button onclick="logoutApp()" style="width:100%; padding:14px; background:#ef4444; color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer; margin-top:20px; display:flex; justify-content:center; align-items:center; gap:8px;"><i class="fas fa-sign-out-alt"></i> Logout Securely</button>
         </div>
     </div>
-    <!-- ==================================================================== -->
 
-    <!-- NAVIGATION TABS -->
+    <!-- TABS -->
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('create-tab')"><i class="fas fa-edit"></i> <span class="tab-text">Edit</span></button>
         <button class="tab-btn" onclick="switchTab('preview-tab')"><i class="fas fa-eye"></i> <span class="tab-text">Preview</span></button>
@@ -435,7 +433,6 @@
     </div>
 
     <script>
-        // ================= FIREBASE SETUP =================
         const firebaseConfig = {
             apiKey: "AIzaSyDI1bnT0cyKVHyH25PbIZqJfWFhuZlc2YA",
             authDomain: "sagar-invoice-app.firebaseapp.com",
@@ -449,7 +446,6 @@
         const auth = firebase.auth();
         const database = firebase.database();
 
-        // PWA SERVICE WORKER REGISTRATION (Force Update Implementation)
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => { 
                 navigator.serviceWorker.register('sw.js').then(reg => {
@@ -474,7 +470,6 @@
         function markUnsaved() { hasUnsavedChanges = true; }
         const formatMoney = (amt) => '₹' + parseFloat(amt).toLocaleString('en-IN', {minimumFractionDigits: 2});
         
-        // ================= CUSTOM TOAST & CONFIRM =================
         function showToast(message, type = 'info') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -496,7 +491,6 @@
             closeConfirmModal();
         });
 
-        // ================= AUTHENTICATION & PROFILE =================
         function handleLoginEnter(e) { if(e.key === 'Enter') loginWithEmail(); }
         function openSignupModal() { document.getElementById('signup-overlay').style.display = 'flex'; }
         function closeSignupModal() { document.getElementById('signup-overlay').style.display = 'none'; }
@@ -566,7 +560,6 @@
             }
         });
 
-        // ================= APP LOGIC (WITH REAL-TIME SYNC) =================
         function initApp() {
             const allInputs = document.querySelectorAll('#editor-container input, #editor-container select');
             allInputs.forEach(el => el.addEventListener('input', () => { markUnsaved(); updatePreview(); }));
@@ -585,13 +578,12 @@
             if(!activeUserId) return;
             document.getElementById('db-loader').style.display = 'block'; document.getElementById('db-table').style.display = 'none';
             
-            // CHANGED FROM .once TO .on FOR INSTANT 1-SECOND REAL-TIME SYNC ACROSS DEVICES
             database.ref('user_invoices/' + activeUserId).on('value', (snapshot) => {
                 document.getElementById('db-loader').style.display = 'none'; document.getElementById('db-table').style.display = 'table';
                 const data = snapshot.val();
                 if(data) { invoices = Array.isArray(data) ? data : Object.values(data); invoices.forEach(inv => { if(inv.paidAmount !== undefined && !inv.payments) { inv.payments = inv.paidAmount > 0 ? [{id: Date.now(), amt: inv.paidAmount, mode: 'Cash', date: inv.date}] : []; delete inv.paidAmount; } }); } else { invoices = []; }
-                renderList(true); // Updates the table instantly when data changes on any device
-                if(activePayId) renderQuickPaymentsList(); // Updates modal if it's currently open
+                renderList(true); 
+                if(activePayId) renderQuickPaymentsList(); 
             }, (error) => { showToast("Database load fail: " + error.message, "error"); });
         }
 
@@ -804,20 +796,41 @@
             if(inv && amt > 0) { const now = new Date(); if(!inv.payments) inv.payments = []; inv.payments.push({ id: Date.now(), amt, mode, date: `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}` }); recalcInvStatus(inv); syncToFirebase(); hideNewPayForm(); showToast("Payment added.", "success"); } else showToast("Invalid Amount", "error");
         }
 
+        // ================= FIX FOR BLANK PDF & IMAGE EXPORT =================
         function makeVisibleForExport(callback) {
-            const printArea = document.getElementById('print-area'); const originalParent = printArea.parentNode; const originalSibling = printArea.nextSibling;
-            const origTransform = printArea.style.transform; const origTransformOrigin = printArea.style.transformOrigin;
-            printArea.style.transform = 'none'; printArea.style.transformOrigin = 'initial';
-            document.body.appendChild(printArea); const origStyle = printArea.getAttribute('style') || '';
-            printArea.style.position = 'absolute'; printArea.style.left = '-9999px'; printArea.style.top = '0'; printArea.style.display = 'block'; printArea.style.zIndex = '-1';
-            setTimeout(() => { callback().then(() => { printArea.setAttribute('style', origStyle); printArea.style.transform = origTransform; printArea.style.transformOrigin = origTransformOrigin; if(originalSibling) { originalParent.insertBefore(printArea, originalSibling); } else { originalParent.appendChild(printArea); } }).catch(err => { printArea.setAttribute('style', origStyle); printArea.style.transform = origTransform; printArea.style.transformOrigin = origTransformOrigin; originalParent.appendChild(printArea); }); }, 300);
+            const printArea = document.getElementById('print-area');
+            const wrapper = document.getElementById('preview-wrapper');
+            
+            // Save current styles
+            const origTransform = printArea.style.transform;
+            const origHeight = wrapper.style.height;
+
+            // Reset scale for full quality capture
+            printArea.style.transform = 'none';
+            wrapper.style.height = 'auto';
+
+            // CRITICAL FIX: Scroll top helps html2canvas not capture blank empty space
+            window.scrollTo(0, 0);
+
+            // Give the browser half a second to render the unscaled version before capturing
+            setTimeout(() => { 
+                callback().then(() => { 
+                    // Restore original look
+                    printArea.style.transform = origTransform; 
+                    wrapper.style.height = origHeight;
+                }).catch(err => { 
+                    printArea.style.transform = origTransform; 
+                    wrapper.style.height = origHeight;
+                }); 
+            }, 500);
         }
 
         async function doShareAsImage() {
             const element = document.getElementById('print-area'), invNo = document.getElementById('f_inv').value || 'Bill';
             return new Promise(async (resolve) => {
                 try {
-                    const canvas = await html2canvas(element, { scale: 2, useCORS: true, logging: false });
+                    // Added scrollY: 0 to fix blank image on scroll
+                    const canvas = await html2canvas(element, { scale: 2, useCORS: true, logging: false, scrollY: 0 });
                     canvas.toBlob(async (blob) => {
                         const file = new File([blob], `Invoice_${invNo}.png`, { type: 'image/png' });
                         if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: `Invoice ${invNo}`, text: 'Here is your invoice.' }); } catch (err) { } } 
@@ -831,7 +844,19 @@
         function shareAsImageFromPreview() { if(checkRequireSave()) return; const btn = event.currentTarget; const originalText = btn.innerHTML; btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Wait..."; btn.disabled = true; makeVisibleForExport(doShareAsImage).then(() => { btn.innerHTML = originalText; btn.disabled = false; }); }
         function shareAsImageList(id) { loadDataToForm(invoices.find(i => i.id === id)); makeVisibleForExport(doShareAsImage); }
 
-        function doGeneratePDF() { const element = document.getElementById('print-area'), invNo = document.getElementById('f_inv').value || 'Bill'; return new Promise((resolve) => { html2pdf().set({ margin: 0, filename: `${invNo}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }).from(element).save().then(resolve); }); }
+        function doGeneratePDF() { 
+            const element = document.getElementById('print-area'), invNo = document.getElementById('f_inv').value || 'Bill'; 
+            return new Promise((resolve) => { 
+                html2pdf().set({ 
+                    margin: 0, 
+                    filename: `${invNo}.pdf`, 
+                    image: { type: 'jpeg', quality: 0.98 }, 
+                    html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, // Added scrollY: 0 to fix blank PDF
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
+                }).from(element).save().then(resolve); 
+            }); 
+        }
+        
         function generatePDFFromPreview() { if(checkRequireSave()) return; makeVisibleForExport(doGeneratePDF); }
         function generatePDFList(id) { loadDataToForm(invoices.find(i => i.id === id)); makeVisibleForExport(doGeneratePDF); }
 
