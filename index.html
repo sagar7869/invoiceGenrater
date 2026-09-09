@@ -2,37 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- PWA MOBILE SETTINGS -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- JALDI UPDATE KE LIYE NO-CACHE TAGS -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <meta name="theme-color" content="#2196F3">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon.png">
     <title>Smart Invoice App</title>
     
-    <!-- PDF & Image Generation Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    
-    <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- FIREBASE LIBRARIES (V8) -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
-        :root {
-            --bg: #f4f6f9; --border: #dce1e6;
-            --paid: rgba(76, 175, 80, 0.25); --partial: rgba(255, 152, 0, 0.25); --unpaid: rgba(244, 67, 54, 0.15);
-            --paid-text: #2e7d32; --partial-text: #ef6c00; --unpaid-text: #c62828;
-            --primary: #2196F3;
-        }
-        
+        :root { --bg: #f4f6f9; --border: #dce1e6; --paid: rgba(76, 175, 80, 0.25); --partial: rgba(255, 152, 0, 0.25); --unpaid: rgba(244, 67, 54, 0.15); --paid-text: #2e7d32; --partial-text: #ef6c00; --unpaid-text: #c62828; --primary: #2196F3; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: var(--bg); color: #333; overscroll-behavior-y: none; }
         
-        /* Layout & Tabs */
         .tabs { display: flex; background: #fff; border-bottom: 2px solid var(--border); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .tab-btn { flex: 1; background: transparent; color: #64748b; border: none; padding: 15px 5px; cursor: pointer; font-size: 14px; font-weight: 600; border-bottom: 3px solid transparent; transition: 0.3s; display:flex; align-items:center; justify-content:center; gap:6px;}
         .tab-btn.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
@@ -41,7 +33,6 @@
         .tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Forms */
         #editor-container { display: flex; flex-direction: column; gap: 20px; position: relative; }
         .form-panel { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.04); border: 1px solid #f1f5f9; position: relative; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
@@ -54,7 +45,6 @@
         .input-row input, .input-row select { padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; flex: 1; min-width: 120px; transition: 0.2s;}
         .input-row input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1); }
         
-        /* ERROR BORDER CLASS FOR VALIDATION */
         .error-border { border: 2px solid #ef4444 !important; background-color: #fef2f2 !important; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;}
         
         .btn-add { background: #334155; color: white; border: none; padding: 13px 15px; cursor: pointer; border-radius: 8px; font-weight: 600; white-space: nowrap; transition: 0.2s; }
@@ -73,7 +63,6 @@
         .btn:active { transform: scale(0.98); }
         .btn-save { background: #f59e0b; } .btn-print { background: #3b82f6; } .btn-pdf { background: #8b5cf6; } .btn-img { background: #ec4899; } .btn-new { background: #14b8a6; } .btn-close { background: #64748b; display: none; }
 
-        /* Preview Container */
         .preview-container { display: flex; justify-content: center; background: #fff; padding: 20px 0; border-radius: 12px; }
         .preview-box { background: white; padding: 20mm; width: 210mm; min-height: 297mm; margin: 0 auto; box-shadow: 0 5px 20px rgba(0,0,0,0.1); position: relative; box-sizing: border-box; overflow: hidden; border-top: 15px solid #1e293b; border-bottom: 15px solid #1e293b; border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0;}
         .header { display: flex; justify-content: space-between; margin-bottom: 30px; border-bottom: 2px solid #f1f5f9; padding-bottom: 20px; }
@@ -103,7 +92,6 @@
         .ledger-table th, .ledger-table td { padding: 6px; border: 1px solid #e2e8f0; text-align: left; }
         .ledger-table th { background: rgba(248,250,252,0.9); }
 
-        /* Desktop List */
         .search-bar { width: 100%; padding: 14px; margin-bottom: 15px; font-size: 15px; border-radius: 10px; border: 1px solid var(--border); box-sizing: border-box; outline: none; transition:0.2s;}
         .search-bar:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1); }
         .list-table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
@@ -114,14 +102,12 @@
         .badge.PARTIAL { background: #fff3e0; color: var(--partial-text); }
         .badge.UNPAID { background: #ffebee; color: var(--unpaid-text); }
         
-        /* CUSTOMIZED ACTION ICONS WITH TEXT */
         .action-icon { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: 48px; height: 48px; cursor: pointer; border: none; border-radius: 8px; margin: 2px; color: white; transition: 0.2s; }
         .action-icon i { font-size: 15px; margin-bottom: 2px; }
         .action-icon span { font-size: 9px; font-family: sans-serif; font-weight: bold; letter-spacing: 0.5px; }
         .action-icon:active { transform: scale(0.9); }
         .bg-view { background: #3b82f6; } .bg-edit { background: #64748b; } .bg-img { background: #25D366; } .bg-pdf { background: #8b5cf6; } .bg-pay { background: #f59e0b; } .bg-del { background: #ef4444; }
         
-        /* Modals Overlay */
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); align-items: center; justify-content: center; z-index: 1000; overflow-y: auto; padding: 15px; backdrop-filter: blur(3px); }
         #btn-close-edit-top { display: none; position: absolute; top: -15px; right: -15px; background: #ef4444; color: white; border: 2px solid white; border-radius: 50%; width: 40px; height: 40px; font-size: 18px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1001; align-items: center; justify-content: center; }
         .modal-sm { background: white; padding: 25px; border-radius: 16px; width: 100%; max-width: 420px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); position:relative;}
@@ -131,16 +117,14 @@
         .modal-sm label { font-size: 13px; font-weight: bold; color: #475569; }
         #db-loader { text-align: center; padding: 20px; font-size: 16px; color: #555; }
 
-        /* ================= CUSTOM TOAST NOTIFICATIONS ================= */
         #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 999999; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px; pointer-events: none;}
         .toast { padding: 14px 20px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: bold; color: white; animation: slideDown 0.3s forwards, fadeOut 0.3s forwards 2.7s; }
         .toast.success { background: #10b981; } .toast.error { background: #ef4444; } .toast.info { background: #3b82f6; }
         @keyframes slideDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
 
-        /* ================= APP NATIVE MOBILE LOOK (BOTTOM NAV) ================= */
         @media (max-width: 768px) {
-            body { padding-bottom: 80px; } /* Padding for bottom nav */
+            body { padding-bottom: 80px; } 
             .tabs { position: fixed; top: auto; bottom: 0; left: 0; width: 100%; border-top: 1px solid var(--border); border-bottom: none; z-index: 999; display: flex; justify-content: space-around; box-shadow: 0 -4px 15px rgba(0,0,0,0.05); padding-bottom: env(safe-area-inset-bottom); }
             .tab-btn { flex-direction: column; font-size: 10px; padding: 12px 5px; gap: 6px; border-bottom: none !important; border-top: 3px solid transparent; }
             .tab-btn.active { border-top: 3px solid var(--primary); background: rgba(33, 150, 243, 0.05); }
@@ -194,7 +178,7 @@
 <body>
 
     <div id="print-holder"></div>
-    <div id="toast-container"></div> <!-- TOAST NOTIFICATIONS -->
+    <div id="toast-container"></div> 
 
     <!-- ================= CUSTOM CONFIRM MODAL ================= -->
     <div class="overlay" id="confirm-overlay" style="z-index: 1000000;">
@@ -226,7 +210,6 @@
 
             <div style="text-align: left;">
                 <input type="email" id="auth-email" placeholder="Email Address">
-                <!-- ADDED onkeypress for ENTER button support -->
                 <input type="password" id="auth-pass" placeholder="Password" onkeypress="handleLoginEnter(event)">
                 
                 <button onclick="loginWithEmail()" style="width:100%; padding:14px; background:var(--primary); color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size:16px; margin-bottom:15px; box-shadow:0 4px 15px rgba(33, 150, 243, 0.3);">Login Securely</button>
@@ -284,12 +267,11 @@
     </div>
     <!-- ==================================================================== -->
 
-    <!-- NAVIGATION TABS (Mobile Bottom Nav) -->
+    <!-- NAVIGATION TABS -->
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('create-tab')"><i class="fas fa-edit"></i> <span class="tab-text">Edit</span></button>
         <button class="tab-btn" onclick="switchTab('preview-tab')"><i class="fas fa-eye"></i> <span class="tab-text">Preview</span></button>
         <button class="tab-btn" onclick="switchTab('list-tab')"><i class="fas fa-list"></i> <span class="tab-text">Cx List</span></button>
-        <!-- Profile Tab Button -->
         <button class="tab-btn" id="btn-profile-tab" onclick="openProfileModal()" style="display:none;" title="My Profile"><i class="fas fa-user-circle"></i> <span class="tab-text">Profile</span></button>
     </div>
 
@@ -387,7 +369,6 @@
 
             <h4 style="margin: 5px 0 10px 0; color: #1e293b; font-size:16px;">Add Items</h4>
             <div class="input-row">
-                <!-- ADDED onkeypress TO ALL FIELDS HERE -->
                 <input type="text" id="i_desc" placeholder="Item Description" style="flex:2;" onkeypress="handleAddItemEnter(event)">
                 <input type="number" id="i_qty" placeholder="QTY" style="flex:1;" min="1" onkeypress="handleAddItemEnter(event)">
                 <input type="number" id="i_price" placeholder="Price (₹)" style="flex:1;" step="0.01" onkeypress="handleAddItemEnter(event)">
@@ -467,57 +448,56 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const database = firebase.database();
-        // ==================================================
 
-        // PWA SERVICE WORKER
+        // PWA SERVICE WORKER REGISTRATION (Force Update Implementation)
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(err => console.log('SW setup failed')); });
+            window.addEventListener('load', () => { 
+                navigator.serviceWorker.register('sw.js').then(reg => {
+                    reg.onupdatefound = () => {
+                        const installingWorker = reg.installing;
+                        installingWorker.onstatechange = () => {
+                            if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                showToast("New update available! Refreshing...", "info");
+                                setTimeout(() => window.location.reload(), 1500);
+                            }
+                        };
+                    };
+                }).catch(err => console.log('SW setup failed')); 
+            });
         }
 
         let invoices = [];
         let currentInvId = null, currentItems = [], currentPayments = [], listLimit = 30, activePayId = null;
-        let isEditMode = false;
-        let hasUnsavedChanges = false;
-        let activeUserId = null; 
-        
+        let isEditMode = false, hasUnsavedChanges = false, activeUserId = null; 
         let confirmActionCallback = null;
 
         function markUnsaved() { hasUnsavedChanges = true; }
         const formatMoney = (amt) => '₹' + parseFloat(amt).toLocaleString('en-IN', {minimumFractionDigits: 2});
         
-        // ================= CUSTOM TOAST & CONFIRM (NO ALERTS) =================
+        // ================= CUSTOM TOAST & CONFIRM =================
         function showToast(message, type = 'info') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
-            let icon = 'fa-info-circle';
-            if(type === 'success') icon = 'fa-check-circle';
-            if(type === 'error') icon = 'fa-exclamation-circle';
-            
+            let icon = type === 'success' ? 'fa-check-circle' : (type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle');
             toast.innerHTML = `<i class="fas ${icon}"></i> <span>${message}</span>`;
             container.appendChild(toast);
-            
             setTimeout(() => { if(toast.parentNode) toast.parentNode.removeChild(toast); }, 3000);
         }
 
         function showCustomConfirm(message, callback) {
             document.getElementById('confirm-msg').innerText = message;
-            confirmActionCallback = callback;
-            document.getElementById('confirm-overlay').style.display = 'flex';
+            confirmActionCallback = callback; document.getElementById('confirm-overlay').style.display = 'flex';
         }
-        function closeConfirmModal() {
-            document.getElementById('confirm-overlay').style.display = 'none';
-            confirmActionCallback = null;
-        }
+        function closeConfirmModal() { document.getElementById('confirm-overlay').style.display = 'none'; confirmActionCallback = null; }
+        
         document.getElementById('confirm-btn-yes').addEventListener('click', () => {
             if(confirmActionCallback) confirmActionCallback();
             closeConfirmModal();
         });
 
-
         // ================= AUTHENTICATION & PROFILE =================
         function handleLoginEnter(e) { if(e.key === 'Enter') loginWithEmail(); }
-
         function openSignupModal() { document.getElementById('signup-overlay').style.display = 'flex'; }
         function closeSignupModal() { document.getElementById('signup-overlay').style.display = 'none'; }
         
@@ -540,24 +520,19 @@
         }
 
         function registerNewUser() {
-            const name = document.getElementById('reg-name').value.trim();
-            const email = document.getElementById('reg-email').value.trim();
-            const pass = document.getElementById('reg-pass').value;
-            const cpass = document.getElementById('reg-cpass').value;
-            
+            const name = document.getElementById('reg-name').value.trim(), email = document.getElementById('reg-email').value.trim(), pass = document.getElementById('reg-pass').value, cpass = document.getElementById('reg-cpass').value;
             if(!name || !email || !pass || !cpass) return showToast("Please fill all details.", "error");
             if(pass !== cpass) return showToast("Passwords do not match!", "error");
             if(pass.length < 6) return showToast("Password must be at least 6 characters.", "error");
 
             auth.createUserWithEmailAndPassword(email, pass)
-                .then((userCredential) => { return userCredential.user.updateProfile({ displayName: name }); })
+                .then((cred) => cred.user.updateProfile({ displayName: name }))
                 .then(() => { showToast("Account Created Successfully!", "success"); closeSignupModal(); })
                 .catch(err => showToast(err.message, "error"));
         }
 
         function loginWithEmail() {
-            const email = document.getElementById('auth-email').value;
-            const pass = document.getElementById('auth-pass').value;
+            const email = document.getElementById('auth-email').value, pass = document.getElementById('auth-pass').value;
             if(!email || !pass) return showToast("Please enter email and password.", "error");
             auth.signInWithEmailAndPassword(email, pass).catch(err => showToast(err.message, "error"));
         }
@@ -565,13 +540,12 @@
         function forgotPassword() {
             const email = document.getElementById('auth-email').value;
             if(!email) return showToast("Please type your email in the box first.", "error");
-            auth.sendPasswordResetEmail(email).then(() => showToast("Password reset link sent to your email!", "success")).catch(err => showToast(err.message, "error"));
+            auth.sendPasswordResetEmail(email).then(() => showToast("Reset link sent!", "success")).catch(err => showToast(err.message, "error"));
         }
 
         function updateUserPassword() {
             const newPass = document.getElementById('prof-new-pass').value;
             if(!newPass || newPass.length < 6) return showToast("Password must be at least 6 characters.", "error");
-            
             auth.currentUser.updatePassword(newPass)
                 .then(() => { showToast("Password updated successfully!", "success"); document.getElementById('prof-new-pass').value = ''; closeProfileModal(); })
                 .catch(err => {
@@ -584,33 +558,23 @@
             showCustomConfirm("Are you sure you want to securely logout?", () => { closeProfileModal(); auth.signOut(); showToast("Logged out successfully.", "success"); });
         }
 
-        // Auth State Observer
         auth.onAuthStateChanged((user) => {
             if (user) {
-                activeUserId = user.uid;
-                document.getElementById('login-overlay').style.display = 'none';
-                document.getElementById('btn-profile-tab').style.display = 'flex'; 
-                loadFirebaseData(); 
+                activeUserId = user.uid; document.getElementById('login-overlay').style.display = 'none'; document.getElementById('btn-profile-tab').style.display = 'flex'; loadFirebaseData(); 
             } else {
-                activeUserId = null; invoices = []; renderList();
-                document.getElementById('login-overlay').style.display = 'flex';
-                document.getElementById('btn-profile-tab').style.display = 'none';
+                activeUserId = null; invoices = []; renderList(); document.getElementById('login-overlay').style.display = 'flex'; document.getElementById('btn-profile-tab').style.display = 'none';
             }
         });
 
-        // ================= APP LOGIC =================
+        // ================= APP LOGIC (WITH REAL-TIME SYNC) =================
         function initApp() {
             const allInputs = document.querySelectorAll('#editor-container input, #editor-container select');
             allInputs.forEach(el => el.addEventListener('input', () => { markUnsaved(); updatePreview(); }));
-            
             document.getElementById('f_to').addEventListener('input', () => { autoGenerateInvoice(); });
             document.getElementById('f_cdate').addEventListener('change', () => { autoGenerateInvoice(); });
             document.getElementById('pay_amt').addEventListener('input', function() { document.getElementById('payment_controls').style.display = (parseFloat(this.value) > 0) ? 'flex' : 'none'; });
 
-            // REMOVE ERROR BORDER ON TYPING
-            ['i_desc', 'i_qty', 'i_price'].forEach(id => {
-                document.getElementById(id).addEventListener('input', function() { this.classList.remove('error-border'); });
-            });
+            ['i_desc', 'i_qty', 'i_price'].forEach(id => { document.getElementById(id).addEventListener('input', function() { this.classList.remove('error-border'); }); });
 
             window.addEventListener('resize', adjustPreviewScale);
             document.getElementById('create-tab-body').appendChild(document.getElementById('editor-container'));
@@ -620,12 +584,15 @@
         function loadFirebaseData() {
             if(!activeUserId) return;
             document.getElementById('db-loader').style.display = 'block'; document.getElementById('db-table').style.display = 'none';
-            database.ref('user_invoices/' + activeUserId).once('value').then((snapshot) => {
+            
+            // CHANGED FROM .once TO .on FOR INSTANT 1-SECOND REAL-TIME SYNC ACROSS DEVICES
+            database.ref('user_invoices/' + activeUserId).on('value', (snapshot) => {
                 document.getElementById('db-loader').style.display = 'none'; document.getElementById('db-table').style.display = 'table';
                 const data = snapshot.val();
                 if(data) { invoices = Array.isArray(data) ? data : Object.values(data); invoices.forEach(inv => { if(inv.paidAmount !== undefined && !inv.payments) { inv.payments = inv.paidAmount > 0 ? [{id: Date.now(), amt: inv.paidAmount, mode: 'Cash', date: inv.date}] : []; delete inv.paidAmount; } }); } else { invoices = []; }
-                renderList(true);
-            }).catch(error => { showToast("Database load fail: " + error.message, "error"); });
+                renderList(true); // Updates the table instantly when data changes on any device
+                if(activePayId) renderQuickPaymentsList(); // Updates modal if it's currently open
+            }, (error) => { showToast("Database load fail: " + error.message, "error"); });
         }
 
         function syncToFirebase() {
@@ -669,13 +636,7 @@
             setTodayDate(); renderTables(); hasUnsavedChanges = true; 
         }
 
-        // ================= Handle ENTER key on Add Item =================
-        function handleAddItemEnter(e) { 
-            if(e.key === 'Enter') { 
-                e.preventDefault(); 
-                addItem(); 
-            } 
-        }
+        function handleAddItemEnter(e) { if(e.key === 'Enter') { e.preventDefault(); addItem(); } }
 
         function addItem() {
             const descEl = document.getElementById('i_desc'), qtyEl = document.getElementById('i_qty'), priceEl = document.getElementById('i_price');
@@ -692,7 +653,7 @@
 
             currentItems.push({ id: Date.now(), desc, qty, price });
             descEl.value = ''; qtyEl.value = ''; priceEl.value = '';
-            descEl.focus(); // Keep cursor ready for next item
+            descEl.focus(); 
             markUnsaved(); renderTables();
         }
         function updateItem(id, field, val) { const item = currentItems.find(i => i.id == id); if(item) { item[field] = field === 'desc' ? val : (parseFloat(val)||0); markUnsaved(); renderTables(); } }
@@ -719,32 +680,23 @@
         }
 
         function calculateTotals() {
-            const total = currentItems.reduce((s, i) => s + (i.qty * i.price), 0);
-            const paid = currentPayments.reduce((s, p) => s + p.amt, 0);
-            const bal = total - paid;
+            const total = currentItems.reduce((s, i) => s + (i.qty * i.price), 0); const paid = currentPayments.reduce((s, p) => s + p.amt, 0); const bal = total - paid;
             let status = 'UNPAID'; if (total > 0) { if (paid >= total) status = 'PAID'; else if (paid > 0) status = 'PARTIAL'; }
             return { total, paid, bal: bal < 0 ? 0 : bal, status };
         }
 
-        // ================= IMPORTANT BUG FIX: RECALC INVOICE STATUS =================
         function recalcInvStatus(inv) {
-            const total = (inv.items||[]).reduce((s, i) => s + (i.qty * i.price), 0);
-            const paid = (inv.payments||[]).reduce((s, p) => s + p.amt, 0);
+            const total = (inv.items||[]).reduce((s, i) => s + (i.qty * i.price), 0); const paid = (inv.payments||[]).reduce((s, p) => s + p.amt, 0);
             inv.status = paid >= total ? 'PAID' : (paid > 0 ? 'PARTIAL' : 'UNPAID');
         }
 
         function updatePreview() {
-            document.getElementById('p_from').innerText = document.getElementById('f_from').value;
-            document.getElementById('p_to').innerText = document.getElementById('f_to').value;
-            document.getElementById('p_inv').innerText = document.getElementById('f_inv').value;
+            document.getElementById('p_from').innerText = document.getElementById('f_from').value; document.getElementById('p_to').innerText = document.getElementById('f_to').value; document.getElementById('p_inv').innerText = document.getElementById('f_inv').value;
             const cd = document.getElementById('f_cdate').value; document.getElementById('p_cdate').innerText = cd ? cd.split('-').reverse().join('/') : '';
             const calc = calculateTotals();
             const ddContainer = document.getElementById('container_ddate'), ddRow = document.getElementById('row_ddate'), f_ddate = document.getElementById('f_ddate');
             
-            if (calc.total > 0 && calc.status !== 'PAID') {
-                ddContainer.style.display = 'flex';
-                if (f_ddate.value) { document.getElementById('p_ddate').innerText = f_ddate.value.split('-').reverse().join('/'); ddRow.style.display = 'table-row'; } else { ddRow.style.display = 'none'; }
-            } else { ddContainer.style.display = 'none'; ddRow.style.display = 'none'; }
+            if (calc.total > 0 && calc.status !== 'PAID') { ddContainer.style.display = 'flex'; if (f_ddate.value) { document.getElementById('p_ddate').innerText = f_ddate.value.split('-').reverse().join('/'); ddRow.style.display = 'table-row'; } else { ddRow.style.display = 'none'; } } else { ddContainer.style.display = 'none'; ddRow.style.display = 'none'; }
 
             const pbody = document.getElementById('p_items'); pbody.innerHTML = '';
             currentItems.forEach(i => pbody.innerHTML += `<tr><td>${i.desc}</td><td>${i.qty}</td><td>${formatMoney(i.price)}</td><td>${formatMoney(i.qty * i.price)}</td></tr>`);
@@ -806,7 +758,7 @@
         }
         function loadMore() { listLimit += 30; renderList(); }
         
-        function deleteInvoice(id) { showCustomConfirm("Permanently delete this invoice?", () => { invoices = invoices.filter(i => i.id !== id); syncToFirebase(); renderList(); showToast("Invoice deleted.", "success"); }); }
+        function deleteInvoice(id) { showCustomConfirm("Permanently delete this invoice?", () => { invoices = invoices.filter(i => i.id !== id); syncToFirebase(); showToast("Invoice deleted.", "success"); }); }
 
         function loadDataToForm(inv) {
             currentInvId = inv.id; document.getElementById('f_from').value = inv.from; document.getElementById('f_to').value = inv.to;
@@ -842,14 +794,14 @@
 
         function saveQMPayment(event, pid) {
             const inv = invoices.find(i => i.id === activePayId), p = inv.payments.find(x => x.id == pid);
-            if(p) { p.amt = parseFloat(document.getElementById(`qm_amt_${pid}`).value) || 0; p.mode = document.getElementById(`qm_mode_${pid}`).value; recalcInvStatus(inv); syncToFirebase(); const btn = event.currentTarget; btn.innerHTML = '<i class="fas fa-check"></i>'; setTimeout(() => { btn.innerHTML = '<i class="fas fa-save"></i>'; }, 1000); renderQuickPaymentsList(); renderList(); showToast("Payment updated.", "success"); }
+            if(p) { p.amt = parseFloat(document.getElementById(`qm_amt_${pid}`).value) || 0; p.mode = document.getElementById(`qm_mode_${pid}`).value; recalcInvStatus(inv); syncToFirebase(); const btn = event.currentTarget; btn.innerHTML = '<i class="fas fa-check"></i>'; setTimeout(() => { btn.innerHTML = '<i class="fas fa-save"></i>'; }, 1000); showToast("Payment updated.", "success"); }
         }
-        function deleteQMPayment(pid) { showCustomConfirm("Delete this payment record?", () => { const inv = invoices.find(i => i.id === activePayId); inv.payments = inv.payments.filter(x => x.id != pid); recalcInvStatus(inv); syncToFirebase(); renderQuickPaymentsList(); renderList(); showToast("Payment removed.", "success"); }); }
+        function deleteQMPayment(pid) { showCustomConfirm("Delete this payment record?", () => { const inv = invoices.find(i => i.id === activePayId); inv.payments = inv.payments.filter(x => x.id != pid); recalcInvStatus(inv); syncToFirebase(); showToast("Payment removed.", "success"); }); }
         
         function confirmQuickPayment() {
             const amt = parseFloat(document.getElementById('pm_amount').value), mode = document.getElementById('pm_mode').value;
             const inv = invoices.find(i => i.id === activePayId);
-            if(inv && amt > 0) { const now = new Date(); if(!inv.payments) inv.payments = []; inv.payments.push({ id: Date.now(), amt, mode, date: `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}` }); recalcInvStatus(inv); syncToFirebase(); hideNewPayForm(); renderQuickPaymentsList(); renderList(); showToast("Payment added.", "success"); } else showToast("Invalid Amount", "error");
+            if(inv && amt > 0) { const now = new Date(); if(!inv.payments) inv.payments = []; inv.payments.push({ id: Date.now(), amt, mode, date: `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}` }); recalcInvStatus(inv); syncToFirebase(); hideNewPayForm(); showToast("Payment added.", "success"); } else showToast("Invalid Amount", "error");
         }
 
         function makeVisibleForExport(callback) {
