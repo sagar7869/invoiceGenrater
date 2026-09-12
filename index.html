@@ -724,9 +724,18 @@
         }
 
         function autoGenerateInvoice() {
-            const name = document.getElementById('f_to').value, date = document.getElementById('f_cdate').value;
-            if(!name) return document.getElementById('f_inv').value = '';
-            document.getElementById('f_inv').value = (name.replace(/[^a-zA-Z0-9]/g, '').toUpperCase() + "XXXX").substring(0, 4) + (date ? (date.split('-')[2] + date.split('-')[1]) : "0000");
+            const date = document.getElementById('f_cdate').value;
+            if(!date) return document.getElementById('f_inv').value = '';
+            // Unique daily serial: INV-YYYYMMDD-001
+            const day = date.replace(/-/g, '');
+            const prefix = `INV-${day}-`;
+            const used = invoices.map(x => String(x.invNo || '')).filter(x => x.startsWith(prefix));
+            let max = 0;
+            used.forEach(no => { const n = parseInt(no.split('-').pop(), 10); if(!isNaN(n)) max = Math.max(max, n); });
+            // Do not change an existing invoice number while editing.
+            const current = document.getElementById('f_inv').value;
+            if(isEditMode && current) return;
+            document.getElementById('f_inv').value = prefix + String(max + 1).padStart(3, '0');
         }
 
         function switchTab(tabId) {
@@ -1064,39 +1073,89 @@
             }
         }
 
-        function getCheckoutUrl(invoiceId) {
+        function generatePaymentCode() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let code = 'PAY-';
+            for(let i=0;i<6;i++) code += chars[Math.floor(Math.random()*chars.length)];
+            return code;
+        }
+
+        function getCheckoutUrl(invoiceId, paymentCode = '') {
             const currentPath = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
-            return `${currentPath}checkout.html?user=${activeUserId}&invoice=${invoiceId}`;
+            let url = `${currentPath}checkout.html?user=${encodeURIComponent(activeUserId)}&invoice=${encodeURIComponent(invoiceId)}`;
+            if(paymentCode) url += `&paycode=${encodeURIComponent(paymentCode)}`;
+            return url;
+        }
+
+        function getInvoiceDue(inv) {
+            const total = (inv.items || []).reduce((sum, item) => sum + Number(item.qty || 0) * Number(item.price || 0), 0);
+            const paid = (inv.payments || []).reduce((sum, p) => sum + Number(p.amt || 0), 0);
+            return Math.max(0, total - paid);
+        }
+
+        function saveNewPaymentCode(inv) {
+            const code = generatePaymentCode();
+            inv.paymentCode = code;
+            inv.lastPaymentCodeAt = new Date().toISOString();
+            syncToFirebase();
+            return code;
+        }
+
+        function buildPaymentMessage(inv, code, checkoutUrl) {
+            const amount = getInvoiceDue(inv).toFixed(2);
+            return `Hello ${inv.to || 'Customer'} 👋
+
+Your invoice payment is pending.
+
+🧾 Invoice: ${inv.invNo || 'N/A'}
+💰 Amount Due: ₹${amount}
+
+🔐 Payment Verification Code:
+${code}
+
+Please use the secure payment link below:
+
+👇 PAY NOW
+${checkoutUrl}
+
+After payment, please share the payment screenshot along with your Payment Code.
+
+Thank you 🙏`;
         }
 
         async function sharePaymentLinkFromPreview() {
             if(checkRequireSave()) return;
-            const invNo = document.getElementById('f_inv').value || 'Bill';
-            const customerName = document.getElementById('f_to').value || 'Customer';
-            
-            const checkoutUrl = getCheckoutUrl(currentInvId);
-            const message = `Hello ${customerName}, your invoice #${invNo} is ready. Pay securely via QR and submit your UTR here: ${checkoutUrl}`;
-            
-            if (navigator.share) {
-                try {
-                    await navigator.share({ title: `Invoice #${invNo}`, text: message, url: checkoutUrl });
-                } catch (err) { }
+            const inv = invoices.find(i => String(i.id) === String(currentInvId)) || {
+                id: currentInvId,
+                to: document.getElementById('f_to').value || 'Customer',
+                invNo: document.getElementById('f_inv').value || 'Bill',
+                items: currentItems,
+                payments: currentPayments
+            };
+            if(!invoices.some(i => String(i.id) === String(currentInvId))) {
+                showToast('Please save the invoice before sharing payment link.', 'error');
+                return;
+            }
+            const code = saveNewPaymentCode(inv);
+            const checkoutUrl = getCheckoutUrl(inv.id, code);
+            const message = buildPaymentMessage(inv, code, checkoutUrl);
+            showToast(`Payment Code: ${code}`, 'success');
+            if(navigator.share) {
+                try { await navigator.share({ title: `Payment - ${inv.invNo}`, text: message }); } catch(err) {}
             } else {
                 window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`, '_blank');
             }
         }
 
         async function sharePaymentLinkList(id) {
-            const inv = invoices.find(i => i.id === id);
+            const inv = invoices.find(i => String(i.id) === String(id));
             if(!inv) return;
-            
-            const checkoutUrl = getCheckoutUrl(inv.id);
-            const message = `Hello ${inv.to || 'Customer'}, your invoice #${inv.invNo} is ready. Pay securely via QR and submit your UTR here: ${checkoutUrl}`;
-            
-            if (navigator.share) {
-                try {
-                    await navigator.share({ title: `Invoice #${inv.invNo}`, text: message, url: checkoutUrl });
-                } catch (err) { }
+            const code = saveNewPaymentCode(inv);
+            const checkoutUrl = getCheckoutUrl(inv.id, code);
+            const message = buildPaymentMessage(inv, code, checkoutUrl);
+            showToast(`Payment Code: ${code}`, 'success');
+            if(navigator.share) {
+                try { await navigator.share({ title: `Payment - ${inv.invNo}`, text: message }); } catch(err) {}
             } else {
                 window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`, '_blank');
             }
