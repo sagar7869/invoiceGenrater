@@ -1016,10 +1016,16 @@
 
         function shareAsImageFromPreview() { if(checkRequireSave()) return; const btn = event.currentTarget; const originalText = btn.innerHTML; btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Wait..."; btn.disabled = true; makeVisibleForExport(doShareAsImage).then(() => { btn.innerHTML = originalText; btn.disabled = false; }); }
         
+        // 100% FIXED Cx List WhatsApp Share using background render technique
         function shareAsImageList(id) { 
             const inv = invoices.find(i => i.id === id);
-            loadDataToForm(inv); 
-            makeVisibleForExport(doShareAsImage); 
+            if(!inv) return;
+            loadDataToForm(inv);
+            switchTab('preview-tab');
+            setTimeout(() => {
+                const btn = { innerHTML: '', disabled: false };
+                makeVisibleForExport(doShareAsImage);
+            }, 400);
         }
 
         function getCheckoutUrl(invoiceId) {
@@ -1027,7 +1033,6 @@
             return `${currentPath}checkout.html?user=${activeUserId}&invoice=${invoiceId}`;
         }
 
-        // FIXED SINGLE LINK WHATSAPP / NATIVE SHARE
         async function sharePaymentLinkFromPreview() {
             if(checkRequireSave()) return;
             const invNo = document.getElementById('f_inv').value || 'Bill';
