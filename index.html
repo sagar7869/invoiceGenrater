@@ -85,7 +85,7 @@
         .watermark.PAID { color: var(--paid); border-color: var(--paid); opacity: 1; }
         .watermark.PARTIAL { color: var(--partial); border-color: var(--partial); opacity: 1; }
         .watermark.UNPAID { color: var(--unpaid); border-color: var(--unpaid); opacity: 1; }
-        .watermark.PENDING_VERIFICATION { color: rgba(245, 158, 11, 0.25); border-color: rgba(245, 158, 11, 0.25); opacity: 1; color: #d97706; font-size: 70px; }
+        .watermark.PENDING_VERIFICATION { color: #d97706; border-color: #d97706; opacity: 1; font-size: 60px; }
         
         .payment-info { margin-top: 30px; position: relative; z-index: 1; background: transparent; display: inline-block; padding-right: 20px; }
         .payment-info h3 { font-size: 12px; margin: 0 0 5px 0; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
@@ -109,7 +109,7 @@
         .action-icon i { font-size: 15px; margin-bottom: 2px; }
         .action-icon span { font-size: 9px; font-family: sans-serif; font-weight: bold; letter-spacing: 0.5px; }
         .action-icon:active { transform: scale(0.9); }
-        .bg-view { background: #3b82f6; } .bg-edit { background: #64748b; } .bg-img { background: #25D366; } .bg-pdf { background: #8b5cf6; } .bg-pay { background: #f59e0b; } .bg-del { background: #ef4444; } .bg-approve { background: #10b981; }
+        .bg-view { background: #3b82f6; } .bg-edit { background: #64748b; } .bg-img { background: #25D366; } .bg-pdf { background: #8b5cf6; } .bg-pay { background: #f59e0b; } .bg-del { background: #ef4444; } .bg-link { background: #10b981; } .bg-approve { background: #059669; }
         
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); align-items: center; justify-content: center; z-index: 1000; overflow-y: auto; padding: 15px; backdrop-filter: blur(3px); }
         #btn-close-edit-top { display: none; position: absolute; top: -15px; right: -15px; background: #ef4444; color: white; border: 2px solid white; border-radius: 50%; width: 40px; height: 40px; font-size: 18px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1001; align-items: center; justify-content: center; }
@@ -326,6 +326,7 @@
             <div class="action-bar" style="margin-top:0; padding-top:0; border-top:none;">
                 <button class="btn btn-close" style="display:inline-flex;" onclick="switchTab('create-tab')"><i class="fas fa-edit"></i> Edit Bill</button>
                 <button class="btn btn-img" onclick="shareAsImageFromPreview()"><i class="fab fa-whatsapp"></i> Share Image</button>
+                <button class="btn" style="background:#10b981;" onclick="sharePaymentLinkFromPreview()"><i class="fas fa-link"></i> Share Pay Link</button>
                 <button class="btn btn-pdf" onclick="generatePDFFromPreview()"><i class="fas fa-file-pdf"></i> Save PDF</button>
             </div>
         </div>
@@ -757,6 +758,7 @@
                     <td data-label="Status"><span class="badge ${badgeClass}">${badgeText}</span></td>
                     <td class="actions-cell">
                         ${approveBtnHtml}
+                        <button class="action-icon bg-link" onclick="sharePaymentLinkList('${inv.id}')" title="Share Pay Link"><i class="fas fa-link"></i><span>PAY LINK</span></button>
                         <button class="action-icon bg-view" onclick="openPreviewFromList('${inv.id}')" title="Preview Bill"><i class="fas fa-eye"></i><span>VIEW</span></button>
                         <button class="action-icon bg-edit" onclick="openEditMode('${inv.id}')" title="Edit Bill"><i class="fas fa-edit"></i><span>EDIT</span></button>
                         <button class="action-icon bg-pay" onclick="openQuickPayment('${inv.id}')" title="Manage Payments"><i class="fas fa-rupee-sign"></i><span>PAY</span></button>
@@ -772,13 +774,11 @@
         
         function deleteInvoice(id) { showCustomConfirm("Permanently delete this invoice?", () => { invoices = invoices.filter(i => i.id !== id); syncToFirebase(); showToast("Invoice deleted.", "success"); }); }
 
-        // MERCHANTS APPROVE UTR PAYMENT FUNCTION
         function approveUtrPayment(id) {
             showCustomConfirm("Kya aapne bank SMS me payment check kar li hai?", () => {
                 const inv = invoices.find(i => i.id === id);
                 if(inv) {
                     const total = (inv.items || []).reduce((s, i) => s + (i.qty * i.price), 0);
-                    const paid = total; // Full approve
                     const now = new Date();
                     if(!inv.payments) inv.payments = [];
                     inv.payments.push({
@@ -867,14 +867,9 @@
                     const canvas = await html2canvas(element, { scale: 2, useCORS: true, logging: false, scrollY: 0 });
                     canvas.toBlob(async (blob) => {
                         const file = new File([blob], `Invoice_${invNo}.png`, { type: 'image/png' });
-                        
-                        // SECURE CHECKOUT LINK GENERATION FOR WHATSAPP
-                        const checkoutUrl = `${window.location.origin}/checkout.html?user=${activeUserId}&invoice=${currentInvId}`;
-                        const shareText = `Hello! Your invoice #${invNo} is ready. Pay securely via QR & submit UTR here: ${checkoutUrl}`;
-
                         if (navigator.canShare && navigator.canShare({ files: [file] })) { 
                             try { 
-                                await navigator.share({ files: [file], title: `Invoice ${invNo}`, text: shareText }); 
+                                await navigator.share({ files: [file], title: `Invoice ${invNo}`, text: 'Here is your invoice.' }); 
                             } catch (err) { } 
                         } else { 
                             const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = file.name; a.click(); URL.revokeObjectURL(url);
@@ -891,6 +886,30 @@
             const inv = invoices.find(i => i.id === id);
             loadDataToForm(inv); 
             makeVisibleForExport(doShareAsImage); 
+        }
+
+        // SEPARATE PAYMENT LINK SHARE FUNCTIONS
+        function sharePaymentLinkFromPreview() {
+            if(checkRequireSave()) return;
+            const invNo = document.getElementById('f_inv').value || 'Bill';
+            const customerName = document.getElementById('f_to').value || 'Customer';
+            
+            const checkoutUrl = `${window.location.origin}/checkout.html?user=${activeUserId}&invoice=${currentInvId}`;
+            const message = `Hello ${customerName}, your invoice #${invNo} is ready. Pay securely via QR and submit your UTR here: ${checkoutUrl}`;
+            
+            const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
+        function sharePaymentLinkList(id) {
+            const inv = invoices.find(i => i.id === id);
+            if(!inv) return;
+            
+            const checkoutUrl = `${window.location.origin}/checkout.html?user=${activeUserId}&invoice=${inv.id}`;
+            const message = `Hello ${inv.to || 'Customer'}, your invoice #${inv.invNo} is ready. Pay securely via QR and submit your UTR here: ${checkoutUrl}`;
+            
+            const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
         }
 
         function doGeneratePDF() { 
