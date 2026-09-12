@@ -39,7 +39,6 @@
         .form-group { display: flex; flex-direction: column; }
         .form-group label { font-size: 13px; margin-bottom: 6px; font-weight: 600; color: #475569; }
         
-        /* PREMIUM 3D GLOW FOCUS EFFECT FOR ALL INPUTS */
         input, select, .search-bar { 
             padding: 14px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 15px; 
             outline: none; background: #f8fafc; font-weight: 500; color:#1e293b;
@@ -51,7 +50,6 @@
             box-shadow: 0 6px 15px rgba(33, 150, 243, 0.15), 0 0 0 3px rgba(33, 150, 243, 0.1) !important; 
             transform: translateY(-2px);
         }
-        input::placeholder { color: #94a3b8; font-weight: 400; }
 
         .input-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 15px;}
         .input-row input, .input-row select { flex: 1; min-width: 120px; }
@@ -182,22 +180,48 @@
             .list-table tr { 
                 display: grid !important; 
                 grid-template-columns: 1fr 1fr; 
-                grid-template-areas: "inv status" "customer customer" "total balance" "actions actions";
-                gap: 8px; background: #fff; margin-bottom: 12px; border-radius: 12px; 
-                border: 1px solid #e2e8f0; padding: 14px 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); 
+                grid-template-areas: 
+                    "inv status"
+                    "customer customer"
+                    "total balance"
+                    "actions actions";
+                gap: 8px; 
+                background: #fff; 
+                margin-bottom: 12px; 
+                border-radius: 12px; 
+                border: 1px solid #e2e8f0; 
+                padding: 14px 12px; 
+                box-shadow: 0 4px 10px rgba(0,0,0,0.03); 
             }
+            
             .list-table td { padding: 0 !important; border: none !important; text-align: left; }
-            .list-table td:nth-child(1) { display: none !important; } 
+            
+            .list-table td:nth-child(1) { display: none !important; }
             .list-table td:nth-child(2) { grid-area: inv; font-size: 16px; font-weight: 800; color: #0f172a; }
             .list-table td:nth-child(6) { grid-area: status; display: flex; flex-wrap: wrap; gap: 4px; justify-content: flex-end; align-items: flex-start; }
             .list-table td:nth-child(3) { grid-area: customer; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px !important; margin-bottom: 4px; }
+            
             .list-table td:nth-child(4) { grid-area: total; background: #f8fafc; padding: 8px !important; border-radius: 6px; font-size: 13px; font-weight: 700; }
             .list-table td:nth-child(4)::before { content: 'Total: '; font-weight: 500; color: #64748b; }
+            
             .list-table td:nth-child(5) { grid-area: balance; background: #fef2f2; padding: 8px !important; border-radius: 6px; font-size: 13px; font-weight: 800; text-align: right !important; }
             .list-table td:nth-child(5)::before { content: 'Bal: '; font-weight: 500; color: #64748b; }
-            .list-table td:nth-child(7) { grid-area: actions; display: grid !important; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 4px; border-top: 1px dashed #e2e8f0; padding-top: 12px !important; }
             
-            .action-icon { width: 100% !important; height: 42px !important; margin: 0 !important; border-radius: 6px !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; gap: 3px !important; padding: 0 !important;}
+            .list-table td:nth-child(7) { 
+                grid-area: actions; 
+                display: grid !important; 
+                grid-template-columns: repeat(4, 1fr); 
+                gap: 6px; 
+                margin-top: 4px; 
+                border-top: 1px dashed #e2e8f0; 
+                padding-top: 12px !important; 
+            }
+            
+            .action-icon { 
+                width: 100% !important; height: 42px !important; margin: 0 !important; border-radius: 6px !important; 
+                display: flex !important; flex-direction: column !important; justify-content: center !important; 
+                align-items: center !important; gap: 3px !important; padding: 0 !important;
+            }
             .action-icon i { font-size: 14px !important; margin: 0 !important; }
             .action-icon span { font-size: 9px !important; font-weight: 800 !important; }
             .badge { padding: 4px 8px; font-size: 10px; display:inline-block; border-radius:4px;}
@@ -353,7 +377,7 @@
     </div>
     <style>@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }</style>
 
-    <!-- TABS BAR WITH 100% WORKING PROFILE CLICK -->
+    <!-- TABS BAR -->
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('create-tab')"><i class="fas fa-edit"></i> <span class="tab-text">Edit</span></button>
         <button class="tab-btn" onclick="switchTab('preview-tab')"><i class="fas fa-eye"></i> <span class="tab-text">Preview</span></button>
@@ -460,7 +484,7 @@
                 <button class="btn btn-close" style="display:inline-flex;" onclick="switchTab('create-tab')"><i class="fas fa-edit"></i> Edit Bill</button>
                 <button class="btn btn-img" onclick="shareAsImageFromPreview(this)"><i class="fab fa-whatsapp"></i> Share Image</button>
                 <button class="btn" style="background:#10b981;" onclick="sharePaymentLinkFromPreview()"><i class="fas fa-link"></i> Share Pay Link</button>
-                <button class="btn btn-pdf" onclick="generatePDFFromPreview()"><i class="fas fa-file-pdf"></i> Save PDF</button>
+                <button class="btn btn-pdf" onclick="generatePDFFromPreview(this)"><i class="fas fa-file-pdf"></i> Save PDF</button>
             </div>
         </div>
     </div>
@@ -911,8 +935,8 @@
                         <button class="action-icon bg-view" onclick="openPreviewFromList('${inv.id}')" title="Preview Bill"><i class="fas fa-eye"></i><span>VIEW</span></button>
                         <button class="action-icon bg-edit" onclick="openEditMode('${inv.id}')" title="Edit Bill"><i class="fas fa-edit"></i><span>EDIT</span></button>
                         <button class="action-icon bg-pay" onclick="openQuickPayment('${inv.id}')" title="Manage Payments"><i class="fas fa-rupee-sign"></i><span>PAY</span></button>
-                        <button class="action-icon bg-img" onclick="shareAsImageList('${inv.id}')" title="Share Image"><i class="fab fa-whatsapp"></i><span>IMG</span></button>
-                        <button class="action-icon bg-pdf" onclick="generatePDFList('${inv.id}')" title="Download PDF"><i class="fas fa-file-pdf"></i><span>PDF</span></button>
+                        <button class="action-icon bg-img" onclick="shareAsImageList('${inv.id}', this)" title="Share Image"><i class="fab fa-whatsapp"></i><span>IMG</span></button>
+                        <button class="action-icon bg-pdf" onclick="generatePDFList('${inv.id}', this)" title="Download PDF"><i class="fas fa-file-pdf"></i><span>PDF</span></button>
                         <button class="action-icon bg-del" onclick="deleteInvoice('${inv.id}')" title="Delete"><i class="fas fa-trash"></i><span>DEL</span></button>
                     </td>
                 </tr>`;
@@ -1006,56 +1030,65 @@
             if(inv && amt > 0) { const now = new Date(); if(!inv.payments) inv.payments = []; inv.payments.push({ id: Date.now(), amt, mode, date: `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}` }); recalcInvStatus(inv); syncToFirebase(); hideNewPayForm(); showToast("Payment added.", "success"); } else showToast("Invalid Amount", "error");
         }
 
-        // PDF KE LIYE PURANA SYSTEM TAAKI KOI ISSUE NA AAYE
-        function makeVisibleForExport(callback) {
-            const printArea = document.getElementById('print-area');
-            const wrapper = document.getElementById('preview-wrapper');
-            const origTransform = printArea.style.transform;
-            const origHeight = wrapper.style.height;
-            printArea.style.transform = 'none'; wrapper.style.height = 'auto';
-            return new Promise(resolve => setTimeout(resolve, 50)).then(() => Promise.resolve(callback())).finally(() => {
-                printArea.style.transform = origTransform; wrapper.style.height = origHeight;
-            });
+        // --- NEW SILENT INVISIBLE CLONE LOGIC (Fixes Fluctuation & Tab Jump) ---
+        async function getCanvasFromPrintArea() {
+            const original = document.getElementById('print-area');
+            const clone = original.cloneNode(true);
+            
+            // Absolutely hidden, full A4 width clone so it renders properly without shifting user screen
+            clone.style.position = 'fixed';
+            clone.style.top = '0';
+            clone.style.left = '-9999px';
+            clone.style.transform = 'none';
+            clone.style.width = '794px';
+            clone.style.height = 'auto';
+            clone.style.margin = '0';
+            clone.style.boxShadow = 'none';
+            document.body.appendChild(clone);
+            
+            // Allow CSS to apply
+            await new Promise(r => setTimeout(r, 100));
+            
+            try {
+                const canvas = await html2canvas(clone, {scale:2, useCORS:true, backgroundColor:'#ffffff', logging:false, scrollY:0});
+                return canvas;
+            } finally {
+                clone.remove(); // Delete clone
+            }
         }
 
-        // --- 100% FIXED WHATSAPP IMAGE SHARE LOGIC (NO DELAY, NO AUTO-DOWNLOAD) ---
+        function downloadFallback(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+            showToast('File downloaded (Share via Whatsapp Web/Gallery)', 'info');
+        }
+
         async function shareAsImageFromPreview(btn) {
             if(checkRequireSave()) return;
-            if(btn) { btn.disabled=true; btn.style.pointerEvents='none'; }
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Wait...'; btn.disabled = true; btn.style.pointerEvents = 'none';
             
-            const printArea = document.getElementById('print-area');
-            const wrapper = document.getElementById('preview-wrapper');
-            const origTransform = printArea.style.transform;
-            const origHeight = wrapper.style.height;
-            
-            printArea.style.transform = 'none'; wrapper.style.height = 'auto';
-            
-            // Force Sync render - ye 'file download bug' ko roke ga
-            void printArea.offsetHeight;
-
             try {
-                const canvas = await html2canvas(printArea, {scale:2, useCORS:true, backgroundColor:'#ffffff', logging:false, scrollY:0});
-                
-                printArea.style.transform = origTransform; wrapper.style.height = origHeight;
-                
+                const canvas = await getCanvasFromPrintArea();
                 const invNo = document.getElementById('f_inv').value || 'Bill';
                 const blob = await new Promise(res => canvas.toBlob(res, 'image/png', 1));
                 const file = new File([blob], `Invoice_${invNo}.png`, { type: 'image/png' });
                 
                 if(navigator.canShare && navigator.canShare({files:[file]})) {
-                    // TEXT WAPAS ADD KIYA GAYA HAI YAHAN:
                     await navigator.share({ title: `Invoice ${invNo}`, text: 'Here is your invoice.', files:[file] });
                 } else {
-                    const url = URL.createObjectURL(blob), a = document.createElement('a');
-                    a.href=url; a.download=file.name; document.body.appendChild(a); a.click(); a.remove();
-                    setTimeout(()=>URL.revokeObjectURL(url),1000);
-                    showToast('File downloaded (Share not supported)', 'info');
+                    downloadFallback(blob, file.name);
                 }
             } catch(e) {
                 if(e.name !== 'AbortError') showToast('Sharing failed. Try again.', 'error');
             } finally { 
-                printArea.style.transform = origTransform; wrapper.style.height = origHeight;
-                if(btn) { btn.disabled=false; btn.style.pointerEvents='auto'; } 
+                btn.innerHTML = originalHtml; btn.disabled = false; btn.style.pointerEvents = 'auto'; 
             }
         }
 
@@ -1073,49 +1106,32 @@
             renderTables(); updatePreview();
         }
 
-        // --- FIXED IMAGE SHARE FOR CX LIST ---
-        async function shareAsImageList(id) {
+        async function shareAsImageList(id, btn) {
             const inv = invoices.find(i => String(i.id) === String(id));
             if(!inv) return showToast('Invoice not found.', 'error');
+            
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; btn.disabled = true;
+            
             const snap = snapshotEditor();
             
             try {
                 loadDataToForm(inv); updatePreview();
-                
-                document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-                document.getElementById('preview-tab').classList.add('active');
-                
-                const printArea = document.getElementById('print-area');
-                const wrapper = document.getElementById('preview-wrapper');
-                const origTransform = printArea.style.transform;
-                const origHeight = wrapper.style.height;
-                printArea.style.transform = 'none'; wrapper.style.height = 'auto';
-                void printArea.offsetHeight;
-                
-                const canvas = await html2canvas(printArea, {scale:2, useCORS:true, backgroundColor:'#ffffff', logging:false, scrollY:0});
-                printArea.style.transform = origTransform; wrapper.style.height = origHeight;
-                
+                const canvas = await getCanvasFromPrintArea();
+                const invNo = inv.invNo || inv.id;
                 const blob = await new Promise(res => canvas.toBlob(res, 'image/png', 1));
-                const file = new File([blob], `Invoice_${inv.invNo || inv.id}.png`, { type: 'image/png' });
+                const file = new File([blob], `Invoice_${invNo}.png`, { type: 'image/png' });
                 
                 if(navigator.canShare && navigator.canShare({files:[file]})) {
-                    // TEXT WAPAS ADD KIYA GAYA HAI YAHAN:
-                    await navigator.share({ title: `Invoice ${inv.invNo || ''}`, text: 'Here is your invoice.', files:[file] });
+                    await navigator.share({ title: `Invoice ${invNo}`, text: 'Here is your invoice.', files:[file] });
                 } else {
-                    const url = URL.createObjectURL(blob), a = document.createElement('a');
-                    a.href=url; a.download=file.name; document.body.appendChild(a); a.click(); a.remove();
-                    setTimeout(()=>URL.revokeObjectURL(url),1000);
-                    showToast('File downloaded (Share not supported)', 'info');
+                    downloadFallback(blob, file.name);
                 }
             } catch(e) {
                 if(e.name !== 'AbortError') showToast('Sharing failed. Try again.', 'error');
             } finally {
                 restoreEditor(snap);
-                document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-                document.getElementById('list-tab').classList.add('active');
-                const btns = document.querySelectorAll('.tab-btn');
-                btns.forEach(b => b.classList.remove('active'));
-                if(btns[2]) btns[2].classList.add('active');
+                btn.innerHTML = originalHtml; btn.disabled = false;
             }
         }
 
@@ -1191,21 +1207,53 @@
             }
         }
 
-        function doGeneratePDF() { 
-            const element = document.getElementById('print-area'), invNo = document.getElementById('f_inv').value || 'Bill'; 
-            return new Promise((resolve) => { 
-                html2pdf().set({ 
+        async function doGeneratePDF(invNo) { 
+            const original = document.getElementById('print-area');
+            const clone = original.cloneNode(true);
+            clone.style.position = 'fixed'; clone.style.top = '0'; clone.style.left = '-9999px'; clone.style.transform = 'none'; clone.style.width = '794px'; clone.style.height = 'auto'; clone.style.margin = '0';
+            document.body.appendChild(clone);
+            
+            await new Promise(r => setTimeout(r, 100));
+            
+            try {
+                await html2pdf().set({ 
                     margin: 0, 
                     filename: `${invNo}.pdf`, 
                     image: { type: 'jpeg', quality: 0.98 }, 
-                    html2canvas: { scale: 2, useCORS: true, scrollY: 0 }, 
+                    html2canvas: { scale: 2, useCORS: true, logging: false }, 
                     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
-                }).from(element).save().then(resolve); 
-            }); 
+                }).from(clone).save();
+            } finally {
+                clone.remove();
+            }
         }
         
-        function generatePDFFromPreview() { if(checkRequireSave()) return; makeVisibleForExport(doGeneratePDF); }
-        function generatePDFList(id) { loadDataToForm(invoices.find(i => i.id === id)); makeVisibleForExport(doGeneratePDF); }
+        async function generatePDFFromPreview(btn) { 
+            if(checkRequireSave()) return; 
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Wait...'; btn.disabled = true;
+            try {
+                const invNo = document.getElementById('f_inv').value || 'Bill';
+                await doGeneratePDF(invNo);
+            } finally {
+                btn.innerHTML = originalHtml; btn.disabled = false;
+            }
+        }
+
+        async function generatePDFList(id, btn) { 
+            const inv = invoices.find(i => String(i.id) === String(id));
+            if(!inv) return;
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; btn.disabled = true;
+            const snap = snapshotEditor();
+            try {
+                loadDataToForm(inv); updatePreview();
+                await doGeneratePDF(inv.invNo || inv.id);
+            } finally {
+                restoreEditor(snap);
+                btn.innerHTML = originalHtml; btn.disabled = false;
+            }
+        }
 
         window.onload = initApp;
     </script>
