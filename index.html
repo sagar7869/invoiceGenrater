@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- JALDI UPDATE KE LIYE NO-CACHE TAGS -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -859,6 +860,7 @@
             }, 500);
         }
 
+        // 100% RESTORED: Original working image sharing function
         async function doShareAsImage() {
             const element = document.getElementById('print-area'), invNo = document.getElementById('f_inv').value || 'Bill';
             return new Promise(async (resolve) => {
@@ -887,28 +889,27 @@
             makeVisibleForExport(doShareAsImage); 
         }
 
-        // NATIVE SHARE MENU FOR PAYMENT LINK (Supports WhatsApp, Telegram, SMS, etc.)
+        // Helper function for correct GitHub Pages / Local path
+        function getCheckoutUrl(invoiceId) {
+            const currentPath = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+            return `${currentPath}checkout.html?user=${activeUserId}&invoice=${invoiceId}`;
+        }
+
+        // SEPARATE PAYMENT LINK SHARE FUNCTIONS (FIXED 404 PATH)
         async function sharePaymentLinkFromPreview() {
             if(checkRequireSave()) return;
             const invNo = document.getElementById('f_inv').value || 'Bill';
             const customerName = document.getElementById('f_to').value || 'Customer';
             
-            const checkoutUrl = `${window.location.origin}/checkout.html?user=${activeUserId}&invoice=${currentInvId}`;
+            const checkoutUrl = getCheckoutUrl(currentInvId);
             const message = `Hello ${customerName}, your invoice #${invNo} is ready. Pay securely via QR and submit your UTR here: ${checkoutUrl}`;
             
             if (navigator.share) {
                 try {
-                    await navigator.share({
-                        title: `Invoice #${invNo}`,
-                        text: message,
-                        url: checkoutUrl
-                    });
-                } catch (err) {
-                    console.log('Share canceled');
-                }
+                    await navigator.share({ title: `Invoice #${invNo}`, text: message, url: checkoutUrl });
+                } catch (err) { }
             } else {
-                const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
-                window.open(whatsappUrl, '_blank');
+                window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`, '_blank');
             }
         }
 
@@ -916,22 +917,15 @@
             const inv = invoices.find(i => i.id === id);
             if(!inv) return;
             
-            const checkoutUrl = `${window.location.origin}/checkout.html?user=${activeUserId}&invoice=${inv.id}`;
+            const checkoutUrl = getCheckoutUrl(inv.id);
             const message = `Hello ${inv.to || 'Customer'}, your invoice #${inv.invNo} is ready. Pay securely via QR and submit your UTR here: ${checkoutUrl}`;
             
             if (navigator.share) {
                 try {
-                    await navigator.share({
-                        title: `Invoice #${inv.invNo}`,
-                        text: message,
-                        url: checkoutUrl
-                    });
-                } catch (err) {
-                    console.log('Share canceled');
-                }
+                    await navigator.share({ title: `Invoice #${inv.invNo}`, text: message, url: checkoutUrl });
+                } catch (err) { }
             } else {
-                const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
-                window.open(whatsappUrl, '_blank');
+                window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`, '_blank');
             }
         }
 
@@ -951,7 +945,7 @@
         function generatePDFFromPreview() { if(checkRequireSave()) return; makeVisibleForExport(doGeneratePDF); }
         function generatePDFList(id) { loadDataToForm(invoices.find(i => i.id === id)); makeVisibleForExport(doGeneratePDF); }
 
-        window.onload = initApp;
+		window.onload = initApp;
     </script>
 </body>
 </html>
