@@ -174,7 +174,8 @@
             .preview-container { overflow: visible; padding: 0; height: auto !important; }
             .preview-box { position: absolute; left: 0; top: 0; margin: 0; box-shadow: none; padding: 10mm; width: 100% !important; height: 100%; border: none; border-top: 15px solid #1e293b; border-bottom: 15px solid #1e293b; transform: none !important; }
         }
-    </style>
+    body { overscroll-behavior-y: contain; }
+        </style>
 </head>
 <body>
 
@@ -197,7 +198,7 @@
 
             <div style="display:flex; gap:10px; margin-top:15px;">
                 <button onclick="document.getElementById('utr-approve-modal').style.display='none'" style="flex:1; padding:12px; background:#f1f5f9; border:none; border-radius:8px; font-weight:bold; color:#475569; cursor:pointer;">Cancel</button>
-                <button onclick="rejectUtr()" style="flex:1; padding:12px; background:#dc2626; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Reject</button><button onclick="confirmApproveUtr()" style="flex:1; padding:12px; background:#059669; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Approve & Save</button>
+                <button onclick="confirmApproveUtr()" style="flex:1; padding:12px; background:#059669; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Approve & Save</button>
             </div>
         </div>
     </div>
@@ -377,7 +378,7 @@
         <div class="form-panel" style="margin-top:20px;">
             <div class="action-bar" style="margin-top:0; padding-top:0; border-top:none;">
                 <button class="btn btn-close" style="display:inline-flex;" onclick="switchTab('create-tab')"><i class="fas fa-edit"></i> Edit Bill</button>
-                <button class="btn btn-img" onclick="shareAsImageFromPreview()"><i class="fab fa-whatsapp"></i> Share Image</button>
+                <button class="btn btn-img" onclick="shareAsImageFromPreview(this)"><i class="fab fa-whatsapp"></i> Share Image</button>
                 <button class="btn" style="background:#10b981;" onclick="sharePaymentLinkFromPreview()"><i class="fas fa-link"></i> Share Pay Link</button>
                 <button class="btn btn-pdf" onclick="generatePDFFromPreview()"><i class="fas fa-file-pdf"></i> Save PDF</button>
             </div>
@@ -473,7 +474,7 @@
 
             <div style="display:flex; gap:10px; margin-top:15px;">
                 <button onclick="document.getElementById('utr-approve-modal').style.display='none'" style="flex:1; padding:12px; background:#f1f5f9; border:none; border-radius:8px; font-weight:bold; color:#475569; cursor:pointer;">Cancel</button>
-                <button onclick="rejectUtr()" style="flex:1; padding:12px; background:#dc2626; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Reject</button><button onclick="confirmApproveUtr()" style="flex:1; padding:12px; background:#059669; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Approve & Save</button>
+                <button onclick="confirmApproveUtr()" style="flex:1; padding:12px; background:#059669; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Approve & Save</button>
             </div>
         </div>
     </div>
@@ -905,19 +906,6 @@
             document.getElementById('utr-approve-modal').style.display = 'flex';
         }
 
-        function rejectUtr() {
-            const inv = invoices.find(i => i.id === activeUtrInvoiceId);
-            if(!inv) return showToast('Invoice not found.', 'error');
-            if(!confirm('Reject this payment request? Customer can submit payment again.')) return;
-            delete inv.utrNumber; delete inv.submittedAmount; delete inv.paymentType; delete inv.submittedAt;
-            inv.status = 'Unpaid';
-            syncToFirebase();
-            document.getElementById('utr-approve-modal').style.display = 'none';
-            activeUtrInvoiceId = null;
-            renderList();
-            showToast('Payment request rejected. Customer can submit again.', 'success');
-        }
-
         function confirmApproveUtr() {
             const amt = parseFloat(document.getElementById('modal-approved-amt').value) || 0;
             if(amt <= 0) return showToast("Kripya valid amount dalein.", "error");
@@ -991,58 +979,66 @@
             const wrapper = document.getElementById('preview-wrapper');
             const origTransform = printArea.style.transform;
             const origHeight = wrapper.style.height;
-
-            printArea.style.transform = 'none';
-            wrapper.style.height = 'auto';
-            window.scrollTo(0, 0);
-
-            setTimeout(() => { 
-                callback().then(() => { 
-                    printArea.style.transform = origTransform; 
-                    wrapper.style.height = origHeight;
-                }).catch(err => { 
-                    printArea.style.transform = origTransform; 
-                    wrapper.style.height = origHeight;
-                }); 
-            }, 500);
+            printArea.style.transform = 'none'; wrapper.style.height = 'auto';
+            return new Promise(resolve => setTimeout(resolve, 80)).then(() => Promise.resolve(callback())).finally(() => {
+                printArea.style.transform = origTransform; wrapper.style.height = origHeight;
+            });
         }
 
         async function doShareAsImage() {
             const element = document.getElementById('print-area');
             const invNo = document.getElementById('f_inv').value || 'Bill';
             try {
-                await new Promise(r => setTimeout(r, 300));
-                const canvas = await html2canvas(element, { scale: 2, useCORS: true, allowTaint: true, logging: false, backgroundColor: '#ffffff', scrollY: -window.scrollY });
-                const blob = await new Promise((resolve, reject) => canvas.toBlob(b => b ? resolve(b) : reject(new Error('Image generation failed')), 'image/png', 1));
+                const canvas = await html2canvas(element, { scale: 2, useCORS: true, logging: false, scrollY: -window.scrollY, backgroundColor: '#ffffff' });
+                const blob = await new Promise((resolve, reject) => canvas.toBlob(b => b ? resolve(b) : reject(new Error('Image generation failed')), 'image/png'));
                 const file = new File([blob], `Invoice_${invNo}.png`, { type: 'image/png' });
-                if(navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))) {
-                    await navigator.share({ files:[file], title:`Invoice ${invNo}`, text:'Here is your invoice.' });
+                if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                    await navigator.share({ files: [file], title: `Invoice ${invNo}`, text: 'Here is your invoice.' });
                 } else {
-                    const url=URL.createObjectURL(blob), a=document.createElement('a');
-                    a.href=url; a.download=file.name; document.body.appendChild(a); a.click(); a.remove();
-                    setTimeout(()=>URL.revokeObjectURL(url),1000);
-                    showToast('Image downloaded successfully.', 'success');
+                    const url = URL.createObjectURL(blob); const a = document.createElement('a');
+                    a.href = url; a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
+                    setTimeout(() => URL.revokeObjectURL(url), 1000);
                 }
-            } catch(e) {
-                console.error('Image share error',e);
-                if(e.name !== 'AbortError') showToast('Error generating or sharing image.', 'error');
+                return true;
+            } catch (e) {
+                if (e && e.name !== 'AbortError') { console.error(e); showToast('Error generating or sharing image.', 'error'); }
+                return false;
             }
         }
 
-        function shareAsImageFromPreview() { if(checkRequireSave()) return; const btn = event.currentTarget; const originalText = btn.innerHTML; btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Wait..."; btn.disabled = true; makeVisibleForExport(doShareAsImage).then(() => { btn.innerHTML = originalText; btn.disabled = false; }); }
-        
-        // 100% FIXED Cx List WhatsApp Share using background render technique
+        async function shareAsImageFromPreview(btn) {
+            if(checkRequireSave()) return;
+            // Do not change button text to Wait...; only temporarily disable to prevent duplicate taps.
+            if(btn) btn.disabled = true;
+            try { await makeVisibleForExport(doShareAsImage); }
+            finally { if(btn) btn.disabled = false; }
+        }
+
+        // Cx List: share directly without redirecting/switching to Preview.
         async function shareAsImageList(id) {
-            const inv = invoices.find(i => i.id === id);
-            if(!inv) return showToast('Invoice not found.', 'error');
-            const previousTab = document.querySelector('.tab-content.active')?.id || 'list-tab';
+            const inv = invoices.find(i => String(i.id) === String(id));
+            if(!inv) { showToast('Invoice not found.', 'error'); return; }
+            const snapshot = {
+                currentInvId, currentItems: JSON.parse(JSON.stringify(currentItems)), currentPayments: JSON.parse(JSON.stringify(currentPayments)),
+                from: document.getElementById('f_from').value, to: document.getElementById('f_to').value,
+                invNo: document.getElementById('f_inv').value, date: document.getElementById('f_cdate').value, due: document.getElementById('f_ddate').value
+            };
             try {
+                // Temporarily render selected invoice in the hidden preview, but keep user on Cx List.
                 loadDataToForm(inv);
-                switchTab('preview-tab');
-                await new Promise(r => setTimeout(r, 500));
+                updatePreview();
+                await new Promise(r => setTimeout(r, 150));
                 await makeVisibleForExport(doShareAsImage);
             } finally {
-                setTimeout(() => switchTab(previousTab), 300);
+                currentInvId = snapshot.currentInvId; currentItems = snapshot.currentItems; currentPayments = snapshot.currentPayments;
+                document.getElementById('f_from').value = snapshot.from; document.getElementById('f_to').value = snapshot.to;
+                document.getElementById('f_inv').value = snapshot.invNo; document.getElementById('f_cdate').value = snapshot.date; document.getElementById('f_ddate').value = snapshot.due;
+                renderTables(); updatePreview();
+                // Explicitly stay on Cx List; never switch to edit/preview.
+                document.querySelectorAll('.tab-content, .tab-btn').forEach(t => t.classList.remove('active'));
+                document.getElementById('list-tab').classList.add('active');
+                document.querySelectorAll('.tab-btn')[2].classList.add('active');
+                renderList(true);
             }
         }
 
