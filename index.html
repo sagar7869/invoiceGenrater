@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- JALDI UPDATE KE LIYE NO-CACHE TAGS -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -85,7 +84,6 @@
         .watermark.PAID { color: var(--paid); border-color: var(--paid); opacity: 1; }
         .watermark.PARTIAL { color: var(--partial); border-color: var(--partial); opacity: 1; }
         .watermark.UNPAID { color: var(--unpaid); border-color: var(--unpaid); opacity: 1; }
-        .watermark.PENDING_VERIFICATION { color: #d97706; border-color: #d97706; opacity: 1; font-size: 60px; }
         
         .payment-info { margin-top: 30px; position: relative; z-index: 1; background: transparent; display: inline-block; padding-right: 20px; }
         .payment-info h3 { font-size: 12px; margin: 0 0 5px 0; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
@@ -183,6 +181,28 @@
     <div id="print-holder"></div>
     <div id="toast-container"></div> 
 
+    <!-- UTR APPROVAL CUSTOM MODAL -->
+    <div class="overlay" id="utr-approve-modal">
+        <div class="modal-sm">
+            <h3 style="margin-top:0; color:#1e293b;">Verify & Approve UTR</h3>
+            <p style="font-size:13px; color:#64748b; margin-bottom:15px;">Customer ne online payment ka UTR bheja hai. Amount verify karke approve karein.</p>
+            
+            <div style="background:#f8fafc; padding:15px; border-radius:10px; border:1px solid #e2e8f0; margin-bottom:15px; font-size:14px;">
+                <div style="margin-bottom:8px;"><b>UTR Number:</b> <span id="modal-utr-num" style="font-family:monospace; color:#d97706;">-</span></div>
+                <div style="margin-bottom:8px;"><b>Customer Claimed:</b> <span id="modal-claimed-amt" style="font-weight:bold; color:#10b981;">₹0</span></div>
+            </div>
+
+            <label>Approved Amount (Aap apne bank me check karke edit kar sakte hain)</label>
+            <input type="number" id="modal-approved-amt" placeholder="Enter amount received" step="0.01">
+
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <button onclick="document.getElementById('utr-approve-modal').style.display='none'" style="flex:1; padding:12px; background:#f1f5f9; border:none; border-radius:8px; font-weight:bold; color:#475569; cursor:pointer;">Cancel</button>
+                <button onclick="confirmApproveUtr()" style="flex:1; padding:12px; background:#059669; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Approve & Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONFIRM MODAL -->
     <div class="overlay" id="confirm-overlay" style="z-index: 1000000;">
         <div class="modal-sm" style="text-align: center; max-width: 320px; padding: 30px 20px;">
             <i class="fas fa-exclamation-circle" style="font-size: 45px; color: #f59e0b; margin-bottom: 15px;"></i>
@@ -248,23 +268,30 @@
     <div class="overlay" id="profile-overlay" style="z-index: 999998;">
         <div class="modal-sm">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f1f5f9; padding-bottom:15px; margin-bottom:20px;">
-                <h3 style="margin:0; color:#1e293b; font-size:20px;">My Profile</h3>
+                <h3 style="margin:0; color:#1e293b; font-size:20px;">My Profile & UPI Settings</h3>
                 <button onclick="closeProfileModal()" style="background:#fef2f2; border:none; width:32px; height:32px; border-radius:50%; color:#ef4444; cursor:pointer; display:flex; align-items:center; justify-content:center;"><i class="fas fa-times"></i></button>
             </div>
             
-            <div style="text-align:center; margin-bottom:25px;">
-                <div style="width:80px; height:80px; background:var(--primary); color:white; font-size:35px; display:inline-flex; align-items:center; justify-content:center; border-radius:50%; font-weight:bold; margin-bottom:12px; box-shadow:0 10px 20px rgba(33, 150, 243, 0.2);" id="prof-avatar">U</div>
-                <h3 style="margin:0; color:#1e293b; font-size:22px;" id="prof-name">User Name</h3>
-                <p style="margin:5px 0 0 0; color:#64748b; font-size:14px; font-weight:600;" id="prof-email">user@email.com</p>
+            <div style="text-align:center; margin-bottom:20px;">
+                <div style="width:70px; height:70px; background:var(--primary); color:white; font-size:30px; display:inline-flex; align-items:center; justify-content:center; border-radius:50%; font-weight:bold; margin-bottom:10px;" id="prof-avatar">U</div>
+                <h3 style="margin:0; color:#1e293b; font-size:18px;" id="prof-name">User Name</h3>
+                <p style="margin:3px 0 0 0; color:#64748b; font-size:13px;" id="prof-email">user@email.com</p>
             </div>
 
-            <div style="background:#f8fafc; padding:20px; border-radius:12px; border:1px solid #e2e8f0;">
-                <h4 style="margin:0 0 15px 0; color:#333;">Change Password</h4>
-                <input type="password" id="prof-new-pass" placeholder="Enter New Password">
-                <button onclick="updateUserPassword()" style="width:100%; padding:12px; background:#334155; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Update Password</button>
+            <!-- Merchant UPI Settings Input -->
+            <div style="background:#f8fafc; padding:15px; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:15px;">
+                <label style="font-size:12px; font-weight:bold; color:#1e293b;">Your Receiving UPI ID (for QR & Pay Link)</label>
+                <input type="text" id="prof-upi-id" placeholder="e.g. yourname@paytm" style="margin-top:6px; margin-bottom:10px; padding:10px; width:100%; border:1px solid #cbd5e1; border-radius:6px;">
+                <button onclick="saveMerchantUpi()" style="width:100%; padding:10px; background:#10b981; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:13px;">Save UPI ID</button>
+            </div>
+
+            <div style="background:#f8fafc; padding:15px; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:15px;">
+                <h4 style="margin:0 0 10px 0; color:#333; font-size:14px;">Change Password</h4>
+                <input type="password" id="prof-new-pass" placeholder="Enter New Password" style="padding:10px; margin-bottom:10px;">
+                <button onclick="updateUserPassword()" style="width:100%; padding:10px; background:#334155; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:13px;">Update Password</button>
             </div>
             
-            <button onclick="logoutApp()" style="width:100%; padding:14px; background:#ef4444; color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer; margin-top:20px; display:flex; justify-content:center; align-items:center; gap:8px;"><i class="fas fa-sign-out-alt"></i> Logout Securely</button>
+            <button onclick="logoutApp()" style="width:100%; padding:12px; background:#ef4444; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:8px;"><i class="fas fa-sign-out-alt"></i> Logout Securely</button>
         </div>
     </div>
 
@@ -467,9 +494,11 @@
         }
 
         let invoices = [];
+        let merchantUpiId = "";
         let currentInvId = null, currentItems = [], currentPayments = [], listLimit = 30, activePayId = null;
         let isEditMode = false, hasUnsavedChanges = false, activeUserId = null; 
         let confirmActionCallback = null;
+        let activeUtrInvoiceId = null;
 
         function markUnsaved() { hasUnsavedChanges = true; }
         const formatMoney = (amt) => '₹' + parseFloat(amt).toLocaleString('en-IN', {minimumFractionDigits: 2});
@@ -506,11 +535,22 @@
                 document.getElementById('prof-name').innerText = name;
                 document.getElementById('prof-email').innerText = user.email;
                 document.getElementById('prof-avatar').innerText = name.charAt(0).toUpperCase();
+                document.getElementById('prof-upi-id').value = merchantUpiId || "";
                 document.getElementById('prof-new-pass').value = '';
                 document.getElementById('profile-overlay').style.display = 'flex';
             }
         }
         function closeProfileModal() { document.getElementById('profile-overlay').style.display = 'none'; }
+
+        function saveMerchantUpi() {
+            const upi = document.getElementById('prof-upi-id').value.trim();
+            if(!upi) return showToast("Kripya valid UPI ID dalein.", "error");
+            merchantUpiId = upi;
+            database.ref('merchant_profile/' + activeUserId).set({ upiId: upi }).then(() => {
+                showToast("UPI ID saved successfully!", "success");
+                closeProfileModal();
+            }).catch(err => showToast("Error saving UPI: " + err.message, "error"));
+        }
 
         function loginWithGoogle() {
             const provider = new firebase.auth.GoogleAuthProvider();
@@ -582,6 +622,13 @@
             if(!activeUserId) return;
             document.getElementById('db-loader').style.display = 'block'; document.getElementById('db-table').style.display = 'none';
             
+            // Load Merchant Profile UPI
+            database.ref('merchant_profile/' + activeUserId).once('value', (snap) => {
+                if(snap.exists() && snap.val().upiId) {
+                    merchantUpiId = snap.val().upiId;
+                }
+            });
+
             database.ref('user_invoices/' + activeUserId).on('value', (snapshot) => {
                 document.getElementById('db-loader').style.display = 'none'; document.getElementById('db-table').style.display = 'table';
                 const data = snapshot.val();
@@ -715,7 +762,7 @@
             const existingInv = invoices.find(i => i.id === currentInvId);
             const statusToSave = existingInv && existingInv.status === "Pending Verification" ? "Pending Verification" : calc.status;
 
-            const invData = { id: currentInvId, from: document.getElementById('f_from').value, to: document.getElementById('f_to').value, invNo: document.getElementById('f_inv').value, date: document.getElementById('f_cdate').value, dueDate: document.getElementById('f_ddate').value, items: currentItems, payments: currentPayments, status: statusToSave };
+            const invData = { id: currentInvId, from: document.getElementById('f_from').value, to: document.getElementById('f_to').value, invNo: document.getElementById('f_inv').value, date: document.getElementById('f_cdate').value, dueDate: document.getElementById('f_ddate').value, upiId: merchantUpiId, items: currentItems, payments: currentPayments, status: statusToSave };
             const idx = invoices.findIndex(i => i.id === currentInvId);
             if(idx > -1) invoices[idx] = invData; else invoices.push(invData);
             
@@ -746,13 +793,13 @@
 
                 let approveBtnHtml = '';
                 if(inv.status === "Pending Verification") {
-                    approveBtnHtml = `<button class="action-icon bg-approve" onclick="approveUtrPayment('${inv.id}')" title="Approve UTR"><i class="fas fa-check-circle"></i><span>APPROVE</span></button>`;
+                    approveBtnHtml = `<button class="action-icon bg-approve" onclick="openUtrModal('${inv.id}')" title="Approve UTR"><i class="fas fa-check-circle"></i><span>APPROVE</span></button>`;
                 }
 
                 tbody.innerHTML += `<tr>
                     <td data-label="Date">${inv.date ? inv.date.split('-').reverse().join('/') : '-'}</td>
                     <td data-label="Invoice #"><b>${inv.invNo}</b></td>
-                    <td data-label="Customer">${inv.to} ${inv.utrNumber ? '<br><small style="color:#d97706; font-family:monospace;">UTR: '+inv.utrNumber+'</small>' : ''}</td>
+                    <td data-label="Customer">${inv.to} ${inv.utrNumber ? '<br><small style="color:#d97706; font-family:monospace;">UTR: '+inv.utrNumber+' (₹'+(inv.submittedAmount||0)+')</small>' : ''}</td>
                     <td data-label="Total">${formatMoney(total)}</td>
                     <td data-label="Balance" style="color:${bal>0?'#dc2626':'#16a34a'}; font-weight:600;">${formatMoney(bal < 0 ? 0 : bal)}</td>
                     <td data-label="Status"><span class="badge ${badgeClass}">${badgeText}</span></td>
@@ -774,25 +821,42 @@
         
         function deleteInvoice(id) { showCustomConfirm("Permanently delete this invoice?", () => { invoices = invoices.filter(i => i.id !== id); syncToFirebase(); showToast("Invoice deleted.", "success"); }); }
 
-        function approveUtrPayment(id) {
-            showCustomConfirm("Kya aapne bank SMS me payment check kar li hai?", () => {
-                const inv = invoices.find(i => i.id === id);
-                if(inv) {
-                    const total = (inv.items || []).reduce((s, i) => s + (i.qty * i.price), 0);
-                    const now = new Date();
-                    if(!inv.payments) inv.payments = [];
-                    inv.payments.push({
-                        id: Date.now(),
-                        amt: total,
-                        mode: "Online (UTR)",
-                        date: `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`
-                    });
-                    inv.status = "PAID";
-                    delete inv.utrNumber;
-                    syncToFirebase();
-                    showToast("Payment Approved & Marked as PAID!", "success");
-                }
-            });
+        // OPEN CUSTOM UTR APPROVAL MODAL
+        function openUtrModal(id) {
+            const inv = invoices.find(i => i.id === id);
+            if(!inv) return;
+            activeUtrInvoiceId = id;
+            document.getElementById('modal-utr-num').innerText = inv.utrNumber || "N/A";
+            const claimed = inv.submittedAmount || 0;
+            document.getElementById('modal-claimed-amt').innerText = "₹" + claimed;
+            document.getElementById('modal-approved-amt').value = claimed;
+            document.getElementById('utr-approve-modal').style.display = 'flex';
+        }
+
+        // CONFIRM APPROVE UTR WITH CUSTOM AMOUNT
+        function confirmApproveUtr() {
+            const amt = parseFloat(document.getElementById('modal-approved-amt').value) || 0;
+            if(amt <= 0) return showToast("Kripya valid amount dalein.", "error");
+
+            const inv = invoices.find(i => i.id === activeUtrInvoiceId);
+            if(inv) {
+                const now = new Date();
+                if(!inv.payments) inv.payments = [];
+                // Tagged properly as requested
+                inv.payments.push({
+                    id: Date.now(),
+                    amt: amt,
+                    mode: "Online (Customer UTR)",
+                    date: `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`
+                });
+
+                recalcInvStatus(inv);
+                delete inv.utrNumber;
+                delete inv.submittedAmount;
+                syncToFirebase();
+                document.getElementById('utr-approve-modal').style.display = 'none';
+                showToast("Payment Approved & Added to Ledger!", "success");
+            }
         }
 
         function loadDataToForm(inv) {
@@ -820,7 +884,7 @@
             const inv = invoices.find(i => i.id === activePayId);
             const tbody = document.getElementById('qm-payments-body'); tbody.innerHTML = '';
             (inv.payments || []).forEach(p => {
-                tbody.innerHTML += `<tr><td style="padding:10px 5px; font-size:11px;">${p.date}</td><td style="padding:5px;"><select id="qm_mode_${p.id}" style="width:100%; border:1px solid #ccc; padding:6px; border-radius:4px; font-size:12px;"><option value="Cash" ${p.mode==='Cash'?'selected':''}>Cash</option><option value="Online" ${p.mode==='Online'?'selected':''}>Online</option></select></td><td style="padding:5px;"><input type="number" id="qm_amt_${p.id}" style="width:100%; border:1px solid #ccc; padding:6px; border-radius:4px; font-size:12px;" value="${p.amt}"></td><td style="padding:5px; text-align:center; white-space:nowrap;"><button style="background:#10b981; color:white; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; margin-right:3px;" onclick="saveQMPayment(event, ${p.id})" title="Save Edit"><i class="fas fa-save"></i></button><button style="background:#ef4444; color:white; border:none; padding:6px 10px; border-radius:4px; cursor:pointer;" onclick="deleteQMPayment(${p.id})" title="Delete"><i class="fas fa-trash"></i></button></td></tr>`;
+                tbody.innerHTML += `<tr><td style="padding:10px 5px; font-size:11px;">${p.date}</td><td style="padding:5px;"><select id="qm_mode_${p.id}" style="width:100%; border:1px solid #ccc; padding:6px; border-radius:4px; font-size:12px;"><option value="Cash" ${p.mode==='Cash'?'selected':''}>Cash</option><option value="Online" ${p.mode==='Online'?'selected':''}>Online</option><option value="Online (Customer UTR)" ${p.mode==='Online (Customer UTR)'?'selected':''}>Online (Customer UTR)</option></select></td><td style="padding:5px;"><input type="number" id="qm_amt_${p.id}" style="width:100%; border:1px solid #ccc; padding:6px; border-radius:4px; font-size:12px;" value="${p.amt}"></td><td style="padding:5px; text-align:center; white-space:nowrap;"><button style="background:#10b981; color:white; border:none; padding:6px 10px; border-radius:4px; cursor:pointer; margin-right:3px;" onclick="saveQMPayment(event, ${p.id})" title="Save Edit"><i class="fas fa-save"></i></button><button style="background:#ef4444; color:white; border:none; padding:6px 10px; border-radius:4px; cursor:pointer;" onclick="deleteQMPayment(${p.id})" title="Delete"><i class="fas fa-trash"></i></button></td></tr>`;
             });
             const total = (inv.items||[]).reduce((s, i) => s + (i.qty * i.price), 0); const paid = (inv.payments||[]).reduce((s, p) => s + p.amt, 0); const bal = total - paid;
             document.getElementById('pm_total').innerText = formatMoney(total); document.getElementById('pm_bal').innerText = formatMoney(bal < 0 ? 0 : bal); document.getElementById('pm_amount').value = bal > 0 ? bal : '';
@@ -860,7 +924,6 @@
             }, 500);
         }
 
-        // 100% RESTORED: Original working image sharing function
         async function doShareAsImage() {
             const element = document.getElementById('print-area'), invNo = document.getElementById('f_inv').value || 'Bill';
             return new Promise(async (resolve) => {
@@ -889,13 +952,11 @@
             makeVisibleForExport(doShareAsImage); 
         }
 
-        // Helper function for correct GitHub Pages / Local path
         function getCheckoutUrl(invoiceId) {
             const currentPath = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
             return `${currentPath}checkout.html?user=${activeUserId}&invoice=${invoiceId}`;
         }
 
-        // SEPARATE PAYMENT LINK SHARE FUNCTIONS (FIXED 404 PATH)
         async function sharePaymentLinkFromPreview() {
             if(checkRequireSave()) return;
             const invNo = document.getElementById('f_inv').value || 'Bill';
@@ -945,7 +1006,7 @@
         function generatePDFFromPreview() { if(checkRequireSave()) return; makeVisibleForExport(doGeneratePDF); }
         function generatePDFList(id) { loadDataToForm(invoices.find(i => i.id === id)); makeVisibleForExport(doGeneratePDF); }
 
-		window.onload = initApp;
+        window.onload = initApp;
     </script>
 </body>
 </html>
