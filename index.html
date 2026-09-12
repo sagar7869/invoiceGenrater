@@ -13,6 +13,7 @@
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -103,9 +104,9 @@
         .badge.UNPAID { background: #ffebee; color: var(--unpaid-text); }
         .badge.PENDING { background: #fef3c7; color: #b45309; }
         
-        .action-icon { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: 48px; height: 48px; cursor: pointer; border: none; border-radius: 8px; margin: 2px; color: white; transition: 0.2s; }
-        .action-icon i { font-size: 15px; margin-bottom: 2px; }
-        .action-icon span { font-size: 9px; font-family: sans-serif; font-weight: bold; letter-spacing: 0.5px; }
+        .action-icon { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: 38px; height: 38px; cursor: pointer; border: none; border-radius: 8px; margin: 2px; color: white; transition: 0.2s; }
+        .action-icon i { font-size: 13px; margin-bottom: 1px; }
+        .action-icon span { font-size: 7px; font-family: sans-serif; font-weight: bold; letter-spacing: 0.5px; }
         .action-icon:active { transform: scale(0.9); }
         .bg-view { background: #3b82f6; } .bg-edit { background: #64748b; } .bg-img { background: #25D366; } .bg-pdf { background: #8b5cf6; } .bg-pay { background: #f59e0b; } .bg-del { background: #ef4444; } .bg-link { background: #10b981; } .bg-approve { background: #059669; }
         
@@ -161,7 +162,7 @@
             .list-table td:nth-child(5) { grid-column: 2 / 3; font-size: 13px; font-weight: 600; text-align: right; padding: 6px; background: #fef2f2; border-radius: 6px; color:#dc2626;}
             .list-table td:nth-child(5)::before { content: 'Bal: '; font-weight: normal; color: #64748b; }
             .list-table td:nth-child(7) { grid-column: 1 / 3; border-top: 1px dashed #e2e8f0; margin-top: 10px; padding-top: 15px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-            .action-icon { width: 100%; height: 48px; margin: 0; border-radius:8px;}
+            .action-icon { width: 100%; height: 38px; margin: 0; border-radius:7px;}
 
             .preview-container { padding: 0; display: block; width: 100%; height: calc((100vw - 30px) * 1.414); overflow: hidden; position: relative; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); background: white; }
             .preview-container .preview-box { position: absolute; top: 0; left: 0; width: 794px !important; min-height: 1123px !important; transform-origin: top left; transform: scale(calc((100vw - 30px) / 794)); border: none; box-shadow: none; }
@@ -198,6 +199,7 @@
 
             <div style="display:flex; gap:10px; margin-top:15px;">
                 <button onclick="document.getElementById('utr-approve-modal').style.display='none'" style="flex:1; padding:12px; background:#f1f5f9; border:none; border-radius:8px; font-weight:bold; color:#475569; cursor:pointer;">Cancel</button>
+                <button onclick="rejectUtr()" style="flex:1; padding:12px; background:#dc2626; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Reject</button>
                 <button onclick="confirmApproveUtr()" style="flex:1; padding:12px; background:#059669; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Approve & Save</button>
             </div>
         </div>
@@ -317,6 +319,20 @@
                 </div>
             </div>
             
+            <!-- ITEM MASTER IMPORT -->
+            <div style="background:#f8fafc; padding:15px; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:15px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                    <div><label style="font-size:13px; font-weight:bold; color:#1e293b;">📦 Item Master</label><p id="item-master-count" style="margin:3px 0 0; font-size:12px; color:#64748b;">0 items saved</p></div>
+                    <button onclick="document.getElementById('item-master-file').click()" style="padding:8px 12px; background:#7c3aed; color:#fff; border:none; border-radius:7px; font-size:12px; font-weight:bold; cursor:pointer;">Import Excel</button>
+                </div>
+                <input type="file" id="item-master-file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importItemMaster(event)">
+                <p style="font-size:11px; color:#64748b; margin:10px 0 0;">Excel columns: <b>Item Name</b> and <b>Price</b> (also supports Product Name/Rate). Importing updates existing items with latest price.</p>
+                <div style="display:flex; gap:8px; margin-top:10px;">
+                    <button onclick="exportItemMasterTemplate()" style="flex:1; padding:8px; background:#e2e8f0; border:none; border-radius:6px; font-size:11px; font-weight:bold; cursor:pointer;">Template</button>
+                    <button onclick="clearItemMaster()" style="flex:1; padding:8px; background:#fee2e2; color:#b91c1c; border:none; border-radius:6px; font-size:11px; font-weight:bold; cursor:pointer;">Delete All</button>
+                </div>
+            </div>
+
             <button onclick="logoutApp()" style="width:100%; padding:12px; background:#ef4444; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:8px;"><i class="fas fa-sign-out-alt"></i> Logout Securely</button>
         </div>
     </div>
@@ -424,7 +440,7 @@
 
             <h4 style="margin: 5px 0 10px 0; color: #1e293b; font-size:16px;">Add Items</h4>
             <div class="input-row">
-                <input type="text" id="i_desc" placeholder="Item Description" style="flex:2;" onkeypress="handleAddItemEnter(event)">
+                <input type="text" id="i_desc" list="item-master-suggestions" placeholder="Search / Item Description" style="flex:2;" autocomplete="off" oninput="autoFillItemPrice()" onkeypress="handleAddItemEnter(event)"><datalist id="item-master-suggestions"></datalist>
                 <input type="number" id="i_qty" placeholder="QTY" style="flex:1;" min="1" onkeypress="handleAddItemEnter(event)">
                 <input type="number" id="i_price" placeholder="Price (₹)" style="flex:1;" step="0.01" onkeypress="handleAddItemEnter(event)">
                 <button class="btn-add" onclick="addItem()"><i class="fas fa-plus"></i> Add Item</button>
@@ -474,6 +490,7 @@
 
             <div style="display:flex; gap:10px; margin-top:15px;">
                 <button onclick="document.getElementById('utr-approve-modal').style.display='none'" style="flex:1; padding:12px; background:#f1f5f9; border:none; border-radius:8px; font-weight:bold; color:#475569; cursor:pointer;">Cancel</button>
+                <button onclick="rejectUtr()" style="flex:1; padding:12px; background:#dc2626; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Reject</button>
                 <button onclick="confirmApproveUtr()" style="flex:1; padding:12px; background:#059669; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Approve & Save</button>
             </div>
         </div>
@@ -541,6 +558,55 @@
         let isEditMode = false, hasUnsavedChanges = false, activeUserId = null; 
         let confirmActionCallback = null;
         let activeUtrInvoiceId = null;
+        let itemMaster = [];
+
+        function renderItemMasterSuggestions() {
+            const dl = document.getElementById('item-master-suggestions');
+            if(dl) dl.innerHTML = itemMaster.map(x => `<option value="${String(x.name).replace(/"/g, '&quot;')}"></option>`).join('');
+            const c = document.getElementById('item-master-count'); if(c) c.innerText = `${itemMaster.length} item${itemMaster.length===1?'':'s'} saved`;
+        }
+        function loadItemMaster() {
+            if(!activeUserId) return;
+            database.ref('item_master/' + activeUserId).once('value').then(snap => {
+                const raw = snap.val() || [];
+                itemMaster = Array.isArray(raw) ? raw.filter(x=>x&&x.name) : Object.values(raw).filter(x=>x&&x.name);
+                renderItemMasterSuggestions();
+            });
+        }
+        function saveItemMaster() {
+            if(!activeUserId) return Promise.resolve();
+            return database.ref('item_master/' + activeUserId).set(itemMaster);
+        }
+        function autoFillItemPrice() {
+            const descEl=document.getElementById('i_desc'), priceEl=document.getElementById('i_price');
+            if(!descEl||!priceEl) return;
+            const q=descEl.value.trim().toLowerCase();
+            const item=itemMaster.find(x=>String(x.name).trim().toLowerCase()===q);
+            if(item) { priceEl.value = Number(item.price||0); }
+        }
+        function importItemMaster(event) {
+            const file=event.target.files && event.target.files[0]; if(!file) return;
+            const reader=new FileReader();
+            reader.onload=e=>{
+                try {
+                    const wb=XLSX.read(e.target.result,{type:'array'}); const ws=wb.Sheets[wb.SheetNames[0]];
+                    const rows=XLSX.utils.sheet_to_json(ws,{defval:''});
+                    if(!rows.length) throw new Error('Excel file is empty');
+                    const map=new Map(itemMaster.map(x=>[String(x.name).trim().toLowerCase(),x])); let count=0;
+                    rows.forEach(r=>{
+                        const keys=Object.keys(r); const get=(names)=>{const k=keys.find(k=>names.includes(String(k).trim().toLowerCase())); return k!==undefined?r[k]:''};
+                        const name=get(['item name','item','product name','product','description','item description']);
+                        const price=get(['price','rate','item price','selling price']);
+                        if(String(name).trim() && price!=='' && !isNaN(Number(price))) { map.set(String(name).trim().toLowerCase(),{name:String(name).trim(),price:Number(price)}); count++; }
+                    });
+                    if(!count) throw new Error('Columns Item Name and Price not found');
+                    itemMaster=Array.from(map.values()); saveItemMaster().then(()=>{renderItemMasterSuggestions(); showToast(`${count} items imported/updated successfully`, 'success');});
+                } catch(err) { showToast('Import error: '+err.message,'error'); }
+                event.target.value='';
+            }; reader.readAsArrayBuffer(file);
+        }
+        function clearItemMaster() { if(!itemMaster.length) return; showCustomConfirm('Delete all imported item master data?',()=>{itemMaster=[]; saveItemMaster().then(()=>{renderItemMasterSuggestions(); showToast('Item master deleted','success');});}); }
+        function exportItemMasterTemplate() { const ws=XLSX.utils.json_to_sheet([{ 'Item Name':'Example Item', 'Price':100 }]); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Items'); XLSX.writeFile(wb,'item-master-template.xlsx'); }
 
         function markUnsaved() { hasUnsavedChanges = true; }
         const formatMoney = (amt) => '₹' + parseFloat(amt).toLocaleString('en-IN', {minimumFractionDigits: 2});
@@ -673,9 +739,9 @@
 
         auth.onAuthStateChanged((user) => {
             if (user) {
-                activeUserId = user.uid; document.getElementById('login-overlay').style.display = 'none'; document.getElementById('btn-profile-tab').style.display = 'flex'; loadFirebaseData(); 
+                activeUserId = user.uid; document.getElementById('login-overlay').style.display = 'none'; document.getElementById('btn-profile-tab').style.display = 'flex'; loadFirebaseData(); loadItemMaster(); 
             } else {
-                activeUserId = null; invoices = []; renderList(); document.getElementById('login-overlay').style.display = 'flex'; document.getElementById('btn-profile-tab').style.display = 'none';
+                activeUserId = null; invoices = []; itemMaster = []; renderItemMasterSuggestions(); renderList(); document.getElementById('login-overlay').style.display = 'flex'; document.getElementById('btn-profile-tab').style.display = 'none';
             }
         });
 
@@ -715,8 +781,8 @@
         }
 
         function syncToFirebase() {
-            if(!activeUserId) return Promise.resolve();
-            return database.ref('user_invoices/' + activeUserId).set(invoices);
+            if(!activeUserId) return;
+            database.ref('user_invoices/' + activeUserId).set(invoices);
         }
 
         function setTodayDate() {
@@ -853,8 +919,7 @@
             const existingInv = invoices.find(i => i.id === currentInvId);
             const statusToSave = existingInv && existingInv.status === "Pending Verification" ? "Pending Verification" : calc.status;
 
-            const previousInv = invoices.find(i => i.id === currentInvId) || {};
-            const invData = { ...previousInv, id: currentInvId, from: document.getElementById('f_from').value, to: document.getElementById('f_to').value, invNo: document.getElementById('f_inv').value, date: document.getElementById('f_cdate').value, dueDate: document.getElementById('f_ddate').value, upiId: merchantUpiId, items: currentItems, payments: currentPayments, status: statusToSave };
+            const invData = { id: currentInvId, from: document.getElementById('f_from').value, to: document.getElementById('f_to').value, invNo: document.getElementById('f_inv').value, date: document.getElementById('f_cdate').value, dueDate: document.getElementById('f_ddate').value, upiId: merchantUpiId, items: currentItems, payments: currentPayments, status: statusToSave };
             const idx = invoices.findIndex(i => i.id === currentInvId);
             if(idx > -1) invoices[idx] = invData; else invoices.push(invData);
             
@@ -891,7 +956,7 @@
                 tbody.innerHTML += `<tr>
                     <td data-label="Date">${inv.date ? inv.date.split('-').reverse().join('/') : '-'}</td>
                     <td data-label="Invoice #"><b>${inv.invNo}</b></td>
-                    <td data-label="Customer">${inv.to} ${inv.paymentCode ? '<br><small style="color:#7c3aed; font-family:monospace; font-weight:bold;">CODE: '+inv.paymentCode+'</small>' : ''} ${inv.utrNumber ? '<br><small style="color:#d97706; font-family:monospace;">UTR: '+inv.utrNumber+' (₹'+(inv.submittedAmount||0)+')</small>' : ''}</td>
+                    <td data-label="Customer">${inv.to}${inv.paymentCode ? '<br><small style="color:#2563eb; font-family:monospace; font-weight:bold;">PAY CODE: '+inv.paymentCode+'</small>' : ''} ${inv.utrNumber ? '<br><small style="color:#d97706; font-family:monospace;">UTR: '+inv.utrNumber+' (₹'+(inv.submittedAmount||0)+')</small>' : ''}</td>
                     <td data-label="Total">${formatMoney(total)}</td>
                     <td data-label="Balance" style="color:${bal>0?'#dc2626':'#16a34a'}; font-weight:600;">${formatMoney(bal < 0 ? 0 : bal)}</td>
                     <td data-label="Status"><span class="badge ${badgeClass}">${badgeText}</span></td>
@@ -946,6 +1011,24 @@
                 document.getElementById('utr-approve-modal').style.display = 'none';
                 showToast("Payment Approved & Added to Ledger!", "success");
             }
+        }
+
+        function rejectUtr() {
+            const inv = invoices.find(i => i.id === activeUtrInvoiceId);
+            if(!inv) return showToast('Invoice not found.', 'error');
+            if(!confirm('Reject this payment request? Customer will be able to submit payment again.')) return;
+            delete inv.utrNumber;
+            delete inv.submittedAmount;
+            delete inv.paymentType;
+            delete inv.submittedAt;
+            delete inv.paymentCodeSubmitted;
+            inv.status = 'Unpaid';
+            recalcInvStatus(inv);
+            syncToFirebase();
+            document.getElementById('utr-approve-modal').style.display = 'none';
+            activeUtrInvoiceId = null;
+            renderList();
+            showToast('Payment request rejected. Customer can submit payment again.', 'success');
         }
 
         function loadDataToForm(inv) {
@@ -1083,7 +1166,8 @@
 
         function getCheckoutUrl(invoiceId, paymentCode = '') {
             const currentPath = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
-            let url = `${currentPath}checkout.html?user=${encodeURIComponent(activeUserId)}&invoice=${encodeURIComponent(invoiceId)}`;
+            // Version parameter helps browsers/service workers fetch the latest checkout file.
+            let url = `${currentPath}checkout.html?v=20260912&user=${encodeURIComponent(activeUserId)}&invoice=${encodeURIComponent(invoiceId)}`;
             if(paymentCode) url += `&paycode=${encodeURIComponent(paymentCode)}`;
             return url;
         }
@@ -1094,12 +1178,13 @@
             return Math.max(0, total - paid);
         }
 
-        async function saveNewPaymentCode(inv) {
+        function saveNewPaymentCode(inv) {
             const code = generatePaymentCode();
+            // Only ONE active code per invoice. Sending a new link automatically expires the old link.
+            if(inv.paymentCode) inv.previousPaymentCode = inv.paymentCode;
             inv.paymentCode = code;
             inv.lastPaymentCodeAt = new Date().toISOString();
-            inv.paymentCodeVersion = (Number(inv.paymentCodeVersion || 0) + 1);
-            await syncToFirebase();
+            syncToFirebase();
             return code;
         }
 
@@ -1138,7 +1223,7 @@ Thank you 🙏`;
                 showToast('Please save the invoice before sharing payment link.', 'error');
                 return;
             }
-            const code = await saveNewPaymentCode(inv);
+            const code = saveNewPaymentCode(inv);
             const checkoutUrl = getCheckoutUrl(inv.id, code);
             const message = buildPaymentMessage(inv, code, checkoutUrl);
             showToast(`Payment Code: ${code}`, 'success');
@@ -1152,7 +1237,7 @@ Thank you 🙏`;
         async function sharePaymentLinkList(id) {
             const inv = invoices.find(i => String(i.id) === String(id));
             if(!inv) return;
-            const code = await saveNewPaymentCode(inv);
+            const code = saveNewPaymentCode(inv);
             const checkoutUrl = getCheckoutUrl(inv.id, code);
             const message = buildPaymentMessage(inv, code, checkoutUrl);
             showToast(`Payment Code: ${code}`, 'success');
