@@ -91,6 +91,7 @@
         let selectedPaymentAmount = 0;
         let merchantUpi = "";
         let shopNameText = "";
+        let currentInvoice = null;
 
         if (!userId || !invoiceId) {
             alert("Invalid Invoice Link!");
@@ -113,6 +114,18 @@
                 const inv = invoices.find(i => String(i.id) === String(invoiceId));
 
                 if (inv) {
+                    currentInvoice = inv;
+
+                    // Only the latest payment link/code is valid. Old shared links expire automatically.
+                    if (inv.paymentCode && paymentCode !== inv.paymentCode) {
+                        document.getElementById('paymentChoiceSection').style.display = 'none';
+                        document.getElementById('upiButtonsSection').style.display = 'none';
+                        document.getElementById('utrFormSection').style.display = 'none';
+                        document.getElementById('qrCodeImg').style.display = 'none';
+                        document.getElementById('statusMessage').innerHTML = '<span class="text-red-600 font-bold">⚠️ This payment link has expired. Please use the latest payment link sent by the merchant.</span>';
+                        return;
+                    }
+
                     const totalAmt = (inv.items || []).reduce((s, item) => s + (item.qty * item.price), 0);
                     const paidAmt = (inv.payments || []).reduce((s, p) => s + p.amt, 0);
                     pendingBalance = totalAmt - paidAmt;
@@ -166,7 +179,8 @@
             selectedPaymentAmount = amount;
             document.getElementById('submittedAmountDisplay').innerText = 'Payment Amount: ₹' + (amount || 0);
             if(!merchantUpi || amount <= 0) return;
-            const note = paymentCode ? `Invoice ${invoiceId} | ${paymentCode}` : `Invoice ${invoiceId}`;
+            const invoiceNumber = (currentInvoice && currentInvoice.invNo) ? currentInvoice.invNo : invoiceId;
+            const note = paymentCode ? `Invoice ${invoiceNumber} | ${paymentCode}` : `Invoice ${invoiceNumber}`;
             const intent = `upi://pay?pa=${encodeURIComponent(merchantUpi)}&pn=${encodeURIComponent(shopNameText)}&am=${encodeURIComponent(amount.toFixed(2))}&cu=INR&tn=${encodeURIComponent(note)}`;
             document.getElementById('directPayBtn').setAttribute('href', intent);
             document.getElementById('qrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(intent)}`;
