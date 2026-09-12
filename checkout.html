@@ -1,1259 +1,237 @@
-
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="hi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Checkout - Pay & Verify</title><script src="https://cdn.tailwindcss.com"></script>
-
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
-</head><body class="bg-slate-50 font-sans"><div class="max-w-md mx-auto min-h-screen bg-white shadow-lg flex flex-col justify-between p-6"><div>
-
-    <!-- SHOP / TOTAL DUE -->
-
-    <div class="text-center mb-6">
-
-        <h1
-            class="text-xl font-bold text-slate-800"
-            id="shopName">
-            Loading...
-        </h1>
-
-        <p class="text-sm text-slate-500">
-            Balance Due / Payable Amount
-        </p>
-
-        <h2
-            class="text-3xl font-extrabold text-emerald-600 mt-1"
-            id="billAmount">
-            ₹0
-        </h2>
-
-    </div>
-
-
-    <!-- PAYMENT TYPE -->
-
-    <div
-        id="paymentChoiceSection"
-        class="bg-violet-50 border border-violet-200 rounded-2xl p-4 mb-4">
-
-        <p class="text-sm font-bold text-violet-900 mb-3 text-center">
-            Payment Option Choose Karein
-        </p>
-
-
-        <div class="grid grid-cols-2 gap-3">
-
-            <button
-                id="fullPayBtn"
-                onclick="selectPaymentType('full')"
-                class="font-bold py-3 px-3 rounded-xl border bg-emerald-600 text-white">
-
-                Full Payment
-
-            </button>
-
-
-            <button
-                id="partPayBtn"
-                onclick="selectPaymentType('part')"
-                class="font-bold py-3 px-3 rounded-xl border bg-white text-slate-700">
-
-                Part Payment
-
-            </button>
-
-        </div>
-
-
-        <!-- PART AMOUNT -->
-
-        <div
-            id="partAmountBox"
-            class="mt-4"
-            style="display:none;">
-
-            <label class="text-xs font-semibold text-slate-700">
-
-                Kitna Payment Kar Rahe Hain?
-
-            </label>
-
-
-            <input
-                type="number"
-                id="partAmountInput"
-                min="1"
-                step="0.01"
-                class="w-full mt-1 px-4 py-3 border border-violet-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-violet-500"
-                placeholder="Enter payment amount manually">
-
-        </div>
-
-    </div>
-
-
-    <!-- SELECTED PAYMENT AMOUNT -->
-
-    <div
-        id="submittedAmountDisplay"
-        class="text-center text-sm font-bold text-emerald-700 mb-4">
-
-        Payment Amount: ₹0
-
-    </div>
-
-
-    <!-- PAY WITH UPI -->
-
-    <div
-        id="upiButtonsSection"
-        class="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-4 text-center shadow-sm"
-        style="display:none;">
-
-        <p class="text-xs font-semibold text-blue-800 mb-2">
-
-            Kisi bhi UPI App se direct pay karne ke liye click karein:
-
-        </p>
-
-
-        <a
-            id="directPayBtn"
-            href="#"
-            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl transition duration-200 shadow-md flex items-center justify-center gap-2 text-sm">
-
-            <span>⚡ Pay with UPI</span>
-
-            <span
-                class="text-xs bg-blue-700 px-2 py-0.5 rounded text-blue-100">
-
-                GPay | PhonePe | Paytm
-
-            </span>
-
-        </a>
-
-    </div>
-
-
-    <!-- QR CODE -->
-
-    <div
-        class="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-center mb-6 shadow-sm">
-
-        <p class="text-sm font-medium text-slate-600 mb-2">
-
-            Ya is QR Code ko scan karein:
-
-        </p>
-
-
-        <div
-            class="bg-white p-2 inline-block rounded-xl border border-slate-200 shadow-inner mb-2">
-
-            <img
-                id="qrCodeImg"
-                src="https://via.placeholder.com/150"
-                alt="UPI QR Code"
-                class="w-40 h-40 mx-auto object-contain">
-
-        </div>
-
-
-        <p class="text-xs text-slate-500">
-
-            UPI ID:
-
-            <span
-                id="upiIdText"
-                class="font-semibold text-slate-700">
-
-                Loading...
-
-            </span>
-
-        </p>
-
-    </div>
-
-
-    <!-- UTR -->
-
-    <div
-        id="utrFormSection"
-        class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6">
-
-        <h3 class="text-sm font-bold text-amber-800 mb-1">
-
-            Payment ke baad details dalein:
-
-        </h3>
-
-
-        <p class="text-xs text-amber-600 mb-3">
-
-            Payment Amount aur 12-digit UTR/Reference Number enter karein.
-
-        </p>
-
-
-        <!-- FINAL AMOUNT -->
-
-        <div
-            class="bg-white border border-amber-200 rounded-xl p-3 text-center mb-3">
-
-            <span class="text-xs text-slate-500">
-
-                Payment Submitted For
-
-            </span>
-
-            <div
-                id="finalPaymentAmount"
-                class="text-xl font-bold text-emerald-600">
-
-                ₹0
-
+    <title>Secure Checkout - Pay & Verify</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+</head>
+<body class="bg-slate-50 font-sans">
+
+    <div class="max-w-md mx-auto min-h-screen bg-white shadow-lg flex flex-col justify-between p-6">
+        <div>
+            <div class="text-center mb-6">
+                <h1 class="text-xl font-bold text-slate-800" id="shopName">Loading...</h1>
+                <p class="text-sm text-slate-500">Balance Due / Payable Amount</p>
+                <h2 class="text-3xl font-extrabold text-emerald-600 mt-1" id="billAmount">₹0</h2>
             </div>
 
+            <!-- Payment Choice -->
+            <div id="paymentChoiceSection" class="bg-violet-50 border border-violet-200 rounded-2xl p-4 mb-4">
+                <p class="text-sm font-bold text-violet-900 mb-3 text-center">Payment Option Choose Karein</p>
+                <div class="grid grid-cols-2 gap-3">
+                    <button id="fullPayBtn" onclick="selectPaymentType('full')" class="font-bold py-3 px-3 rounded-xl border bg-white">Full Payment</button>
+                    <button id="partPayBtn" onclick="selectPaymentType('part')" class="font-bold py-3 px-3 rounded-xl border bg-white">Part Payment</button>
+                </div>
+                <div id="partAmountBox" class="mt-3" style="display:none;">
+                    <label class="text-xs font-semibold text-slate-700">Part Payment Amount</label>
+                    <input type="number" id="partAmountInput" min="1" step="0.01" class="w-full mt-1 px-4 py-3 border border-violet-300 rounded-xl" placeholder="Enter amount manually">
+                </div>
+            </div>
+
+            <!-- Pay with UPI Intent Box -->
+            <div id="upiButtonsSection" class="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-4 text-center shadow-sm" style="display:none;">
+                <p class="text-xs font-semibold text-blue-800 mb-2">Kisi bhi UPI App se direct pay karne ke liye click karein:</p>
+                <a id="directPayBtn" href="#" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl transition duration-200 shadow-md flex items-center justify-center gap-2 text-sm">
+                    <span>⚡ Pay with UPI</span>
+                    <span class="text-xs bg-blue-700 px-2 py-0.5 rounded text-blue-100">GPay | PhonePe | Paytm</span>
+                </a>
+            </div>
+
+            <!-- Payment Box with QR -->
+            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-center mb-6 shadow-sm">
+                <p class="text-sm font-medium text-slate-600 mb-2">Ya is QR Code ko scan karein:</p>
+                <div class="bg-white p-2 inline-block rounded-xl border border-slate-200 shadow-inner mb-2">
+                    <img id="qrCodeImg" src="https://via.placeholder.com/150" alt="UPI QR Code" class="w-40 h-40 mx-auto object-contain">
+                </div>
+                <p class="text-xs text-slate-500">UPI ID: <span id="upiIdText" class="font-semibold text-slate-700">Loading...</span></p>
+            </div>
+
+            <!-- UTR Submission Form -->
+            <div id="utrFormSection" class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6">
+                <h3 class="text-sm font-bold text-amber-800 mb-1">Payment ke baad UTR dalein:</h3>
+                <p class="text-xs text-amber-600 mb-3">12-digit UTR/Reference Number yahan enter karein.</p>
+                
+                <div id="submittedAmountDisplay" class="text-center text-sm font-bold text-emerald-700 mb-3">Payment Amount: ₹0</div>
+                <input type="text" id="utrInput" placeholder="Enter 12-digit UTR Number" maxlength="12" class="w-full px-4 py-3 border border-amber-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 text-center font-mono text-lg tracking-wider bg-white mb-3">
+                
+                <button onclick="submitUtr()" id="submitBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition duration-200 shadow-md">
+                    Submit UTR & Verify
+                </button>
+            </div>
         </div>
 
-
-        <!-- UTR INPUT -->
-
-        <input
-            type="text"
-            id="utrInput"
-            placeholder="Enter 12-digit UTR Number"
-            maxlength="12"
-            class="w-full px-4 py-3 border border-amber-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 text-center font-mono text-lg tracking-wider bg-white mb-3">
-
-
-        <!-- SUBMIT -->
-
-        <button
-            onclick="submitUtr()"
-            id="submitBtn"
-            class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition duration-200 shadow-md">
-
-            Submit Payment & UTR
-
-        </button>
-
+        <div id="statusMessage" class="text-center text-sm text-slate-500 pb-2">
+            Status: Waiting for payment...
+        </div>
     </div>
 
-</div>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDI1bnT0cyKVHyH25PbIZqJfWFhuZlc2YA",
+            authDomain: "sagar-invoice-app.firebaseapp.com",
+            databaseURL: "https://sagar-invoice-app-default-rtdb.firebaseio.com",
+            storageBucket: "sagar-invoice-app.firebasestorage.app",
+            messagingSenderId: "733494306894",
+            appId: "1:733494306894:web:cbab88d65b1dbd08bcbb1f"
+        };
 
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
 
-<!-- STATUS -->
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('user');
+        const invoiceId = urlParams.get('invoice');
 
-<div
-    id="statusMessage"
-    class="text-center text-sm text-slate-500 pb-2">
+        let pendingBalance = 0;
+        let selectedPaymentType = "full";
+        let selectedPaymentAmount = 0;
+        let merchantUpi = "";
+        let shopNameText = "";
 
-    Status: Waiting for payment...
-
-</div>
-
-</div><script>
-
-
-/* ===============================
-   FIREBASE CONFIG
-================================ */
-
-const firebaseConfig = {
-
-    apiKey:
-        "AIzaSyDI1bnT0cyKVHyH25PbIZqJfWFhuZlc2YA",
-
-    authDomain:
-        "sagar-invoice-app.firebaseapp.com",
-
-    databaseURL:
-        "https://sagar-invoice-app-default-rtdb.firebaseio.com",
-
-    storageBucket:
-        "sagar-invoice-app.firebasestorage.app",
-
-    messagingSenderId:
-        "733494306894",
-
-    appId:
-        "1:733494306894:web:cbab88d65b1dbd08bcbb1f"
-
-};
-
-
-firebase.initializeApp(firebaseConfig);
-
-const database = firebase.database();
-
-
-
-/* ===============================
-   URL DATA
-================================ */
-
-const urlParams =
-    new URLSearchParams(
-        window.location.search
-    );
-
-
-const userId =
-    urlParams.get("user");
-
-
-const invoiceId =
-    urlParams.get("invoice");
-
-
-
-/* ===============================
-   VARIABLES
-================================ */
-
-let pendingBalance = 0;
-
-let merchantUpi = "";
-
-let shopNameText = "";
-
-let selectedPaymentType = "full";
-
-let selectedPaymentAmount = 0;
-
-
-
-/* ===============================
-   INVALID LINK
-================================ */
-
-if (!userId || !invoiceId) {
-
-    alert("Invalid Invoice Link!");
-
-    document.getElementById(
-        "statusMessage"
-    ).innerText =
-        "Error: Invalid link parameters.";
-
-} else {
-
-    loadCheckoutData();
-
-}
-
-
-
-/* ===============================
-   LOAD CHECKOUT DATA
-================================ */
-
-async function loadCheckoutData() {
-
-    try {
-
-
-        /* GET PROFILE */
-
-        const profileSnap =
-            await database
-                .ref(
-                    "merchant_profile/" +
-                    userId
-                )
-                .once("value");
-
-
-        if (
-            profileSnap.exists() &&
-            profileSnap.val().upiId
-        ) {
-
-            merchantUpi =
-                profileSnap.val().upiId;
-
+        if (!userId || !invoiceId) {
+            alert("Invalid Invoice Link!");
+            document.getElementById('statusMessage').innerText = "Error: Invalid link parameters.";
+        } else {
+            loadCheckoutData();
         }
 
-
-
-        /* GET INVOICES */
-
-        const invSnap =
-            await database
-                .ref(
-                    "user_invoices/" +
-                    userId
-                )
-                .once("value");
-
-
-        const invoices =
-            invSnap.val() || [];
-
-
-        const inv =
-            invoices.find(
-                i =>
-                    String(i.id) ===
-                    String(invoiceId)
-            );
-
-
-
-        if (!inv) {
-
-            alert(
-                "Invoice not found!"
-            );
-
-            return;
-
-        }
-
-
-
-        /* ===============================
-           CALCULATE TOTAL
-        ================================ */
-
-        const totalAmt =
-            (inv.items || [])
-                .reduce(
-                    (sum, item) => {
-
-                        return (
-                            sum +
-
-                            (
-                                Number(
-                                    item.qty || 0
-                                )
-
-                                *
-
-                                Number(
-                                    item.price || 0
-                                )
-                            )
-
-                        );
-
-                    },
-                    0
-                );
-
-
-
-        /* ===============================
-           CALCULATE PAID
-        ================================ */
-
-        const paidAmt =
-            (inv.payments || [])
-                .reduce(
-                    (sum, payment) => {
-
-                        return (
-
-                            sum +
-
-                            Number(
-                                payment.amt || 0
-                            )
-
-                        );
-
-                    },
-                    0
-                );
-
-
-
-        /* ===============================
-           PENDING BALANCE
-        ================================ */
-
-        pendingBalance =
-            totalAmt - paidAmt;
-
-
-        if (pendingBalance < 0) {
-
-            pendingBalance = 0;
-
-        }
-
-
-
-        /* SHOP NAME */
-
-        shopNameText =
-            inv.from ||
-            "My Dukaan";
-
-
-        document.getElementById(
-            "shopName"
-        ).innerText =
-            shopNameText;
-
-
-
-        /* TOTAL DUE */
-
-        document.getElementById(
-            "billAmount"
-        ).innerText =
-            "₹" +
-            pendingBalance.toFixed(2);
-
-
-
-        /* GET UPI */
-
-        if (!merchantUpi) {
-
-            merchantUpi =
-                inv.upiId || "";
-
-        }
-
-
-
-        /* UPI ERROR */
-
-        if (!merchantUpi) {
-
-            document.getElementById(
-                "upiIdText"
-            ).innerText =
-                "UPI ID Not Configured";
-
-
-            document.getElementById(
-                "upiIdText"
-            ).style.color =
-                "red";
-
-
-            document.getElementById(
-                "statusMessage"
-            ).innerHTML =
-                "<span class='text-red-600 font-bold'>Merchant UPI ID not configured.</span>";
-
-
-            return;
-
-        }
-
-
-
-        /* SHOW UPI */
-
-        document.getElementById(
-            "upiIdText"
-        ).innerText =
-            merchantUpi;
-
-
-
-        /* ===============================
-           INVOICE ALREADY PAID
-        ================================ */
-
-        if (pendingBalance <= 0) {
-
-            document.getElementById(
-                "paymentChoiceSection"
-            ).style.display =
-                "none";
-
-
-            document.getElementById(
-                "upiButtonsSection"
-            ).style.display =
-                "none";
-
-
-            document.getElementById(
-                "utrFormSection"
-            ).style.display =
-                "none";
-
-
-            document.getElementById(
-                "statusMessage"
-            ).innerHTML =
-                "<span class='text-emerald-600 font-bold'>✅ This invoice is already fully paid!</span>";
-
-
-            return;
-
-        }
-
-
-
-        /* ===============================
-           UTR ALREADY PENDING
-        ================================ */
-
-        if (
-            inv.status ===
-            "Pending Verification"
-        ) {
-
-            document.getElementById(
-                "paymentChoiceSection"
-            ).style.display =
-                "none";
-
-
-            document.getElementById(
-                "upiButtonsSection"
-            ).style.display =
-                "none";
-
-
-            document.getElementById(
-                "utrFormSection"
-            ).style.display =
-                "none";
-
-
-            document.getElementById(
-                "statusMessage"
-            ).innerHTML =
-
-                "<span class='text-amber-600 font-bold'>" +
-
-                "⏳ Payment Submitted ₹" +
-
-                Number(
-                    inv.submittedAmount || 0
-                ).toFixed(2) +
-
-                " | UTR: " +
-
-                (
-                    inv.utrNumber || ""
-                ) +
-
-                "<br>Waiting for merchant approval." +
-
-                "</span>";
-
-
-            return;
-
-        }
-
-
-
-        /* DEFAULT FULL PAYMENT */
-
-        selectPaymentType(
-            "full"
-        );
-
-
-    } catch (error) {
-
-        console.error(
-            "Checkout Error:",
-            error
-        );
-
-
-        alert(
-            "Failed to load invoice details."
-        );
-
-    }
-
-}
-
-
-
-/* ===============================
-   SELECT PAYMENT TYPE
-================================ */
-
-window.selectPaymentType =
-function(type) {
-
-
-    selectedPaymentType =
-        type;
-
-
-
-    const fullBtn =
-        document.getElementById(
-            "fullPayBtn"
-        );
-
-
-    const partBtn =
-        document.getElementById(
-            "partPayBtn"
-        );
-
-
-    const partBox =
-        document.getElementById(
-            "partAmountBox"
-        );
-
-
-
-    /* FULL PAYMENT */
-
-    if (type === "full") {
-
-
-        partBox.style.display =
-            "none";
-
-
-        fullBtn.className =
-            "font-bold py-3 px-3 rounded-xl border bg-emerald-600 text-white";
-
-
-        partBtn.className =
-            "font-bold py-3 px-3 rounded-xl border bg-white text-slate-700";
-
-
-        document.getElementById(
-            "partAmountInput"
-        ).value =
-            "";
-
-
-        selectedPaymentAmount =
-            pendingBalance;
-
-
-    }
-
-
-
-    /* PART PAYMENT */
-
-    if (type === "part") {
-
-
-        partBox.style.display =
-            "block";
-
-
-        partBtn.className =
-            "font-bold py-3 px-3 rounded-xl border bg-violet-600 text-white";
-
-
-        fullBtn.className =
-            "font-bold py-3 px-3 rounded-xl border bg-white text-slate-700";
-
-
-        selectedPaymentAmount = 0;
-
-    }
-
-
-    updatePaymentMethods();
-
-};
-
-
-
-/* ===============================
-   PART AMOUNT INPUT
-================================ */
-
-document
-    .getElementById(
-        "partAmountInput"
-    )
-    .addEventListener(
-        "input",
-        function() {
-
-
-            let amount =
-                parseFloat(
-                    this.value
-                ) || 0;
-
-
-
-            if (
-                amount >
-                pendingBalance
-            ) {
-
-                amount =
-                    pendingBalance;
-
-
-                this.value =
-                    pendingBalance;
-
-            }
-
-
-
-            if (
-                amount < 0
-            ) {
-
-                amount = 0;
-
-            }
-
-
-
-            selectedPaymentAmount =
-                amount;
-
-
-
-            updatePaymentMethods();
-
-        }
-    );
-
-
-
-/* ===============================
-   GET PAYMENT AMOUNT
-================================ */
-
-function getSelectedAmount() {
-
-
-    if (
-        selectedPaymentType ===
-        "full"
-    ) {
-
-        return pendingBalance;
-
-    }
-
-
-
-    return (
-        parseFloat(
-            document.getElementById(
-                "partAmountInput"
-            ).value
-        )
-
-        || 0
-    );
-
-}
-
-
-
-/* ===============================
-   UPDATE UPI + QR
-================================ */
-
-function updatePaymentMethods() {
-
-
-    const amount =
-        getSelectedAmount();
-
-
-
-    selectedPaymentAmount =
-        amount;
-
-
-
-    /* DISPLAY */
-
-    document.getElementById(
-        "submittedAmountDisplay"
-    ).innerText =
-        "Payment Amount: ₹" +
-        amount.toFixed(2);
-
-
-
-    document.getElementById(
-        "finalPaymentAmount"
-    ).innerText =
-        "₹" +
-        amount.toFixed(2);
-
-
-
-    /* NO AMOUNT */
-
-    if (
-        amount <= 0
-    ) {
-
-        document.getElementById(
-            "upiButtonsSection"
-        ).style.display =
-            "none";
-
-
-        return;
-
-    }
-
-
-
-    /* UPI NOT AVAILABLE */
-
-    if (!merchantUpi) {
-
-        return;
-
-    }
-
-
-
-    /* CREATE UPI */
-
-    const upiIntent =
-
-        "upi://pay" +
-
-        "?pa=" +
-        encodeURIComponent(
-            merchantUpi
-        )
-
-        +
-
-        "&pn=" +
-        encodeURIComponent(
-            shopNameText
-        )
-
-        +
-
-        "&am=" +
-        amount.toFixed(2)
-
-        +
-
-        "&cu=INR";
-
-
-
-    /* UPI BUTTON */
-
-    document.getElementById(
-        "directPayBtn"
-    ).setAttribute(
-        "href",
-        upiIntent
-    );
-
-
-
-    /* QR */
-
-    document.getElementById(
-        "qrCodeImg"
-    ).src =
-
-        "https://api.qrserver.com/v1/create-qr-code/" +
-
-        "?size=250x250" +
-
-        "&data=" +
-
-        encodeURIComponent(
-            upiIntent
-        );
-
-
-
-    document.getElementById(
-        "upiButtonsSection"
-    ).style.display =
-        "block";
-
-}
-
-
-
-/* ===============================
-   SUBMIT UTR
-================================ */
-
-window.submitUtr =
-function() {
-
-
-    const utr =
-        document.getElementById(
-            "utrInput"
-        ).value
-        .trim();
-
-
-
-    const amount =
-        getSelectedAmount();
-
-
-
-    /* UTR VALIDATION */
-
-    if (
-        !/^\d{12}$/.test(
-            utr
-        )
-    ) {
-
-        alert(
-            "Please enter valid 12-digit UTR number."
-        );
-
-        return;
-
-    }
-
-
-
-    /* AMOUNT VALIDATION */
-
-    if (
-        amount <= 0
-    ) {
-
-        alert(
-            "Please select or enter payment amount."
-        );
-
-        return;
-
-    }
-
-
-
-    if (
-        amount >
-        pendingBalance
-    ) {
-
-        alert(
-            "Payment amount total due se zyada nahi ho sakta."
-        );
-
-        return;
-
-    }
-
-
-
-    /* BUTTON */
-
-    const submitBtn =
-        document.getElementById(
-            "submitBtn"
-        );
-
-
-    submitBtn.innerText =
-        "Submitting...";
-
-
-    submitBtn.disabled =
-        true;
-
-
-
-    /* GET DATA */
-
-    database
-        .ref(
-            "user_invoices/" +
-            userId
-        )
-        .once(
-            "value"
-        )
-
-        .then(
-            snapshot => {
-
-
-                let invoices =
-                    snapshot.val() || [];
-
-
-                let found =
-                    false;
-
-
-
-                invoices =
-                    invoices.map(
-                        inv => {
-
-
-                            if (
-
-                                String(
-                                    inv.id
-                                )
-
-                                ===
-
-                                String(
-                                    invoiceId
-                                )
-
-                            ) {
-
-
-                                found =
-                                    true;
-
-
-                                inv.status =
-                                    "Pending Verification";
-
-
-                                inv.utrNumber =
-                                    utr;
-
-
-                                inv.submittedAmount =
-                                    amount;
-
-
-                                inv.paymentType =
-                                    selectedPaymentType;
-
-
-                                inv.submittedAt =
-                                    new Date()
-                                    .toISOString();
-
-                            }
-
-
-                            return inv;
-
-                        }
-                    );
-
-
-
-                if (!found) {
-
-                    throw new Error(
-                        "Invoice not found"
-                    );
-
+        async function loadCheckoutData() {
+            try {
+                // 1. Fetch Merchant UPI Profile first
+                const profileSnap = await database.ref('merchant_profile/' + userId).once('value');
+                if (profileSnap.exists() && profileSnap.val().upiId) {
+                    merchantUpi = profileSnap.val().upiId;
                 }
 
+                // 2. Fetch Invoice Details
+                const invSnap = await database.ref('user_invoices/' + userId).once('value');
+                const invoices = invSnap.val() || [];
+                const inv = invoices.find(i => String(i.id) === String(invoiceId));
 
+                if (inv) {
+                    const totalAmt = (inv.items || []).reduce((s, item) => s + (item.qty * item.price), 0);
+                    const paidAmt = (inv.payments || []).reduce((s, p) => s + p.amt, 0);
+                    pendingBalance = totalAmt - paidAmt;
+                    if(pendingBalance < 0) pendingBalance = 0;
 
-                return database
-                    .ref(
-                        "user_invoices/" +
-                        userId
-                    )
-                    .set(
-                        invoices
-                    );
+                    shopNameText = inv.from || "My Dukaan";
+                    document.getElementById('shopName').innerText = shopNameText;
+                    document.getElementById('billAmount').innerText = "₹" + pendingBalance; // Total Due / remaining balance
+                    
+                    // Agar invoice mein alag UPI hai ya profile mein, usko use karo. Fallback hata diya hai taaki galat naam na aaye.
+                    if (!merchantUpi) {
+                        merchantUpi = inv.upiId || "";
+                    }
 
+                    if (!merchantUpi) {
+                        document.getElementById('upiIdText').innerText = "Error: UPI ID Not Configured by Merchant!";
+                        document.getElementById('upiIdText').style.color = "red";
+                        alert("Kripya pehle apni profile mein jaakar valid UPI ID save karein!");
+                        return;
+                    }
+
+                    document.getElementById('upiIdText').innerText = merchantUpi;
+                    
+                    selectPaymentType('full');
+
+                    if (pendingBalance <= 0) {
+                        document.getElementById('utrFormSection').style.display = 'none';
+                        document.getElementById('statusMessage').innerHTML = "<span class='text-emerald-600 font-bold'>✅ This invoice is already fully paid! Thank you.</span>";
+                    } else if (inv.status === "Pending Verification") {
+                        document.getElementById('utrFormSection').style.display = 'none';
+                        document.getElementById('statusMessage').innerHTML = `<span class='text-amber-600 font-bold'>⏳ UTR Submitted (${inv.utrNumber || ''}). Waiting for merchant approval.</span>`;
+                    }
+                } else {
+                    alert("Invoice not found in database!");
+                }
+            } catch (error) {
+                console.error("Error loading checkout:", error);
+                alert("Failed to load details.");
             }
-        )
+        }
 
-
-        .then(
-            () => {
-
-
-                document.getElementById(
-                    "statusMessage"
-                ).innerHTML =
-
-                    "<span class='text-emerald-600 font-bold'>" +
-
-                    "✓ Payment Request Submitted!" +
-
-                    "<br>Amount: ₹" +
-
-                    amount.toFixed(2) +
-
-                    "<br>UTR: " +
-
-                    utr +
-
-                    "<br>Waiting for merchant approval." +
-
-                    "</span>";
-
-
-
-                document.getElementById(
-                    "utrFormSection"
-                ).style.display =
-                    "none";
-
-
-                document.getElementById(
-                    "paymentChoiceSection"
-                ).style.display =
-                    "none";
-
-
-                document.getElementById(
-                    "upiButtonsSection"
-                ).style.display =
-                    "none";
-
-
+        function getSelectedAmount() {
+            if(selectedPaymentType === 'part') {
+                return parseFloat(document.getElementById('partAmountInput').value) || 0;
             }
-        )
+            return pendingBalance;
+        }
 
+        function updatePaymentMethods() {
+            const amount = getSelectedAmount();
+            selectedPaymentAmount = amount;
+            document.getElementById('submittedAmountDisplay').innerText = 'Payment Amount: ₹' + (amount || 0);
+            if(!merchantUpi || amount <= 0) return;
+            const intent = `upi://pay?pa=${merchantUpi}&pn=${encodeURIComponent(shopNameText)}&am=${amount}&cu=INR`;
+            document.getElementById('directPayBtn').setAttribute('href', intent);
+            document.getElementById('qrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(intent)}`;
+            document.getElementById('upiButtonsSection').style.display = 'block';
+        }
 
-        .catch(
-            error => {
+        window.selectPaymentType = function(type) {
+            selectedPaymentType = type;
+            document.getElementById('partAmountBox').style.display = type === 'part' ? 'block' : 'none';
+            document.getElementById('fullPayBtn').className = type === 'full' ? 'font-bold py-3 px-3 rounded-xl border bg-emerald-600 text-white' : 'font-bold py-3 px-3 rounded-xl border bg-white';
+            document.getElementById('partPayBtn').className = type === 'part' ? 'font-bold py-3 px-3 rounded-xl border bg-emerald-600 text-white' : 'font-bold py-3 px-3 rounded-xl border bg-white';
+            if(type === 'full') document.getElementById('partAmountInput').value = '';
+            updatePaymentMethods();
+        }
 
+        document.addEventListener('input', function(e) {
+            if(e.target && e.target.id === 'partAmountInput') updatePaymentMethods();
+        });
 
-                console.error(
-                    error
-                );
-
-
-                alert(
-                    "Error saving payment: " +
-                    error.message
-                );
-
-
-                submitBtn.innerText =
-                    "Submit Payment & UTR";
-
-
-                submitBtn.disabled =
-                    false;
-
+        window.submitUtr = function() {
+            const utr = document.getElementById('utrInput').value.trim();
+            if (utr.length < 12) {
+                alert("Kripya poora 12-digit UTR number dalein.");
+                return;
             }
-        );
 
-};
+            const amountToSubmit = getSelectedAmount();
+            if(amountToSubmit <= 0 || amountToSubmit > pendingBalance) {
+                alert("Please enter a valid payment amount up to the total due.");
+                return;
+            }
 
+            document.getElementById('submitBtn').innerText = "Submitting...";
+            document.getElementById('submitBtn').disabled = true;
 
-</script></body>
+            database.ref('user_invoices/' + userId).once('value', (snapshot) => {
+                let invoices = snapshot.val() || [];
+                let found = false;
+
+                invoices = invoices.map(inv => {
+                    if (String(inv.id) === String(invoiceId)) {
+                        found = true;
+                        inv.status = "Pending Verification";
+                        inv.utrNumber = utr;
+                        inv.submittedAmount = amountToSubmit;
+                        inv.paymentType = selectedPaymentType;
+                        inv.submittedAt = new Date().toISOString();
+                    }
+                    return inv;
+                });
+
+                if (found) {
+                    database.ref('user_invoices/' + userId).set(invoices).then(() => {
+                        document.getElementById('statusMessage').innerHTML = "<span class='text-emerald-600 font-bold'>✓ UTR Submitted Successfully! Waiting for merchant approval.</span>";
+                        document.getElementById('utrFormSection').style.display = 'none';
+                    }).catch(err => {
+                        alert("Error saving UTR: " + err.message);
+                        document.getElementById('submitBtn').innerText = "Submit UTR & Verify";
+                        document.getElementById('submitBtn').disabled = false;
+                    });
+                } else {
+                    alert("Invoice update error.");
+                    document.getElementById('submitBtn').innerText = "Submit UTR & Verify";
+                    document.getElementById('submitBtn').disabled = false;
+                }
+            });
+        }
+    </script>
+</body>
 </html>
