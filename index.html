@@ -39,7 +39,6 @@
         .form-group { display: flex; flex-direction: column; }
         .form-group label { font-size: 13px; margin-bottom: 6px; font-weight: 600; color: #475569; }
         
-        /* --- PREMIUM 3D GLOW & LIFT FOCUS EFFECT FOR ALL INPUTS --- */
         input, select, .search-bar { 
             padding: 14px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 15px; 
             outline: none; background: #f8fafc; font-weight: 500; color:#1e293b;
@@ -51,8 +50,6 @@
             box-shadow: 0 6px 15px rgba(33, 150, 243, 0.15), 0 0 0 3px rgba(33, 150, 243, 0.1) !important; 
             transform: translateY(-2px);
         }
-        input::placeholder { color: #94a3b8; font-weight: 400; }
-        /* -------------------------------------------------------- */
 
         .input-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 15px;}
         .input-row input, .input-row select { flex: 1; min-width: 120px; }
@@ -91,7 +88,9 @@
         .totals-box { width: 300px; font-size: 14px; background: #fdfdfd; padding: 15px 20px; border-radius: 8px; border: 1px solid #e2e8f0; }
         .tot-row { display: flex; justify-content: space-between; padding: 5px 0; color: #64748b; }
         .tot-row.bold { font-weight: bold; font-size: 16px; border-top: 1px solid #e2e8f0; margin-top: 8px; padding-top: 10px; color: #0f172a; }
-        .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 120px; font-weight: bold; border: 6px solid; padding: 10px 40px; opacity: 0; pointer-events: none; z-index: 0; border-radius: 10px; text-transform: uppercase; }
+        
+        /* 100% FIXED WATERMARK: Hamesha upar dikhega aur chhipega nahi */
+        .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 120px; font-weight: bold; border: 6px solid; padding: 10px 40px; opacity: 0; pointer-events: none; z-index: 10; border-radius: 10px; text-transform: uppercase; mix-blend-mode: multiply; }
         .watermark.PAID { color: var(--paid); border-color: var(--paid); opacity: 1; }
         .watermark.PARTIAL { color: var(--partial); border-color: var(--partial); opacity: 1; }
         .watermark.UNPAID { color: var(--unpaid); border-color: var(--unpaid); opacity: 1; }
@@ -99,10 +98,12 @@
         .payment-info { margin-top: 30px; position: relative; z-index: 1; background: transparent; display: inline-block; padding-right: 20px; }
         .payment-info h3 { font-size: 12px; margin: 0 0 5px 0; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
         #p_payment_text { font-weight: bold; font-size: 15px; }
-        .ledger-table { width: 100%; max-width: 350px; font-size: 12px; margin-top: 10px; border-collapse: collapse; background: rgba(255,255,255,0.8); }
-        .ledger-table th, .ledger-table td { padding: 6px; border: 1px solid #e2e8f0; text-align: left; }
-        .ledger-table th { background: rgba(248,250,252,0.9); }
+        /* TRANSPARENT TABLE SO WATERMARK SHOWS THROUGH */
+        .ledger-table { width: 100%; max-width: 350px; font-size: 12px; margin-top: 10px; border-collapse: collapse; background: transparent; }
+        .ledger-table th, .ledger-table td { padding: 6px; border-bottom: 1px solid #e2e8f0; text-align: left; }
+        .ledger-table th { background: transparent; }
 
+        .search-bar { width: 100%; padding: 14px; margin-bottom: 15px; font-size: 15px; border-radius: 10px; border: 1px solid var(--border); box-sizing: border-box; outline: none;}
         .list-table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
         .list-table th, .list-table td { padding: 15px; text-align: left; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
         .list-table th { background: #f8fafc; color: #475569; font-weight: 600; }
@@ -113,18 +114,26 @@
         .badge.UNPAID { background: #ffebee; color: var(--unpaid-text); }
         .badge.PENDING { background: #fef3c7; color: #b45309; }
         
+        /* PULSE ANIMATION FOR APPROVE BUTTON */
+        @keyframes alertPulse {
+            0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+            70% { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+        }
+        .btn-request { background: #f59e0b !important; animation: alertPulse 2s infinite; }
+
         .action-icon { display: inline-flex; align-items: center; justify-content: center; cursor: pointer; border: none; border-radius: 6px; color: white; transition: 0.15s; }
         .action-icon:active { transform: scale(0.92); }
-        .bg-view { background: #3b82f6; } .bg-edit { background: #64748b; } .bg-img { background: #25D366; } .bg-pdf { background: #8b5cf6; } .bg-pay { background: #f59e0b; } .bg-del { background: #ef4444; } .bg-link { background: #10b981; } .bg-approve { background: #059669; }
+        .bg-view { background: #3b82f6; } .bg-edit { background: #64748b; } .bg-img { background: #25D366; } .bg-pdf { background: #8b5cf6; } .bg-pay { background: #10b981; } .bg-del { background: #ef4444; } .bg-link { background: #6366f1; } .bg-approve { background: #059669; }
         
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); align-items: center; justify-content: center; z-index: 100000; overflow-y: auto; padding: 15px; backdrop-filter: blur(3px); }
         #btn-close-edit-top { display: none; position: absolute; top: -15px; right: -15px; background: #ef4444; color: white; border: 2px solid white; border-radius: 50%; width: 40px; height: 40px; font-size: 18px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1001; align-items: center; justify-content: center; }
         .modal-sm { background: white; padding: 25px; border-radius: 16px; width: 100%; max-width: 420px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); position:relative; overflow:hidden;}
         .modal-lg { background: transparent; padding: 10px; width: 100%; max-width: 900px; margin: auto; position: relative;}
+        .modal-sm input, .modal-sm select { width: 100%; padding: 14px; margin: 8px 0 15px 0; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline:none; background:#f8fafc;}
         .modal-sm label { font-size: 13px; font-weight: bold; color: #475569; }
         #db-loader { text-align: center; padding: 20px; font-size: 16px; color: #555; }
 
-        /* MENU LIST CSS */
         .menu-list-btn { width: 100%; padding: 16px; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 700; color: #334155; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
         .menu-list-btn i.fa-chevron-right { margin-left: auto; font-size: 12px; color: #94a3b8; }
         .menu-list-btn i.main-icon { color: var(--primary); font-size: 18px; width: 24px; text-align: center; }
@@ -167,7 +176,6 @@
             #edit-items-body td:nth-child(4) { width: 30%; justify-content: flex-end; font-weight: bold; color:var(--primary);} 
             #edit-items-body td:nth-child(5) { width: 100%; justify-content: flex-end; border-top: 1px dashed #e2e8f0; margin-top: 6px; padding-top: 8px; } 
             
-            /* CLEAN COMPACT CARD CSS GRID */
             .list-table { background: transparent !important; box-shadow: none !important; border-radius: 0 !important; }
             .list-table thead { display: none; }
             .list-table, .list-table tbody { display: block; width: 100%; }
@@ -175,22 +183,48 @@
             .list-table tr { 
                 display: grid !important; 
                 grid-template-columns: 1fr 1fr; 
-                grid-template-areas: "inv status" "customer customer" "total balance" "actions actions";
-                gap: 8px; background: #fff; margin-bottom: 12px; border-radius: 12px; 
-                border: 1px solid #e2e8f0; padding: 14px 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); 
+                grid-template-areas: 
+                    "inv status"
+                    "customer customer"
+                    "total balance"
+                    "actions actions";
+                gap: 8px; 
+                background: #fff; 
+                margin-bottom: 12px; 
+                border-radius: 12px; 
+                border: 1px solid #e2e8f0; 
+                padding: 14px 12px; 
+                box-shadow: 0 4px 10px rgba(0,0,0,0.03); 
             }
+            
             .list-table td { padding: 0 !important; border: none !important; text-align: left; }
-            .list-table td:nth-child(1) { display: none !important; } 
+            
+            .list-table td:nth-child(1) { display: none !important; }
             .list-table td:nth-child(2) { grid-area: inv; font-size: 16px; font-weight: 800; color: #0f172a; }
             .list-table td:nth-child(6) { grid-area: status; display: flex; flex-wrap: wrap; gap: 4px; justify-content: flex-end; align-items: flex-start; }
             .list-table td:nth-child(3) { grid-area: customer; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px !important; margin-bottom: 4px; }
+            
             .list-table td:nth-child(4) { grid-area: total; background: #f8fafc; padding: 8px !important; border-radius: 6px; font-size: 13px; font-weight: 700; }
             .list-table td:nth-child(4)::before { content: 'Total: '; font-weight: 500; color: #64748b; }
+            
             .list-table td:nth-child(5) { grid-area: balance; background: #fef2f2; padding: 8px !important; border-radius: 6px; font-size: 13px; font-weight: 800; text-align: right !important; }
             .list-table td:nth-child(5)::before { content: 'Bal: '; font-weight: 500; color: #64748b; }
-            .list-table td:nth-child(7) { grid-area: actions; display: grid !important; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 4px; border-top: 1px dashed #e2e8f0; padding-top: 12px !important; }
             
-            .action-icon { width: 100% !important; height: 42px !important; margin: 0 !important; border-radius: 6px !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; gap: 3px !important; padding: 0 !important;}
+            .list-table td:nth-child(7) { 
+                grid-area: actions; 
+                display: grid !important; 
+                grid-template-columns: repeat(4, 1fr); 
+                gap: 6px; 
+                margin-top: 4px; 
+                border-top: 1px dashed #e2e8f0; 
+                padding-top: 12px !important; 
+            }
+            
+            .action-icon { 
+                width: 100% !important; height: 42px !important; margin: 0 !important; border-radius: 6px !important; 
+                display: flex !important; flex-direction: column !important; justify-content: center !important; 
+                align-items: center !important; gap: 3px !important; padding: 0 !important;
+            }
             .action-icon i { font-size: 14px !important; margin: 0 !important; }
             .action-icon span { font-size: 9px !important; font-weight: 800 !important; }
             .badge { padding: 4px 8px; font-size: 10px; display:inline-block; border-radius:4px;}
@@ -308,52 +342,40 @@
     <!-- NEW LIST MENU PROFILE OVERLAY (CLEAN & PROFESSIONAL) -->
     <div class="overlay" id="profile-overlay" style="z-index: 999998; align-items: flex-end; padding:0; padding-bottom:70px;">
         <div class="modal-sm" style="padding:0; overflow:hidden; background:#f8fafc; width:100%; max-width:100%; border-radius: 20px 20px 0 0; box-shadow: 0 -10px 40px rgba(0,0,0,0.15); animation: slideUp 0.3s ease-out;">
-            
-            <!-- HEADER -->
             <div style="background: var(--primary); color: white; padding: 25px 20px; text-align: center; position:relative;">
                 <button onclick="closeProfileMenu()" style="position:absolute; top:15px; right:15px; background:rgba(255,255,255,0.2); border:none; color:white; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;"><i class="fas fa-times"></i></button>
                 <div style="width:64px; height:64px; background:white; color:var(--primary); font-size:26px; display:inline-flex; align-items:center; justify-content:center; border-radius:50%; font-weight:bold; margin-bottom:10px; box-shadow:0 4px 10px rgba(0,0,0,0.2);" id="pm-avatar">U</div>
                 <h3 style="margin:0; font-size:20px; font-weight:700;" id="pm-name">User Name</h3>
                 <p style="margin:4px 0 0 0; font-size:13px; opacity: 0.9;" id="pm-email">user@email.com</p>
             </div>
-
-            <!-- MAIN MENU LIST VIEW -->
             <div id="profile-menu-view" style="padding: 20px;">
                 <button class="menu-list-btn" onclick="showProfileSection('upi-edit-view')"><i class="fas fa-qrcode main-icon"></i> Update UPI ID <i class="fas fa-chevron-right ml-auto"></i></button>
                 <button class="menu-list-btn" onclick="showProfileSection('pass-edit-view')"><i class="fas fa-key main-icon"></i> Change Password <i class="fas fa-chevron-right ml-auto"></i></button>
                 <button class="menu-list-btn" onclick="showProfileSection('item-edit-view')"><i class="fas fa-box main-icon"></i> Update Item Data <i class="fas fa-chevron-right ml-auto"></i></button>
                 <button class="menu-list-btn" onclick="logoutApp()" style="margin-top: 15px; color:#ef4444;"><i class="fas fa-sign-out-alt main-icon" style="color:#ef4444;"></i> Logout Account</button>
             </div>
-
-            <!-- SUB VIEW: UPI -->
             <div id="upi-edit-view" style="display:none; padding:20px; background:#fff; min-height: 300px;">
                 <h4 style="margin:0 0 20px 0; display:flex; align-items:center; gap:12px; font-size: 18px; color:#1e293b;"><button onclick="showProfileSection('profile-menu-view')" style="border:none; background:transparent; font-size:18px; cursor:pointer; color:#64748b;"><i class="fas fa-arrow-left"></i></button> Update UPI ID</h4>
                 <label style="font-size:13px; font-weight:bold; color:#475569;">Receiving UPI ID</label>
                 <input type="text" id="prof-upi-id" placeholder="e.g. yourname@paytm" style="margin:8px 0 20px; width:100%;">
                 <button onclick="saveMerchantUpi()" style="width:100%; padding:14px; background:#10b981; color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size:15px; box-shadow:0 4px 15px rgba(16, 185, 129, 0.3);">Save Details</button>
             </div>
-
-            <!-- SUB VIEW: PASSWORD -->
             <div id="pass-edit-view" style="display:none; padding:20px; background:#fff; min-height: 300px;">
                 <h4 style="margin:0 0 20px 0; display:flex; align-items:center; gap:12px; font-size: 18px; color:#1e293b;"><button onclick="showProfileSection('profile-menu-view')" style="border:none; background:transparent; font-size:18px; cursor:pointer; color:#64748b;"><i class="fas fa-arrow-left"></i></button> Change Password</h4>
                 <label style="font-size:13px; font-weight:bold; color:#475569;">New Password</label>
                 <input type="password" id="prof-new-pass" placeholder="Minimum 6 characters" style="margin:8px 0 20px; width:100%;">
                 <button onclick="updateUserPassword()" style="width:100%; padding:14px; background:#3b82f6; color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size:15px; box-shadow:0 4px 15px rgba(59, 130, 246, 0.3);">Update Password</button>
             </div>
-
-            <!-- SUB VIEW: ITEM MASTER -->
             <div id="item-edit-view" style="display:none; padding:20px; background:#fff; min-height: 300px;">
                 <h4 style="margin:0 0 20px 0; display:flex; align-items:center; gap:12px; font-size: 18px; color:#1e293b;"><button onclick="showProfileSection('profile-menu-view')" style="border:none; background:transparent; font-size:18px; cursor:pointer; color:#64748b;"><i class="fas fa-arrow-left"></i></button> Update Item Data</h4>
                 <p id="item-master-count" style="margin:0 0 20px; font-size:14px; color:#64748b; font-weight:bold; background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #e2e8f0; text-align:center;">0 items currently saved</p>
                 <button onclick="document.getElementById('item-master-file').click()" style="width:100%; padding:14px; background:#8b5cf6; color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size:15px; box-shadow:0 4px 15px rgba(139, 92, 246, 0.3); margin-bottom:15px;"><i class="fas fa-file-excel"></i> Import Excel File</button>
                 <input type="file" id="item-master-file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importItemMaster(event)">
-                
                 <div style="display:flex; gap:10px; margin-top:10px;">
                     <button onclick="exportItemMasterTemplate()" style="flex:1; padding:12px; background:#f1f5f9; color:#475569; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:13px;">Get Template</button>
                     <button onclick="clearItemMaster()" style="flex:1; padding:12px; background:#fef2f2; color:#dc2626; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:13px;">Delete All</button>
                 </div>
             </div>
-
         </div>
     </div>
     <style>@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }</style>
@@ -369,7 +391,6 @@
     <!-- TAB 1: CREATE BILL -->
     <div id="create-tab" class="tab-content active container">
         <div id="create-tab-body">
-            <!-- SHARED EDITOR CONTAINER -->
             <div id="editor-container">
                 <button id="btn-close-edit-top" onclick="cancelEditMode()"><i class="fas fa-times"></i></button>
                 <div class="form-panel">
@@ -613,7 +634,6 @@
         function openSignupModal() { document.getElementById('signup-overlay').style.display = 'flex'; }
         function closeSignupModal() { document.getElementById('signup-overlay').style.display = 'none'; }
         
-        // NEW LIST MENU FUNCTIONS
         function openProfileModal() {
             const user = auth.currentUser;
             if(user) {
@@ -875,7 +895,6 @@
             return false;
         }
 
-        // --- FIXED COMPACT LIST WITH CLEAN LAYOUT ---
         function renderList(reset = false) {
             if(reset) listLimit = 30;
             const term = document.getElementById('search-box').value.toLowerCase();
@@ -896,7 +915,7 @@
 
                 let approveBtnHtml = '';
                 if(inv.status === "Pending Verification" || inv.utrNumber) {
-                    approveBtnHtml = `<button class="action-icon bg-approve" onclick="openUtrModal('${inv.id}')" title="Approve UTR"><i class="fas fa-check-circle"></i><span>OK</span></button>`;
+                    approveBtnHtml = `<button class="action-icon btn-request" onclick="openUtrModal('${inv.id}')" title="Approve UTR"><i class="fas fa-bell"></i><span>APPROVE</span></button>`;
                 }
 
                 tbody.innerHTML += `<tr>
@@ -1028,9 +1047,13 @@
         async function shareCanvasAsFile(canvas, invNo) {
             const blob = await new Promise((resolve, reject) => canvas.toBlob(b => b ? resolve(b) : reject(new Error('Image generation failed')), 'image/png', 1));
             const file = new File([blob], `Invoice_${invNo || 'Bill'}.png`, { type: 'image/png' });
-            if(navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))) {
-                await navigator.share({ title: `Invoice ${invNo || ''}`, text: 'Here is your invoice.' }); 
-                return;
+            
+            if(navigator.canShare && navigator.canShare({files:[file]})) {
+                try {
+                    // WhatsApp par sirf image bhejne ke liye text hatana zaroori tha.
+                    await navigator.share({ files:[file] }); 
+                    return;
+                } catch(err) { console.log(err); }
             }
             const url = URL.createObjectURL(blob), a = document.createElement('a');
             a.href=url; a.download=file.name; document.body.appendChild(a); a.click(); a.remove();
