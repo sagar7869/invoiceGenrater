@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Checkout - Pay & Verify</title>
+    <!-- Tailwind CSS for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 font-sans">
+
+    <div class="max-w-md mx-auto min-h-screen bg-white shadow-lg flex flex-col justify-between p-6">
+        
+        <!-- Header -->
+        <div>
+            <div class="text-center mb-6">
+                <h1 class="text-xl font-bold text-slate-800" id="shopName">Dukaan ka Naam</h1>
+                <p class="text-sm text-slate-500">Invoice Amount</p>
+                <h2 class="text-3xl font-extrabold text-emerald-600 mt-1" id="billAmount">₹500</h2>
+            </div>
+
+            <!-- Payment Box -->
+            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 text-center mb-6 shadow-sm">
+                <p class="text-sm font-medium text-slate-600 mb-3">Is QR Code ko kisi bhi UPI App se scan karein:</p>
+                
+                <!-- QR Code Image -->
+                <div class="bg-white p-3 inline-block rounded-xl border border-slate-200 shadow-inner mb-3">
+                    <img id="qrCodeImg" src="https://via.placeholder.com/180" alt="UPI QR Code" class="w-44 h-44 mx-auto object-contain">
+                </div>
+                
+                <p class="text-xs text-slate-500">UPI ID: <span id="upiIdText" class="font-semibold text-slate-700">loading...</span></p>
+            </div>
+
+            <!-- UTR Submission Form -->
+            <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6">
+                <h3 class="text-sm font-bold text-amber-800 mb-1">Payment karne ke baad yahan UTR dalein:</h3>
+                <p class="text-xs text-amber-600 mb-3">Payment successful hone ke baad 12-digit UTR/Reference Number yahan enter karein.</p>
+                
+                <input type="text" id="utrInput" placeholder="Enter 12-digit UTR Number" maxlength="12" class="w-full px-4 py-3 border border-amber-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 text-center font-mono text-lg tracking-wider bg-white mb-3">
+                
+                <button onclick="submitUtr()" id="submitBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition duration-200 shadow-md">
+                    Submit UTR & Verify
+                </button>
+            </div>
+        </div>
+
+        <!-- Footer Status Message -->
+        <div id="statusMessage" class="text-center text-sm text-slate-500 pb-2">
+            Status: Waiting for payment...
+        </div>
+
+    </div>
+
+    <!-- Firebase SDKs -->
+    <type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Aapki Firebase Configuration (Yahan apni details dalein)
+        const firebaseConfig = {
+            apiKey: "AQUAP_AP_YOUR_KEY",
+            authDomain: "your-app.firebaseapp.com",
+            projectId: "your-app-id",
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // URL se Invoice ID nikalna (e.g. checkout.html?invoice=INV101)
+        const urlParams = new URLSearchParams(window.location.search);
+        const invoiceId = urlParams.get('invoice') || "INV_TEST";
+
+        async function loadInvoiceDetails() {
+            try {
+                // Firestore se dukandaar aur bill ki details laana
+                const docRef = doc(db, "invoices", invoiceId);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    document.getElementById('shopName').innerText = data.shopName;
+                    document.getElementById('billAmount').innerText = "₹" + data.amount;
+                    document.getElementById('upiIdText').innerText = data.upiId;
+                    document.getElementById('qrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${data.upiId}&pn=${data.shopName}&am=${data.amount}&cu=INR`;
+                } else {
+                    alert("Invoice not found!");
+                }
+            } catch (error) {
+                console.error("Error loading invoice:", error);
+            }
+        }
+
+        // Global scope mein function attach karna taaki HTML button click kaam kare
+        window.submitUtr = async function() {
+            const utr = document.getElementById('utrInput').value.trim();
+            if (utr.length < 12) {
+                alert("Kripya poora 12-digit UTR number dalein.");
+                return;
+            }
+
+            document.getElementById('submitBtn').innerText = "Submitting...";
+            document.getElementById('submitBtn').disabled = true;
+
+            try {
+                // UTR ko database mein save karna (Status: Pending)
+                await setDoc(doc(db, "invoices", invoiceId), {
+                    utrNumber: utr,
+                    status: "Pending Verification",
+                    submittedAt: new Date().toISOString()
+                }, { merge: true });
+
+                document.getElementById('statusMessage').innerHTML = "<span class='text-emerald-600 font-bold'>✓ UTR Submitted Successfully! Waiting for merchant approval.</span>";
+                document.querySelector('.bg-amber-50').style.display = 'none';
+            } catch (error) {
+                console.error("Error submitting UTR:", error);
+                alert("Kuch galat ho gaya. Phir se try karein.");
+                document.getElementById('submitBtn').innerText = "Submit UTR & Verify";
+                document.getElementById('submitBtn').disabled = false;
+            }
+        }
+
+        loadInvoiceDetails();
+    </script>
+</body>
+</html>
