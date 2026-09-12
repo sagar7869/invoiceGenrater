@@ -84,6 +84,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const userId = urlParams.get('user');
         const invoiceId = urlParams.get('invoice');
+        const paymentCode = urlParams.get('paycode') || '';
 
         let pendingBalance = 0;
         let selectedPaymentType = "full";
@@ -165,7 +166,8 @@
             selectedPaymentAmount = amount;
             document.getElementById('submittedAmountDisplay').innerText = 'Payment Amount: ₹' + (amount || 0);
             if(!merchantUpi || amount <= 0) return;
-            const intent = `upi://pay?pa=${merchantUpi}&pn=${encodeURIComponent(shopNameText)}&am=${amount}&cu=INR`;
+            const note = paymentCode ? `Invoice ${invoiceId} | ${paymentCode}` : `Invoice ${invoiceId}`;
+            const intent = `upi://pay?pa=${encodeURIComponent(merchantUpi)}&pn=${encodeURIComponent(shopNameText)}&am=${encodeURIComponent(amount.toFixed(2))}&cu=INR&tn=${encodeURIComponent(note)}`;
             document.getElementById('directPayBtn').setAttribute('href', intent);
             document.getElementById('qrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(intent)}`;
             document.getElementById('upiButtonsSection').style.display = 'block';
@@ -211,6 +213,7 @@
                         inv.utrNumber = utr;
                         inv.submittedAmount = amountToSubmit;
                         inv.paymentType = selectedPaymentType;
+                        inv.paymentCode = paymentCode || inv.paymentCode || '';
                         inv.submittedAt = new Date().toISOString();
                     }
                     return inv;
