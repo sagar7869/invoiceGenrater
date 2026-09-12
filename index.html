@@ -39,6 +39,7 @@
         .form-group { display: flex; flex-direction: column; }
         .form-group label { font-size: 13px; margin-bottom: 6px; font-weight: 600; color: #475569; }
         
+        /* PREMIUM 3D GLOW FOCUS EFFECT FOR ALL INPUTS */
         input, select, .search-bar { 
             padding: 14px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 15px; 
             outline: none; background: #f8fafc; font-weight: 500; color:#1e293b;
@@ -50,6 +51,7 @@
             box-shadow: 0 6px 15px rgba(33, 150, 243, 0.15), 0 0 0 3px rgba(33, 150, 243, 0.1) !important; 
             transform: translateY(-2px);
         }
+        input::placeholder { color: #94a3b8; font-weight: 400; }
 
         .input-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 15px;}
         .input-row input, .input-row select { flex: 1; min-width: 120px; }
@@ -89,7 +91,6 @@
         .tot-row { display: flex; justify-content: space-between; padding: 5px 0; color: #64748b; }
         .tot-row.bold { font-weight: bold; font-size: 16px; border-top: 1px solid #e2e8f0; margin-top: 8px; padding-top: 10px; color: #0f172a; }
         
-        /* 100% FIXED WATERMARK: Hamesha upar dikhega aur chhipega nahi */
         .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 120px; font-weight: bold; border: 6px solid; padding: 10px 40px; opacity: 0; pointer-events: none; z-index: 10; border-radius: 10px; text-transform: uppercase; mix-blend-mode: multiply; }
         .watermark.PAID { color: var(--paid); border-color: var(--paid); opacity: 1; }
         .watermark.PARTIAL { color: var(--partial); border-color: var(--partial); opacity: 1; }
@@ -98,7 +99,6 @@
         .payment-info { margin-top: 30px; position: relative; z-index: 1; background: transparent; display: inline-block; padding-right: 20px; }
         .payment-info h3 { font-size: 12px; margin: 0 0 5px 0; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
         #p_payment_text { font-weight: bold; font-size: 15px; }
-        /* TRANSPARENT TABLE SO WATERMARK SHOWS THROUGH */
         .ledger-table { width: 100%; max-width: 350px; font-size: 12px; margin-top: 10px; border-collapse: collapse; background: transparent; }
         .ledger-table th, .ledger-table td { padding: 6px; border-bottom: 1px solid #e2e8f0; text-align: left; }
         .ledger-table th { background: transparent; }
@@ -114,7 +114,6 @@
         .badge.UNPAID { background: #ffebee; color: var(--unpaid-text); }
         .badge.PENDING { background: #fef3c7; color: #b45309; }
         
-        /* PULSE ANIMATION FOR APPROVE BUTTON */
         @keyframes alertPulse {
             0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
             70% { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
@@ -183,48 +182,22 @@
             .list-table tr { 
                 display: grid !important; 
                 grid-template-columns: 1fr 1fr; 
-                grid-template-areas: 
-                    "inv status"
-                    "customer customer"
-                    "total balance"
-                    "actions actions";
-                gap: 8px; 
-                background: #fff; 
-                margin-bottom: 12px; 
-                border-radius: 12px; 
-                border: 1px solid #e2e8f0; 
-                padding: 14px 12px; 
-                box-shadow: 0 4px 10px rgba(0,0,0,0.03); 
+                grid-template-areas: "inv status" "customer customer" "total balance" "actions actions";
+                gap: 8px; background: #fff; margin-bottom: 12px; border-radius: 12px; 
+                border: 1px solid #e2e8f0; padding: 14px 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); 
             }
-            
             .list-table td { padding: 0 !important; border: none !important; text-align: left; }
-            
-            .list-table td:nth-child(1) { display: none !important; }
+            .list-table td:nth-child(1) { display: none !important; } 
             .list-table td:nth-child(2) { grid-area: inv; font-size: 16px; font-weight: 800; color: #0f172a; }
             .list-table td:nth-child(6) { grid-area: status; display: flex; flex-wrap: wrap; gap: 4px; justify-content: flex-end; align-items: flex-start; }
             .list-table td:nth-child(3) { grid-area: customer; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px !important; margin-bottom: 4px; }
-            
             .list-table td:nth-child(4) { grid-area: total; background: #f8fafc; padding: 8px !important; border-radius: 6px; font-size: 13px; font-weight: 700; }
             .list-table td:nth-child(4)::before { content: 'Total: '; font-weight: 500; color: #64748b; }
-            
             .list-table td:nth-child(5) { grid-area: balance; background: #fef2f2; padding: 8px !important; border-radius: 6px; font-size: 13px; font-weight: 800; text-align: right !important; }
             .list-table td:nth-child(5)::before { content: 'Bal: '; font-weight: 500; color: #64748b; }
+            .list-table td:nth-child(7) { grid-area: actions; display: grid !important; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 4px; border-top: 1px dashed #e2e8f0; padding-top: 12px !important; }
             
-            .list-table td:nth-child(7) { 
-                grid-area: actions; 
-                display: grid !important; 
-                grid-template-columns: repeat(4, 1fr); 
-                gap: 6px; 
-                margin-top: 4px; 
-                border-top: 1px dashed #e2e8f0; 
-                padding-top: 12px !important; 
-            }
-            
-            .action-icon { 
-                width: 100% !important; height: 42px !important; margin: 0 !important; border-radius: 6px !important; 
-                display: flex !important; flex-direction: column !important; justify-content: center !important; 
-                align-items: center !important; gap: 3px !important; padding: 0 !important;
-            }
+            .action-icon { width: 100% !important; height: 42px !important; margin: 0 !important; border-radius: 6px !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; gap: 3px !important; padding: 0 !important;}
             .action-icon i { font-size: 14px !important; margin: 0 !important; }
             .action-icon span { font-size: 9px !important; font-weight: 800 !important; }
             .badge { padding: 4px 8px; font-size: 10px; display:inline-block; border-radius:4px;}
@@ -339,7 +312,7 @@
         </div>
     </div>
 
-    <!-- NEW LIST MENU PROFILE OVERLAY (CLEAN & PROFESSIONAL) -->
+    <!-- PROFILE MENU OVERLAY -->
     <div class="overlay" id="profile-overlay" style="z-index: 999998; align-items: flex-end; padding:0; padding-bottom:70px;">
         <div class="modal-sm" style="padding:0; overflow:hidden; background:#f8fafc; width:100%; max-width:100%; border-radius: 20px 20px 0 0; box-shadow: 0 -10px 40px rgba(0,0,0,0.15); animation: slideUp 0.3s ease-out;">
             <div style="background: var(--primary); color: white; padding: 25px 20px; text-align: center; position:relative;">
@@ -1033,52 +1006,57 @@
             if(inv && amt > 0) { const now = new Date(); if(!inv.payments) inv.payments = []; inv.payments.push({ id: Date.now(), amt, mode, date: `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}` }); recalcInvStatus(inv); syncToFirebase(); hideNewPayForm(); showToast("Payment added.", "success"); } else showToast("Invalid Amount", "error");
         }
 
+        // PDF KE LIYE PURANA SYSTEM TAAKI KOI ISSUE NA AAYE
         function makeVisibleForExport(callback) {
             const printArea = document.getElementById('print-area');
             const wrapper = document.getElementById('preview-wrapper');
             const origTransform = printArea.style.transform;
             const origHeight = wrapper.style.height;
             printArea.style.transform = 'none'; wrapper.style.height = 'auto';
-            return new Promise(resolve => setTimeout(resolve, 80)).then(() => Promise.resolve(callback())).finally(() => {
+            return new Promise(resolve => setTimeout(resolve, 50)).then(() => Promise.resolve(callback())).finally(() => {
                 printArea.style.transform = origTransform; wrapper.style.height = origHeight;
             });
         }
 
-        async function shareCanvasAsFile(canvas, invNo) {
-            const blob = await new Promise((resolve, reject) => canvas.toBlob(b => b ? resolve(b) : reject(new Error('Image generation failed')), 'image/png', 1));
-            const file = new File([blob], `Invoice_${invNo || 'Bill'}.png`, { type: 'image/png' });
-            
-            if(navigator.canShare && navigator.canShare({files:[file]})) {
-                try {
-                    // WhatsApp par sirf image bhejne ke liye text hatana zaroori tha.
-                    await navigator.share({ files:[file] }); 
-                    return;
-                } catch(err) { console.log(err); }
-            }
-            const url = URL.createObjectURL(blob), a = document.createElement('a');
-            a.href=url; a.download=file.name; document.body.appendChild(a); a.click(); a.remove();
-            setTimeout(()=>URL.revokeObjectURL(url),1000);
-        }
-
-        async function doShareAsImage(elementOverride, invNoOverride) {
-            const element = elementOverride || document.getElementById('print-area');
-            const invNo = invNoOverride || document.getElementById('f_inv').value || 'Bill';
-            try {
-                await new Promise(r=>setTimeout(r,100));
-                const canvas = await html2canvas(element, {scale:2, useCORS:true, backgroundColor:'#ffffff', logging:false, scrollY:0, windowWidth:element.scrollWidth, windowHeight:element.scrollHeight});
-                await shareCanvasAsFile(canvas, invNo);
-                return true;
-            } catch(e) {
-                if(e?.name !== 'AbortError') showToast('Image sharing error. Please try again.', 'error');
-                return false;
-            }
-        }
-
+        // --- 100% FIXED WHATSAPP IMAGE SHARE LOGIC (NO DELAY, NO AUTO-DOWNLOAD) ---
         async function shareAsImageFromPreview(btn) {
             if(checkRequireSave()) return;
             if(btn) { btn.disabled=true; btn.style.pointerEvents='none'; }
-            try { await makeVisibleForExport(() => doShareAsImage()); }
-            finally { if(btn) { btn.disabled=false; btn.style.pointerEvents='auto'; } }
+            
+            const printArea = document.getElementById('print-area');
+            const wrapper = document.getElementById('preview-wrapper');
+            const origTransform = printArea.style.transform;
+            const origHeight = wrapper.style.height;
+            
+            printArea.style.transform = 'none'; wrapper.style.height = 'auto';
+            
+            // Force Sync render - ye 'file download bug' ko roke ga
+            void printArea.offsetHeight;
+
+            try {
+                const canvas = await html2canvas(printArea, {scale:2, useCORS:true, backgroundColor:'#ffffff', logging:false, scrollY:0});
+                
+                printArea.style.transform = origTransform; wrapper.style.height = origHeight;
+                
+                const invNo = document.getElementById('f_inv').value || 'Bill';
+                const blob = await new Promise(res => canvas.toBlob(res, 'image/png', 1));
+                const file = new File([blob], `Invoice_${invNo}.png`, { type: 'image/png' });
+                
+                if(navigator.canShare && navigator.canShare({files:[file]})) {
+                    // TEXT WAPAS ADD KIYA GAYA HAI YAHAN:
+                    await navigator.share({ title: `Invoice ${invNo}`, text: 'Here is your invoice.', files:[file] });
+                } else {
+                    const url = URL.createObjectURL(blob), a = document.createElement('a');
+                    a.href=url; a.download=file.name; document.body.appendChild(a); a.click(); a.remove();
+                    setTimeout(()=>URL.revokeObjectURL(url),1000);
+                    showToast('File downloaded (Share not supported)', 'info');
+                }
+            } catch(e) {
+                if(e.name !== 'AbortError') showToast('Sharing failed. Try again.', 'error');
+            } finally { 
+                printArea.style.transform = origTransform; wrapper.style.height = origHeight;
+                if(btn) { btn.disabled=false; btn.style.pointerEvents='auto'; } 
+            }
         }
 
         function snapshotEditor() {
@@ -1095,25 +1073,49 @@
             renderTables(); updatePreview();
         }
 
+        // --- FIXED IMAGE SHARE FOR CX LIST ---
         async function shareAsImageList(id) {
             const inv = invoices.find(i => String(i.id) === String(id));
             if(!inv) return showToast('Invoice not found.', 'error');
             const snap = snapshotEditor();
-            const activeTab = 'list-tab';
-            let exportNode;
+            
             try {
                 loadDataToForm(inv); updatePreview();
-                exportNode = document.getElementById('print-area').cloneNode(true);
-                exportNode.style.cssText='position:fixed !important; left:-10000px !important; top:0 !important; display:block !important; transform:none !important; width:794px !important; height:auto !important; z-index:-1 !important; background:#fff !important;';
-                document.body.appendChild(exportNode);
-                await new Promise(r=>setTimeout(r,250));
-                await doShareAsImage(exportNode, inv.invNo || inv.id);
+                
+                document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+                document.getElementById('preview-tab').classList.add('active');
+                
+                const printArea = document.getElementById('print-area');
+                const wrapper = document.getElementById('preview-wrapper');
+                const origTransform = printArea.style.transform;
+                const origHeight = wrapper.style.height;
+                printArea.style.transform = 'none'; wrapper.style.height = 'auto';
+                void printArea.offsetHeight;
+                
+                const canvas = await html2canvas(printArea, {scale:2, useCORS:true, backgroundColor:'#ffffff', logging:false, scrollY:0});
+                printArea.style.transform = origTransform; wrapper.style.height = origHeight;
+                
+                const blob = await new Promise(res => canvas.toBlob(res, 'image/png', 1));
+                const file = new File([blob], `Invoice_${inv.invNo || inv.id}.png`, { type: 'image/png' });
+                
+                if(navigator.canShare && navigator.canShare({files:[file]})) {
+                    // TEXT WAPAS ADD KIYA GAYA HAI YAHAN:
+                    await navigator.share({ title: `Invoice ${inv.invNo || ''}`, text: 'Here is your invoice.', files:[file] });
+                } else {
+                    const url = URL.createObjectURL(blob), a = document.createElement('a');
+                    a.href=url; a.download=file.name; document.body.appendChild(a); a.click(); a.remove();
+                    setTimeout(()=>URL.revokeObjectURL(url),1000);
+                    showToast('File downloaded (Share not supported)', 'info');
+                }
             } catch(e) {
-                 showToast('Image sharing error. Please try again.', 'error');
+                if(e.name !== 'AbortError') showToast('Sharing failed. Try again.', 'error');
             } finally {
-                if(exportNode) exportNode.remove();
                 restoreEditor(snap);
-                switchTab(activeTab);
+                document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+                document.getElementById('list-tab').classList.add('active');
+                const btns = document.querySelectorAll('.tab-btn');
+                btns.forEach(b => b.classList.remove('active'));
+                if(btns[2]) btns[2].classList.add('active');
             }
         }
 
