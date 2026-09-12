@@ -715,8 +715,8 @@
         }
 
         function syncToFirebase() {
-            if(!activeUserId) return;
-            database.ref('user_invoices/' + activeUserId).set(invoices);
+            if(!activeUserId) return Promise.resolve();
+            return database.ref('user_invoices/' + activeUserId).set(invoices);
         }
 
         function setTodayDate() {
@@ -853,7 +853,8 @@
             const existingInv = invoices.find(i => i.id === currentInvId);
             const statusToSave = existingInv && existingInv.status === "Pending Verification" ? "Pending Verification" : calc.status;
 
-            const invData = { id: currentInvId, from: document.getElementById('f_from').value, to: document.getElementById('f_to').value, invNo: document.getElementById('f_inv').value, date: document.getElementById('f_cdate').value, dueDate: document.getElementById('f_ddate').value, upiId: merchantUpiId, items: currentItems, payments: currentPayments, status: statusToSave };
+            const previousInv = invoices.find(i => i.id === currentInvId) || {};
+            const invData = { ...previousInv, id: currentInvId, from: document.getElementById('f_from').value, to: document.getElementById('f_to').value, invNo: document.getElementById('f_inv').value, date: document.getElementById('f_cdate').value, dueDate: document.getElementById('f_ddate').value, upiId: merchantUpiId, items: currentItems, payments: currentPayments, status: statusToSave };
             const idx = invoices.findIndex(i => i.id === currentInvId);
             if(idx > -1) invoices[idx] = invData; else invoices.push(invData);
             
@@ -890,7 +891,7 @@
                 tbody.innerHTML += `<tr>
                     <td data-label="Date">${inv.date ? inv.date.split('-').reverse().join('/') : '-'}</td>
                     <td data-label="Invoice #"><b>${inv.invNo}</b></td>
-                    <td data-label="Customer">${inv.to} ${inv.utrNumber ? '<br><small style="color:#d97706; font-family:monospace;">UTR: '+inv.utrNumber+' (₹'+(inv.submittedAmount||0)+')</small>' : ''}</td>
+                    <td data-label="Customer">${inv.to} ${inv.paymentCode ? '<br><small style="color:#7c3aed; font-family:monospace; font-weight:bold;">CODE: '+inv.paymentCode+'</small>' : ''} ${inv.utrNumber ? '<br><small style="color:#d97706; font-family:monospace;">UTR: '+inv.utrNumber+' (₹'+(inv.submittedAmount||0)+')</small>' : ''}</td>
                     <td data-label="Total">${formatMoney(total)}</td>
                     <td data-label="Balance" style="color:${bal>0?'#dc2626':'#16a34a'}; font-weight:600;">${formatMoney(bal < 0 ? 0 : bal)}</td>
                     <td data-label="Status"><span class="badge ${badgeClass}">${badgeText}</span></td>
@@ -1093,11 +1094,12 @@
             return Math.max(0, total - paid);
         }
 
-        function saveNewPaymentCode(inv) {
+        async function saveNewPaymentCode(inv) {
             const code = generatePaymentCode();
             inv.paymentCode = code;
             inv.lastPaymentCodeAt = new Date().toISOString();
-            syncToFirebase();
+            inv.paymentCodeVersion = (Number(inv.paymentCodeVersion || 0) + 1);
+            await syncToFirebase();
             return code;
         }
 
@@ -1136,7 +1138,7 @@ Thank you 🙏`;
                 showToast('Please save the invoice before sharing payment link.', 'error');
                 return;
             }
-            const code = saveNewPaymentCode(inv);
+            const code = await saveNewPaymentCode(inv);
             const checkoutUrl = getCheckoutUrl(inv.id, code);
             const message = buildPaymentMessage(inv, code, checkoutUrl);
             showToast(`Payment Code: ${code}`, 'success');
@@ -1150,7 +1152,7 @@ Thank you 🙏`;
         async function sharePaymentLinkList(id) {
             const inv = invoices.find(i => String(i.id) === String(id));
             if(!inv) return;
-            const code = saveNewPaymentCode(inv);
+            const code = await saveNewPaymentCode(inv);
             const checkoutUrl = getCheckoutUrl(inv.id, code);
             const message = buildPaymentMessage(inv, code, checkoutUrl);
             showToast(`Payment Code: ${code}`, 'success');
