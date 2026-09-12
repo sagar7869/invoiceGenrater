@@ -39,29 +39,32 @@
         .form-group { display: flex; flex-direction: column; }
         .form-group label { font-size: 13px; margin-bottom: 6px; font-weight: 600; color: #475569; }
         
+        /* --- PREMIUM 3D GLOW & LIFT FOCUS EFFECT FOR ALL INPUTS --- */
         input, select, .search-bar { 
-            padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 15px; 
-            outline: none; background: #fdfdfd;
-            transition: all 0.25s ease;
+            padding: 14px; border: 1.5px solid #cbd5e1; border-radius: 10px; font-size: 15px; 
+            outline: none; background: #f8fafc; font-weight: 500; color:#1e293b;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         input:focus, select:focus, .search-bar:focus { 
             border-color: var(--primary) !important; 
-            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2) !important;
-            background-color: #ffffff !important;
+            background: #ffffff !important;
+            box-shadow: 0 6px 15px rgba(33, 150, 243, 0.15), 0 0 0 3px rgba(33, 150, 243, 0.1) !important; 
+            transform: translateY(-2px);
         }
+        input::placeholder { color: #94a3b8; font-weight: 400; }
+        /* -------------------------------------------------------- */
 
         .input-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; background: #f8fafc; padding: 15px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 15px;}
         .input-row input, .input-row select { flex: 1; min-width: 120px; }
-        
         .error-border { border: 2px solid #ef4444 !important; background-color: #fef2f2 !important; box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;}
         
-        .btn-add { background: #334155; color: white; border: none; padding: 13px 15px; cursor: pointer; border-radius: 8px; font-weight: 600; white-space: nowrap; transition: 0.2s; }
+        .btn-add { background: #334155; color: white; border: none; padding: 13px 15px; cursor: pointer; border-radius: 10px; font-weight: 600; white-space: nowrap; transition: 0.2s; }
         .btn-add:active { transform: scale(0.96); }
         
         .editor-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
         .editor-table th, .editor-table td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
         .editor-table th { background: #f8fafc; color: #475569; font-weight: 600; border-radius: 6px 6px 0 0;}
-        .editor-table input, .editor-table select { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px;}
+        .editor-table input, .editor-table select { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px;}
         .btn-del { color: #ef4444; cursor: pointer; border: none; background: rgba(239, 68, 68, 0.1); padding: 8px 12px; border-radius: 6px; font-weight: bold; transition:0.2s;}
         .btn-del:active { transform:scale(0.9); }
 
@@ -100,12 +103,11 @@
         .ledger-table th, .ledger-table td { padding: 6px; border: 1px solid #e2e8f0; text-align: left; }
         .ledger-table th { background: rgba(248,250,252,0.9); }
 
-        .search-bar { width: 100%; padding: 14px; margin-bottom: 15px; font-size: 15px; border-radius: 10px; border: 1px solid var(--border); box-sizing: border-box; outline: none;}
         .list-table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
         .list-table th, .list-table td { padding: 15px; text-align: left; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
         .list-table th { background: #f8fafc; color: #475569; font-weight: 600; }
         
-        .badge { padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase; display:inline-block; }
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; text-transform: uppercase; display:inline-block; }
         .badge.PAID { background: #e8f5e9; color: var(--paid-text); }
         .badge.PARTIAL { background: #fff3e0; color: var(--partial-text); }
         .badge.UNPAID { background: #ffebee; color: var(--unpaid-text); }
@@ -117,11 +119,16 @@
         
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); align-items: center; justify-content: center; z-index: 100000; overflow-y: auto; padding: 15px; backdrop-filter: blur(3px); }
         #btn-close-edit-top { display: none; position: absolute; top: -15px; right: -15px; background: #ef4444; color: white; border: 2px solid white; border-radius: 50%; width: 40px; height: 40px; font-size: 18px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1001; align-items: center; justify-content: center; }
-        .modal-sm { background: white; padding: 25px; border-radius: 16px; width: 100%; max-width: 420px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); position:relative;}
+        .modal-sm { background: white; padding: 25px; border-radius: 16px; width: 100%; max-width: 420px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); position:relative; overflow:hidden;}
         .modal-lg { background: transparent; padding: 10px; width: 100%; max-width: 900px; margin: auto; position: relative;}
-        .modal-sm input, .modal-sm select { width: 100%; padding: 14px; margin: 8px 0 15px 0; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; outline:none; background:#f8fafc;}
         .modal-sm label { font-size: 13px; font-weight: bold; color: #475569; }
         #db-loader { text-align: center; padding: 20px; font-size: 16px; color: #555; }
+
+        /* MENU LIST CSS */
+        .menu-list-btn { width: 100%; padding: 16px; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; font-size: 15px; font-weight: 700; color: #334155; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .menu-list-btn i.fa-chevron-right { margin-left: auto; font-size: 12px; color: #94a3b8; }
+        .menu-list-btn i.main-icon { color: var(--primary); font-size: 18px; width: 24px; text-align: center; }
+        .menu-list-btn:active { transform: scale(0.98); background: #f8fafc; border-color:#cbd5e1;}
 
         #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 999999; display: flex; flex-direction: column; gap: 10px; width: 90%; max-width: 400px; pointer-events: none;}
         .toast { padding: 14px 20px; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: bold; color: white; animation: slideDown 0.3s forwards, fadeOut 0.3s forwards 2.7s; }
@@ -129,9 +136,15 @@
         @keyframes slideDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
 
-        /* --- MOBILE LAYOUT: SUPER COMPACT 3-4 CX PER SCREEN --- */
+        .mobile-only { display: none; }
+
         @media (max-width: 768px) {
+            .mobile-only { display: block !important; }
+            .desktop-only { display: none !important; }
+            
             body { padding-bottom: 70px; } 
+            .container { padding: 6px !important; } 
+
             .tabs { position: fixed; top: auto; bottom: 0; left: 0; width: 100%; border-top: 1px solid var(--border); border-bottom: none; z-index: 99999; display: flex; justify-content: space-around; box-shadow: 0 -4px 15px rgba(0,0,0,0.05); padding-bottom: env(safe-area-inset-bottom); background: #fff;}
             .tab-btn { flex-direction: column; font-size: 11px; padding: 10px 4px; gap: 4px; border-bottom: none !important; border-top: 3px solid transparent; }
             .tab-btn.active { border-top: 3px solid var(--primary); background: rgba(33, 150, 243, 0.05); }
@@ -154,41 +167,33 @@
             #edit-items-body td:nth-child(4) { width: 30%; justify-content: flex-end; font-weight: bold; color:var(--primary);} 
             #edit-items-body td:nth-child(5) { width: 100%; justify-content: flex-end; border-top: 1px dashed #e2e8f0; margin-top: 6px; padding-top: 8px; } 
             
-            /* COMPACT CARD CSS */
+            /* CLEAN COMPACT CARD CSS GRID */
+            .list-table { background: transparent !important; box-shadow: none !important; border-radius: 0 !important; }
             .list-table thead { display: none; }
             .list-table, .list-table tbody { display: block; width: 100%; }
+            
             .list-table tr { 
-                display: block !important;
-                background: #fff; 
-                margin-bottom: 8px; 
-                border-radius: 10px; 
-                border: 1px solid #e2e8f0; 
-                padding: 10px 12px; 
-                box-shadow: 0 1px 4px rgba(0,0,0,0.04); 
+                display: grid !important; 
+                grid-template-columns: 1fr 1fr; 
+                grid-template-areas: "inv status" "customer customer" "total balance" "actions actions";
+                gap: 8px; background: #fff; margin-bottom: 12px; border-radius: 12px; 
+                border: 1px solid #e2e8f0; padding: 14px 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); 
             }
             .list-table td { padding: 0 !important; border: none !important; text-align: left; }
+            .list-table td:nth-child(1) { display: none !important; } 
+            .list-table td:nth-child(2) { grid-area: inv; font-size: 16px; font-weight: 800; color: #0f172a; }
+            .list-table td:nth-child(6) { grid-area: status; display: flex; flex-wrap: wrap; gap: 4px; justify-content: flex-end; align-items: flex-start; }
+            .list-table td:nth-child(3) { grid-area: customer; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px !important; margin-bottom: 4px; }
+            .list-table td:nth-child(4) { grid-area: total; background: #f8fafc; padding: 8px !important; border-radius: 6px; font-size: 13px; font-weight: 700; }
+            .list-table td:nth-child(4)::before { content: 'Total: '; font-weight: 500; color: #64748b; }
+            .list-table td:nth-child(5) { grid-area: balance; background: #fef2f2; padding: 8px !important; border-radius: 6px; font-size: 13px; font-weight: 800; text-align: right !important; }
+            .list-table td:nth-child(5)::before { content: 'Bal: '; font-weight: 500; color: #64748b; }
+            .list-table td:nth-child(7) { grid-area: actions; display: grid !important; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 4px; border-top: 1px dashed #e2e8f0; padding-top: 12px !important; }
             
-            .cx-top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
-            .cx-date { font-size: 11px; color: #64748b; font-weight: 500; }
-            .cx-inv { font-size: 14px; font-weight: bold; color: #0f172a; }
-            .cx-badges { display: flex; gap: 4px; align-items: center; }
-            
-            .cx-mid-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
-            .cx-name { font-size: 14px; font-weight: 700; color: #1e293b; max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-            .cx-totals { font-size: 12px; display: flex; gap: 6px; }
-            .cx-total-amt { color: #475569; font-weight: 600; }
-            .cx-bal-amt { font-weight: 700; }
-            
-            .cx-btn-grid { 
-                border-top: 1px dashed #e2e8f0; 
-                padding-top: 6px; 
-                margin-top: 4px;
-                display: grid;
-                grid-template-columns: repeat(4, 1fr);
-                gap: 5px;
-            }
-            .action-icon { width: 100% !important; height: 28px !important; margin: 0 !important; border-radius: 5px !important; gap: 4px; font-size: 10px; font-weight: bold;}
-            .action-icon i { font-size: 11px; }
+            .action-icon { width: 100% !important; height: 42px !important; margin: 0 !important; border-radius: 6px !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; gap: 3px !important; padding: 0 !important;}
+            .action-icon i { font-size: 14px !important; margin: 0 !important; }
+            .action-icon span { font-size: 9px !important; font-weight: 800 !important; }
+            .badge { padding: 4px 8px; font-size: 10px; display:inline-block; border-radius:4px;}
 
             .preview-container { padding: 0; display: block; width: 100%; height: calc((100vw - 30px) * 1.414); overflow: hidden; position: relative; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); background: white; }
             .preview-container .preview-box { position: absolute; top: 0; left: 0; width: 794px !important; min-height: 1123px !important; transform-origin: top left; transform: scale(calc((100vw - 30px) / 794)); border: none; box-shadow: none; }
@@ -210,7 +215,7 @@
 
     <!-- UTR APPROVAL MODAL -->
     <div class="overlay" id="utr-approve-modal">
-        <div class="modal-sm">
+        <div class="modal-sm" style="padding:25px;">
             <h3 style="margin-top:0; color:#1e293b;">Verify & Approve UTR</h3>
             <p style="font-size:13px; color:#64748b; margin-bottom:15px;">Customer ne online payment ka UTR bheja hai. Amount verify karke approve karein.</p>
             <div style="background:#f8fafc; padding:15px; border-radius:10px; border:1px solid #e2e8f0; margin-bottom:15px; font-size:14px;">
@@ -242,7 +247,7 @@
 
     <!-- PAYMENT MODAL -->
     <div class="overlay" id="payment-modal">
-        <div class="modal-sm">
+        <div class="modal-sm" style="padding:25px;">
             <h3 style="margin-top:0; color:#1e293b;">Manage Payments</h3>
             <div style="margin-bottom:15px; font-size:14px; background:#f8fafc; padding:15px; border-radius:10px; border:1px solid #e2e8f0;">
                 <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span>Total Bill:</span> <b id="pm_total">0</b></div>
@@ -268,7 +273,7 @@
 
     <!-- LOGIN OVERLAY -->
     <div class="overlay" id="login-overlay" style="background: rgba(244, 246, 249, 1); display:none;">
-        <div class="modal-sm" style="text-align: center; max-width:380px;">
+        <div class="modal-sm" style="text-align: center; max-width:380px; padding:30px;">
             <i class="fas fa-file-invoice-dollar" style="font-size: 50px; color: var(--primary); margin-bottom: 15px;"></i>
             <h2 style="margin-top: 0; color: #1e293b; margin-bottom: 5px;">Smart Invoices</h2>
             <p style="font-size: 14px; color: #64748b; margin-bottom: 30px;">Login securely to access your cloud data.</p>
@@ -277,8 +282,8 @@
             </button>
             <div style="display:flex; align-items:center; margin: 25px 0; color:#cbd5e1; font-size:12px; font-weight:bold;"><hr style="flex:1; border:none; border-top:1px solid #e2e8f0;"> <span style="padding:0 12px;">OR EMAIL LOGIN</span> <hr style="flex:1; border:none; border-top:1px solid #e2e8f0;"></div>
             <div style="text-align: left;">
-                <input type="email" id="auth-email" placeholder="Email Address">
-                <input type="password" id="auth-pass" placeholder="Password" onkeypress="handleLoginEnter(event)">
+                <input type="email" id="auth-email" placeholder="Email Address" style="margin-bottom:10px;">
+                <input type="password" id="auth-pass" placeholder="Password" onkeypress="handleLoginEnter(event)" style="margin-bottom:15px;">
                 <button onclick="loginWithEmail()" style="width:100%; padding:14px; background:var(--primary); color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size:16px; margin-bottom:15px; box-shadow:0 4px 15px rgba(33, 150, 243, 0.3);">Login Securely</button>
                 <div style="display:flex; justify-content:space-between; font-size:14px; padding:0 5px;"><a href="#" style="color:#64748b; text-decoration:none; font-weight:600;" onclick="forgotPassword()">Forgot Pass?</a><a href="#" style="color:#10b981; text-decoration:none; font-weight:bold;" onclick="openSignupModal()">Create Account</a></div>
             </div>
@@ -287,74 +292,84 @@
 
     <!-- SIGNUP MODAL -->
     <div class="overlay" id="signup-overlay">
-        <div class="modal-sm">
+        <div class="modal-sm" style="padding:25px;">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f1f5f9; padding-bottom:15px; margin-bottom:20px;">
                 <h3 style="margin:0; color:#1e293b; font-size:20px;">Register User</h3>
                 <button onclick="closeSignupModal()" style="background:#fef2f2; border:none; width:32px; height:32px; border-radius:50%; color:#ef4444; cursor:pointer; display:flex; align-items:center; justify-content:center;"><i class="fas fa-times"></i></button>
             </div>
-            <label>Full Name</label><input type="text" id="reg-name" placeholder="Enter full name">
-            <label>Email Address</label><input type="email" id="reg-email" placeholder="Enter valid email">
-            <label>Password</label><input type="password" id="reg-pass" placeholder="Create a password">
-            <label>Confirm Password</label><input type="password" id="reg-cpass" placeholder="Confirm your password">
+            <label>Full Name</label><input type="text" id="reg-name" placeholder="Enter full name" style="margin-bottom:10px;">
+            <label>Email Address</label><input type="email" id="reg-email" placeholder="Enter valid email" style="margin-bottom:10px;">
+            <label>Password</label><input type="password" id="reg-pass" placeholder="Create a password" style="margin-bottom:10px;">
+            <label>Confirm Password</label><input type="password" id="reg-cpass" placeholder="Confirm your password" style="margin-bottom:15px;">
             <button onclick="registerNewUser()" style="width:100%; padding:14px; background:#10b981; color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size:16px; margin-top:10px; box-shadow:0 4px 15px rgba(16, 185, 129, 0.3);">Submit Registration</button>
         </div>
     </div>
 
-    <!-- PROFILE MODAL (FIXED & FULLY FUNCTIONAL) -->
-    <div class="overlay" id="profile-overlay">
-        <div class="modal-sm">
-            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f1f5f9; padding-bottom:15px; margin-bottom:20px;">
-                <h3 style="margin:0; color:#1e293b; font-size:20px;">My Profile & Settings</h3>
-                <button onclick="closeProfileModal()" style="background:#fef2f2; border:none; width:32px; height:32px; border-radius:50%; color:#ef4444; cursor:pointer; display:flex; align-items:center; justify-content:center;"><i class="fas fa-times"></i></button>
-            </div>
-            <div style="text-align:center; margin-bottom:20px;">
-                <div style="width:70px; height:70px; background:var(--primary); color:white; font-size:30px; display:inline-flex; align-items:center; justify-content:center; border-radius:50%; font-weight:bold; margin-bottom:10px;" id="prof-avatar">U</div>
-                <h3 style="margin:0; color:#1e293b; font-size:18px;" id="prof-name">User Name</h3>
-                <p style="margin:3px 0 0 0; color:#64748b; font-size:13px;" id="prof-email">user@email.com</p>
-            </div>
-
-            <!-- Merchant UPI Settings -->
-            <div style="background:#f8fafc; padding:15px; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:15px;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div><label style="font-size:12px; font-weight:bold; color:#1e293b;">Receiving UPI ID</label><p id="display-upi-text" style="margin:2px 0 0 0; font-size:14px; font-family:monospace; color:#059669; font-weight:bold;">Not Set</p></div>
-                    <button id="btn-edit-upi" onclick="toggleUpiEdit(true)" style="padding:6px 12px; background:#3b82f6; color:white; border:none; border-radius:6px; font-size:12px; font-weight:bold; cursor:pointer;">Edit</button>
-                </div>
-                <div id="upi-edit-container" style="display:none; margin-top:12px; border-top:1px dashed #cbd5e1; padding-top:12px;">
-                    <input type="text" id="prof-upi-id" placeholder="e.g. yourname@paytm" style="margin-bottom:8px; padding:10px; width:100%; border:1px solid #cbd5e1; border-radius:6px; font-size:14px;">
-                    <div style="display:flex; gap:8px;">
-                        <button onclick="toggleUpiEdit(false)" style="flex:1; padding:8px; background:#f1f5f9; border:none; border-radius:6px; font-weight:bold; color:#475569; cursor:pointer; font-size:12px;">Cancel</button>
-                        <button onclick="saveMerchantUpi()" style="flex:1; padding:8px; background:#10b981; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:12px;">Save UPI</button>
-                    </div>
-                </div>
+    <!-- NEW LIST MENU PROFILE OVERLAY (CLEAN & PROFESSIONAL) -->
+    <div class="overlay" id="profile-overlay" style="z-index: 999998; align-items: flex-end; padding:0; padding-bottom:70px;">
+        <div class="modal-sm" style="padding:0; overflow:hidden; background:#f8fafc; width:100%; max-width:100%; border-radius: 20px 20px 0 0; box-shadow: 0 -10px 40px rgba(0,0,0,0.15); animation: slideUp 0.3s ease-out;">
+            
+            <!-- HEADER -->
+            <div style="background: var(--primary); color: white; padding: 25px 20px; text-align: center; position:relative;">
+                <button onclick="closeProfileMenu()" style="position:absolute; top:15px; right:15px; background:rgba(255,255,255,0.2); border:none; color:white; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;"><i class="fas fa-times"></i></button>
+                <div style="width:64px; height:64px; background:white; color:var(--primary); font-size:26px; display:inline-flex; align-items:center; justify-content:center; border-radius:50%; font-weight:bold; margin-bottom:10px; box-shadow:0 4px 10px rgba(0,0,0,0.2);" id="pm-avatar">U</div>
+                <h3 style="margin:0; font-size:20px; font-weight:700;" id="pm-name">User Name</h3>
+                <p style="margin:4px 0 0 0; font-size:13px; opacity: 0.9;" id="pm-email">user@email.com</p>
             </div>
 
-            <!-- Item Master -->
-            <div style="background:#f8fafc; padding:15px; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:15px;">
-                <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
-                    <div><label style="font-size:13px; font-weight:bold; color:#1e293b;">📦 Item Master</label><p id="item-master-count" style="margin:3px 0 0; font-size:12px; color:#64748b;">0 items saved</p></div>
-                    <button onclick="document.getElementById('item-master-file').click()" style="padding:8px 12px; background:#7c3aed; color:#fff; border:none; border-radius:7px; font-size:12px; font-weight:bold; cursor:pointer;">Import Excel</button>
-                </div>
+            <!-- MAIN MENU LIST VIEW -->
+            <div id="profile-menu-view" style="padding: 20px;">
+                <button class="menu-list-btn" onclick="showProfileSection('upi-edit-view')"><i class="fas fa-qrcode main-icon"></i> Update UPI ID <i class="fas fa-chevron-right ml-auto"></i></button>
+                <button class="menu-list-btn" onclick="showProfileSection('pass-edit-view')"><i class="fas fa-key main-icon"></i> Change Password <i class="fas fa-chevron-right ml-auto"></i></button>
+                <button class="menu-list-btn" onclick="showProfileSection('item-edit-view')"><i class="fas fa-box main-icon"></i> Update Item Data <i class="fas fa-chevron-right ml-auto"></i></button>
+                <button class="menu-list-btn" onclick="logoutApp()" style="margin-top: 15px; color:#ef4444;"><i class="fas fa-sign-out-alt main-icon" style="color:#ef4444;"></i> Logout Account</button>
+            </div>
+
+            <!-- SUB VIEW: UPI -->
+            <div id="upi-edit-view" style="display:none; padding:20px; background:#fff; min-height: 300px;">
+                <h4 style="margin:0 0 20px 0; display:flex; align-items:center; gap:12px; font-size: 18px; color:#1e293b;"><button onclick="showProfileSection('profile-menu-view')" style="border:none; background:transparent; font-size:18px; cursor:pointer; color:#64748b;"><i class="fas fa-arrow-left"></i></button> Update UPI ID</h4>
+                <label style="font-size:13px; font-weight:bold; color:#475569;">Receiving UPI ID</label>
+                <input type="text" id="prof-upi-id" placeholder="e.g. yourname@paytm" style="margin:8px 0 20px; width:100%;">
+                <button onclick="saveMerchantUpi()" style="width:100%; padding:14px; background:#10b981; color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size:15px; box-shadow:0 4px 15px rgba(16, 185, 129, 0.3);">Save Details</button>
+            </div>
+
+            <!-- SUB VIEW: PASSWORD -->
+            <div id="pass-edit-view" style="display:none; padding:20px; background:#fff; min-height: 300px;">
+                <h4 style="margin:0 0 20px 0; display:flex; align-items:center; gap:12px; font-size: 18px; color:#1e293b;"><button onclick="showProfileSection('profile-menu-view')" style="border:none; background:transparent; font-size:18px; cursor:pointer; color:#64748b;"><i class="fas fa-arrow-left"></i></button> Change Password</h4>
+                <label style="font-size:13px; font-weight:bold; color:#475569;">New Password</label>
+                <input type="password" id="prof-new-pass" placeholder="Minimum 6 characters" style="margin:8px 0 20px; width:100%;">
+                <button onclick="updateUserPassword()" style="width:100%; padding:14px; background:#3b82f6; color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size:15px; box-shadow:0 4px 15px rgba(59, 130, 246, 0.3);">Update Password</button>
+            </div>
+
+            <!-- SUB VIEW: ITEM MASTER -->
+            <div id="item-edit-view" style="display:none; padding:20px; background:#fff; min-height: 300px;">
+                <h4 style="margin:0 0 20px 0; display:flex; align-items:center; gap:12px; font-size: 18px; color:#1e293b;"><button onclick="showProfileSection('profile-menu-view')" style="border:none; background:transparent; font-size:18px; cursor:pointer; color:#64748b;"><i class="fas fa-arrow-left"></i></button> Update Item Data</h4>
+                <p id="item-master-count" style="margin:0 0 20px; font-size:14px; color:#64748b; font-weight:bold; background:#f8fafc; padding:12px; border-radius:8px; border:1px solid #e2e8f0; text-align:center;">0 items currently saved</p>
+                <button onclick="document.getElementById('item-master-file').click()" style="width:100%; padding:14px; background:#8b5cf6; color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size:15px; box-shadow:0 4px 15px rgba(139, 92, 246, 0.3); margin-bottom:15px;"><i class="fas fa-file-excel"></i> Import Excel File</button>
                 <input type="file" id="item-master-file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importItemMaster(event)">
-                <div style="display:flex; gap:8px; margin-top:10px;">
-                    <button onclick="exportItemMasterTemplate()" style="flex:1; padding:8px; background:#e2e8f0; border:none; border-radius:6px; font-size:11px; font-weight:bold; cursor:pointer;">Template</button>
-                    <button onclick="clearItemMaster()" style="flex:1; padding:8px; background:#fee2e2; color:#b91c1c; border:none; border-radius:6px; font-size:11px; font-weight:bold; cursor:pointer;">Delete All</button>
+                
+                <div style="display:flex; gap:10px; margin-top:10px;">
+                    <button onclick="exportItemMasterTemplate()" style="flex:1; padding:12px; background:#f1f5f9; color:#475569; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:13px;">Get Template</button>
+                    <button onclick="clearItemMaster()" style="flex:1; padding:12px; background:#fef2f2; color:#dc2626; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:13px;">Delete All</button>
                 </div>
             </div>
-            <button onclick="logoutApp()" style="width:100%; padding:12px; background:#ef4444; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:8px;"><i class="fas fa-sign-out-alt"></i> Logout Securely</button>
+
         </div>
     </div>
+    <style>@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }</style>
 
     <!-- TABS BAR WITH 100% WORKING PROFILE CLICK -->
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('create-tab')"><i class="fas fa-edit"></i> <span class="tab-text">Edit</span></button>
         <button class="tab-btn" onclick="switchTab('preview-tab')"><i class="fas fa-eye"></i> <span class="tab-text">Preview</span></button>
         <button class="tab-btn" onclick="switchTab('list-tab')"><i class="fas fa-list"></i> <span class="tab-text">Cx List</span></button>
-        <button class="tab-btn" onclick="openProfileModal()" title="My Profile"><i class="fas fa-user-circle"></i> <span class="tab-text">Profile</span></button>
+        <button class="tab-btn" id="btn-profile-tab" onclick="openProfileModal()" title="My Profile"><i class="fas fa-user-circle"></i> <span class="tab-text">Profile</span></button>
     </div>
 
     <!-- TAB 1: CREATE BILL -->
     <div id="create-tab" class="tab-content active container">
         <div id="create-tab-body">
+            <!-- SHARED EDITOR CONTAINER -->
             <div id="editor-container">
                 <button id="btn-close-edit-top" onclick="cancelEditMode()"><i class="fas fa-times"></i></button>
                 <div class="form-panel">
@@ -369,8 +384,8 @@
                     <h4 style="margin: 5px 0 10px 0; color: #1e293b; font-size:16px;">Add Items</h4>
                     <div class="input-row">
                         <div style="position:relative; flex:2; min-width:140px;">
-                            <input type="text" id="i_desc" placeholder="Search / Item Description" style="width:100%;" autocomplete="off" onfocus="showItemSuggestions()" onblur="setTimeout(hideItemSuggestions, 200)" oninput="filterItemSuggestions()" onkeypress="handleAddItemEnter(event)">
-                            <div id="custom-item-list" style="display:none; position:absolute; top:100%; left:0; width:100%; max-height:200px; overflow-y:auto; background:white; border:1px solid #cbd5e1; border-radius:0 0 8px 8px; z-index:1000; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);"></div>
+                            <input type="text" id="i_desc" placeholder="Search / Item Description" style="width:100%; box-sizing:border-box;" autocomplete="off" onfocus="showItemSuggestions()" onblur="setTimeout(hideItemSuggestions, 200)" oninput="filterItemSuggestions()" onkeypress="handleAddItemEnter(event)">
+                            <div id="custom-item-list" style="display:none; position:absolute; top:100%; left:0; width:100%; max-height:200px; overflow-y:auto; background:white; border:1px solid #cbd5e1; border-radius:0 0 10px 10px; z-index:1000; box-shadow:0 10px 25px -5px rgba(0,0,0,0.2);"></div>
                         </div>
                         <input type="number" id="i_qty" placeholder="QTY" style="flex:1; min-width:60px;" min="1" onkeypress="handleAddItemEnter(event)">
                         <input type="number" id="i_price" placeholder="Price (₹)" style="flex:1; min-width:80px;" step="0.01" onkeypress="handleAddItemEnter(event)">
@@ -464,10 +479,12 @@
         <table class="list-table" id="db-table" style="display:none;">
             <thead>
                 <tr>
-                    <th>Invoice Info</th>
+                    <th class="desktop-only">Date</th>
+                    <th>Invoice #</th>
                     <th>Customer</th>
                     <th>Total</th>
                     <th>Balance</th>
+                    <th>Status</th>
                     <th style="text-align:center;">Actions</th>
                 </tr>
             </thead>
@@ -515,8 +532,10 @@
             
             filtered.forEach(item => {
                 const div = document.createElement('div');
-                div.style.cssText = "padding:10px; border-bottom:1px solid #f1f5f9; cursor:pointer; font-size:13px; color:#1e293b; display:flex; justify-content:space-between;";
+                div.style.cssText = "padding:12px 15px; border-bottom:1px solid #f1f5f9; cursor:pointer; font-size:14px; color:#1e293b; display:flex; justify-content:space-between; transition:background 0.2s;";
                 div.innerHTML = `<span>${item.name}</span> <span style="color:#10b981; font-weight:bold;">₹${item.price}</span>`;
+                div.onmouseover = function() { this.style.background = '#f8fafc'; }
+                div.onmouseout = function() { this.style.background = 'white'; }
                 div.onmousedown = function(e) { 
                     e.preventDefault();
                     document.getElementById('i_desc').value = item.name;
@@ -558,12 +577,12 @@
                         if(String(name).trim() && price!=='' && !isNaN(Number(price))) { map.set(String(name).trim().toLowerCase(),{name:String(name).trim(),price:Number(price)}); count++; }
                     });
                     if(!count) throw new Error('Columns Item Name and Price not found');
-                    itemMaster=Array.from(map.values()); saveItemMaster().then(()=>{renderItemMasterSuggestions(); showToast(`${count} items imported/updated successfully`, 'success');});
+                    itemMaster=Array.from(map.values()); saveItemMaster().then(()=>{renderItemMasterSuggestions(); showToast(`${count} items imported successfully`, 'success');});
                 } catch(err) { showToast('Import error: '+err.message,'error'); }
                 event.target.value='';
             }; reader.readAsArrayBuffer(file);
         }
-        function clearItemMaster() { if(!itemMaster.length) return; showCustomConfirm('Delete all imported item master data?',()=>{itemMaster=[]; saveItemMaster().then(()=>{renderItemMasterSuggestions(); showToast('Item master deleted','success');});}); }
+        function clearItemMaster() { if(!itemMaster.length) return; showCustomConfirm('Delete all imported item master data?',()=>{itemMaster=[]; saveItemMaster().then(()=>{renderItemMasterSuggestions(); showToast('Item master deleted','success'); showProfileSection('profile-menu-view');});}); }
         function exportItemMasterTemplate() { const ws=XLSX.utils.json_to_sheet([{ 'Item Name':'Example Item', 'Price':100 }]); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'Items'); XLSX.writeFile(wb,'item-master-template.xlsx'); }
 
         function markUnsaved() { hasUnsavedChanges = true; }
@@ -594,25 +613,27 @@
         function openSignupModal() { document.getElementById('signup-overlay').style.display = 'flex'; }
         function closeSignupModal() { document.getElementById('signup-overlay').style.display = 'none'; }
         
+        // NEW LIST MENU FUNCTIONS
         function openProfileModal() {
             const user = auth.currentUser;
-            const name = (user && user.displayName) ? user.displayName : "Smart User";
-            const email = (user && user.email) ? user.email : "user@email.com";
-            document.getElementById('prof-name').innerText = name;
-            document.getElementById('prof-email').innerText = email;
-            document.getElementById('prof-avatar').innerText = name.charAt(0).toUpperCase();
-            document.getElementById('display-upi-text').innerText = merchantUpiId || "Not Set";
-            document.getElementById('prof-upi-id').value = merchantUpiId || "";
-            document.getElementById('upi-edit-container').style.display = 'none';
-            document.getElementById('btn-edit-upi').innerText = "Edit";
-            document.getElementById('profile-overlay').style.display = 'flex';
+            if(user) {
+                const name = user.displayName || "Smart User";
+                document.getElementById('pm-name').innerText = name;
+                document.getElementById('pm-email').innerText = user.email;
+                document.getElementById('pm-avatar').innerText = name.charAt(0).toUpperCase();
+                document.getElementById('prof-upi-id').value = merchantUpiId || "";
+                document.getElementById('prof-new-pass').value = '';
+                
+                showProfileSection('profile-menu-view');
+                document.getElementById('profile-overlay').style.display = 'flex';
+            }
         }
-        function closeProfileModal() { document.getElementById('profile-overlay').style.display = 'none'; }
-
-        function toggleUpiEdit(show) {
-            const container = document.getElementById('upi-edit-container');
-            const btn = document.getElementById('btn-edit-upi');
-            if(show) { container.style.display = 'block'; btn.innerText = "Close"; } else { container.style.display = 'none'; btn.innerText = "Edit"; }
+        function closeProfileMenu() { document.getElementById('profile-overlay').style.display = 'none'; }
+        
+        function showProfileSection(secId) {
+            ['profile-menu-view', 'upi-edit-view', 'pass-edit-view', 'item-edit-view'].forEach(id => {
+                document.getElementById(id).style.display = (id === secId) ? 'block' : 'none';
+            });
         }
 
         function saveMerchantUpi() {
@@ -621,8 +642,7 @@
             merchantUpiId = upi;
             database.ref('merchant_profile/' + activeUserId).set({ upiId: upi }).then(() => {
                 showToast("UPI ID saved successfully!", "success");
-                document.getElementById('display-upi-text').innerText = merchantUpiId;
-                toggleUpiEdit(false);
+                showProfileSection('profile-menu-view');
             }).catch(err => showToast("Error saving UPI: " + err.message, "error"));
         }
 
@@ -651,12 +671,25 @@
             auth.sendPasswordResetEmail(email).then(() => showToast("Reset link sent!", "success")).catch(err => showToast(err.message, "error"));
         }
 
-        function logoutApp() { showCustomConfirm("Are you sure you want to securely logout?", () => { closeProfileModal(); auth.signOut(); showToast("Logged out successfully.", "success"); }); }
+        function updateUserPassword() {
+            const newPass = document.getElementById('prof-new-pass').value;
+            if(!newPass || newPass.length < 6) return showToast("Password must be at least 6 characters.", "error");
+            auth.currentUser.updatePassword(newPass).then(() => { 
+                showToast("Password updated successfully!", "success"); 
+                document.getElementById('prof-new-pass').value = ''; 
+                showProfileSection('profile-menu-view'); 
+            }).catch(err => {
+                if(err.code === 'auth/requires-recent-login') showToast("Please logout and login again to change password.", "error");
+                else showToast(err.message, "error");
+            });
+        }
+
+        function logoutApp() { showCustomConfirm("Are you sure you want to securely logout?", () => { closeProfileMenu(); auth.signOut(); showToast("Logged out successfully.", "success"); }); }
 
         auth.onAuthStateChanged((user) => {
             if (user) {
                 activeUserId = user.uid; 
-                document.getElementById('login-overlay').style.display = 'none'; 
+                document.getElementById('login-overlay').style.display = 'none';
                 loadFirebaseData(); 
                 loadItemMaster(); 
             } else {
@@ -842,7 +875,7 @@
             return false;
         }
 
-        // --- 100% FIXED & VERIFIED RENDER LIST (NO BROKEN COLUMNS) ---
+        // --- FIXED COMPACT LIST WITH CLEAN LAYOUT ---
         function renderList(reset = false) {
             if(reset) listLimit = 30;
             const term = document.getElementById('search-box').value.toLowerCase();
@@ -867,29 +900,28 @@
                 }
 
                 tbody.innerHTML += `<tr>
-                    <td colspan="5">
-                        <div class="cx-top-row">
-                            <span class="cx-date">${inv.date ? inv.date.split('-').reverse().join('/') : '-'}</span>
-                            <div class="cx-badges">${badgeHtml}</div>
+                    <td data-label="Date" class="desktop-only">${inv.date ? inv.date.split('-').reverse().join('/') : '-'}</td>
+                    <td data-label="Invoice #"><b>${inv.invNo}</b></td>
+                    <td data-label="Customer">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                            <div style="font-weight:bold; color:#1e293b; font-size:15px; word-break:break-word; padding-right:10px;">${inv.to}</div>
+                            <div class="mobile-only" style="font-size:11px; color:#64748b; white-space:nowrap; padding-top:2px;">${inv.date ? inv.date.split('-').reverse().join('/') : '-'}</div>
                         </div>
-                        <div class="cx-mid-row">
-                            <span class="cx-inv">#${inv.invNo} • <span class="cx-name">${inv.to}</span></span>
-                            <div class="cx-totals">
-                                <span class="cx-total-amt">${formatMoney(total)}</span>
-                                <span class="cx-bal-amt" style="color:${bal>0?'#dc2626':'#16a34a'};">Bal: ${formatMoney(bal < 0 ? 0 : bal)}</span>
-                            </div>
-                        </div>
-                        ${inv.utrNumber ? '<div style="font-size:11px; color:#d97706; margin-bottom:4px; font-family:monospace;">UTR: '+inv.utrNumber+' (₹'+(inv.submittedAmount||0)+')</div>' : ''}
-                        <div class="cx-btn-grid">
-                            ${approveBtnHtml}
-                            <button class="action-icon bg-link" onclick="sharePaymentLinkList('${inv.id}')"><i class="fas fa-link"></i><span>LINK</span></button>
-                            <button class="action-icon bg-view" onclick="openPreviewFromList('${inv.id}')"><i class="fas fa-eye"></i><span>VIEW</span></button>
-                            <button class="action-icon bg-edit" onclick="openEditMode('${inv.id}')"><i class="fas fa-edit"></i><span>EDIT</span></button>
-                            <button class="action-icon bg-pay" onclick="openQuickPayment('${inv.id}')"><i class="fas fa-rupee-sign"></i><span>PAY</span></button>
-                            <button class="action-icon bg-img" onclick="shareAsImageList('${inv.id}')"><i class="fab fa-whatsapp"></i><span>IMG</span></button>
-                            <button class="action-icon bg-pdf" onclick="generatePDFList('${inv.id}')"><i class="fas fa-file-pdf"></i><span>PDF</span></button>
-                            <button class="action-icon bg-del" onclick="deleteInvoice('${inv.id}')"><i class="fas fa-trash"></i><span>DEL</span></button>
-                        </div>
+                        ${inv.paymentCode ? '<div style="font-size:11px; color:#2563eb; font-family:monospace; margin-top:4px;"><b>PAY CODE:</b> '+inv.paymentCode+'</div>' : ''}
+                        ${inv.utrNumber ? '<div style="font-size:11px; color:#d97706; font-family:monospace; margin-top:2px;"><b>UTR:</b> '+inv.utrNumber+' (₹'+(inv.submittedAmount||0)+')</div>' : ''}
+                    </td>
+                    <td data-label="Total">${formatMoney(total)}</td>
+                    <td data-label="Balance" style="color:${bal>0?'#dc2626':'#16a34a'}; font-weight:600;">${formatMoney(bal < 0 ? 0 : bal)}</td>
+                    <td data-label="Status" style="text-align:right;">${badgeHtml}</td>
+                    <td class="actions-cell">
+                        ${approveBtnHtml}
+                        <button class="action-icon bg-link" onclick="sharePaymentLinkList('${inv.id}')" title="Share Pay Link"><i class="fas fa-link"></i><span>LINK</span></button>
+                        <button class="action-icon bg-view" onclick="openPreviewFromList('${inv.id}')" title="Preview Bill"><i class="fas fa-eye"></i><span>VIEW</span></button>
+                        <button class="action-icon bg-edit" onclick="openEditMode('${inv.id}')" title="Edit Bill"><i class="fas fa-edit"></i><span>EDIT</span></button>
+                        <button class="action-icon bg-pay" onclick="openQuickPayment('${inv.id}')" title="Manage Payments"><i class="fas fa-rupee-sign"></i><span>PAY</span></button>
+                        <button class="action-icon bg-img" onclick="shareAsImageList('${inv.id}')" title="Share Image"><i class="fab fa-whatsapp"></i><span>IMG</span></button>
+                        <button class="action-icon bg-pdf" onclick="generatePDFList('${inv.id}')" title="Download PDF"><i class="fas fa-file-pdf"></i><span>PDF</span></button>
+                        <button class="action-icon bg-del" onclick="deleteInvoice('${inv.id}')" title="Delete"><i class="fas fa-trash"></i><span>DEL</span></button>
                     </td>
                 </tr>`;
             });
@@ -997,7 +1029,7 @@
             const blob = await new Promise((resolve, reject) => canvas.toBlob(b => b ? resolve(b) : reject(new Error('Image generation failed')), 'image/png', 1));
             const file = new File([blob], `Invoice_${invNo || 'Bill'}.png`, { type: 'image/png' });
             if(navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))) {
-                await navigator.share({ title: `Invoice ${invNo || ''}`, text: 'Invoice image', files:[file] }); 
+                await navigator.share({ title: `Invoice ${invNo || ''}`, text: 'Here is your invoice.' }); 
                 return;
             }
             const url = URL.createObjectURL(blob), a = document.createElement('a');
