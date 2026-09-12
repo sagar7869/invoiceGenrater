@@ -104,6 +104,7 @@
         .badge.UNPAID { background: #ffebee; color: var(--unpaid-text); }
         .badge.PENDING { background: #fef3c7; color: #b45309; }
         
+        /* GENERAL ACTION ICON */
         .action-icon { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: 48px; height: 48px; cursor: pointer; border: none; border-radius: 8px; margin: 2px; color: white; transition: 0.2s; }
         .action-icon i { font-size: 15px; margin-bottom: 2px; }
         .action-icon span { font-size: 9px; font-family: sans-serif; font-weight: bold; letter-spacing: 0.5px; }
@@ -125,7 +126,7 @@
         @keyframes slideDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
 
-        /* ULTRA COMPACT MOBILE CSS START - FOR MORE CX CARDS VISIBILITY */
+        /* --- NAYA ULTRA COMPACT MOBILE CSS --- */
         @media (max-width: 768px) {
             body { padding-bottom: 70px; } 
             .tabs { position: fixed; top: auto; bottom: 0; left: 0; width: 100%; border-top: 1px solid var(--border); border-bottom: none; z-index: 999; display: flex; justify-content: space-around; box-shadow: 0 -4px 15px rgba(0,0,0,0.05); padding-bottom: env(safe-area-inset-bottom); background: #fff;}
@@ -153,17 +154,9 @@
             .list-table thead { display: none; }
             .list-table, .list-table tbody { display: block; width: 100%; }
             
-            /* Highly Compact Cx List Cards */
+            /* COMPACT CARDS - Ek screen par 3-4 dikhne ke liye */
             .list-table tr { 
-                display: grid; 
-                grid-template-columns: 1fr 1fr; 
-                gap: 2px; 
-                background: #fff; 
-                margin-bottom: 8px; 
-                border-radius: 8px; 
-                border: 1px solid #e2e8f0; 
-                padding: 10px; 
-                box-shadow: 0 1px 4px rgba(0,0,0,0.04); 
+                display: grid; grid-template-columns: 1fr 1fr; gap: 2px; background: #fff; margin-bottom: 8px; border-radius: 8px; border: 1px solid #e2e8f0; padding: 8px 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); 
             }
             .list-table td { padding: 0; border: none; text-align: left; display: block; width: auto; }
             .list-table td:nth-child(2) { grid-column: 1 / 2; font-size: 14px; font-weight: bold; color: #1e293b; line-height: 1.1; }
@@ -175,25 +168,19 @@
             .list-table td:nth-child(5) { grid-column: 2 / 3; font-size: 11px; font-weight: 600; text-align: right; padding: 2px 4px; background: #fef2f2; border-radius: 4px; color:#dc2626;}
             .list-table td:nth-child(5)::before { content: 'Bal: '; font-weight: normal; color: #64748b; }
             
-            /* Buttons Grid - Super Small Horizontal Pills */
+            /* SUPER COMPACT BUTTONS - 4 Columns in a Row */
             .list-table td:nth-child(7) { 
-                grid-column: 1 / 3; 
-                border-top: 1px solid #e2e8f0; 
-                margin-top: 4px; 
-                padding-top: 6px; 
-                display: grid; 
-                grid-template-columns: repeat(4, 1fr); 
-                gap: 4px; 
+                grid-column: 1 / 3; border-top: 1px dashed #e2e8f0; margin-top: 4px !important; padding-top: 8px !important; 
+                display: flex !important; flex-wrap: wrap !important; gap: 4px !important; justify-content: space-between;
             }
-            .action-icon { width: 100%; height: 26px; margin: 0; border-radius: 4px; flex-direction: row; gap: 4px; }
-            .action-icon i { font-size: 11px; margin-bottom: 0; }
-            .action-icon span { font-size: 8px; }
+            .action-icon { width: calc(25% - 4px) !important; height: 30px !important; margin: 0 !important; border-radius: 4px !important; display: flex !important; flex-direction: row !important; justify-content: center !important; gap: 4px !important; padding: 0 !important;}
+            .action-icon i { font-size: 12px !important; margin-bottom: 0 !important; }
+            .action-icon span { font-size: 10px !important; }
             .badge { padding: 2px 6px; font-size: 9px; display:inline-block;}
 
             .preview-container { padding: 0; display: block; width: 100%; height: calc((100vw - 30px) * 1.414); overflow: hidden; position: relative; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); background: white; }
             .preview-container .preview-box { position: absolute; top: 0; left: 0; width: 794px !important; min-height: 1123px !important; transform-origin: top left; transform: scale(calc((100vw - 30px) / 794)); border: none; box-shadow: none; }
         }
-        /* ULTRA COMPACT MOBILE CSS END */
 
         @media print {
             body { background: white; padding:0; }
@@ -297,7 +284,7 @@
     <div class="overlay" id="profile-overlay" style="z-index: 999998;">
         <div class="modal-sm">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f1f5f9; padding-bottom:15px; margin-bottom:20px;">
-                <h3 style="margin:0; color:#1e293b; font-size:20px;">My Profile & UPI Settings</h3>
+                <h3 style="margin:0; color:#1e293b; font-size:20px;">My Profile & Settings</h3>
                 <button onclick="closeProfileModal()" style="background:#fef2f2; border:none; width:32px; height:32px; border-radius:50%; color:#ef4444; cursor:pointer; display:flex; align-items:center; justify-content:center;"><i class="fas fa-times"></i></button>
             </div>
             
@@ -326,25 +313,6 @@
                 </div>
             </div>
 
-            <!-- Change Password -->
-            <div style="background:#f8fafc; padding:15px; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:15px;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <label style="font-size:12px; font-weight:bold; color:#1e293b;">Password Security</label>
-                        <p style="margin:2px 0 0 0; font-size:13px; color:#64748b;">********</p>
-                    </div>
-                    <button id="btn-edit-pass" onclick="togglePassEdit(true)" style="padding:6px 12px; background:#3b82f6; color:white; border:none; border-radius:6px; font-size:12px; font-weight:bold; cursor:pointer;">Change</button>
-                </div>
-
-                <div id="pass-edit-container" style="display:none; margin-top:12px; border-top:1px dashed #cbd5e1; padding-top:12px;">
-                    <input type="password" id="prof-new-pass" placeholder="Enter New Password (min 6 chars)" style="padding:10px; width:100%; border:1px solid #cbd5e1; border-radius:6px; font-size:14px; margin-bottom:8px;">
-                    <div style="display:flex; gap:8px;">
-                        <button onclick="togglePassEdit(false)" style="flex:1; padding:8px; background:#f1f5f9; border:none; border-radius:6px; font-weight:bold; color:#475569; cursor:pointer; font-size:12px;">Cancel</button>
-                        <button onclick="updateUserPassword()" style="flex:1; padding:8px; background:#334155; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer; font-size:12px;">Update Password</button>
-                    </div>
-                </div>
-            </div>
-            
             <!-- ITEM MASTER IMPORT -->
             <div style="background:#f8fafc; padding:15px; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:15px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
@@ -352,10 +320,9 @@
                     <button onclick="document.getElementById('item-master-file').click()" style="padding:8px 12px; background:#7c3aed; color:#fff; border:none; border-radius:7px; font-size:12px; font-weight:bold; cursor:pointer;">Import Excel</button>
                 </div>
                 <input type="file" id="item-master-file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importItemMaster(event)">
-                <p style="font-size:11px; color:#64748b; margin:10px 0 0;">Excel columns: <b>Item Name</b> and <b>Price</b>.</p>
+                <p style="font-size:11px; color:#64748b; margin:10px 0 0;">Excel columns: <b>Item Name</b> and <b>Price</b>. Importing updates existing items.</p>
                 <div style="display:flex; gap:8px; margin-top:10px;">
-                    <button onclick="exportItemMasterTemplate()" style="flex:1; padding:8px; background:#e2e8f0; border:none; border-radius:6px; font-size:11px; font-weight:bold; cursor:pointer;">Template</button>
-                    <button onclick="clearItemMaster()" style="flex:1; padding:8px; background:#fee2e2; color:#b91c1c; border:none; border-radius:6px; font-size:11px; font-weight:bold; cursor:pointer;">Delete All</button>
+                    <button onclick="clearItemMaster()" style="flex:1; padding:8px; background:#fee2e2; color:#b91c1c; border:none; border-radius:6px; font-size:11px; font-weight:bold; cursor:pointer;">Delete All Items</button>
                 </div>
             </div>
 
@@ -466,11 +433,14 @@
 
             <h4 style="margin: 5px 0 10px 0; color: #1e293b; font-size:16px;">Add Items</h4>
             <div class="input-row">
-                <input type="text" id="i_desc" list="item-master-suggestions" placeholder="Search / Item Description" style="flex:2;" autocomplete="on" oninput="autoFillItemPrice()" onkeypress="handleAddItemEnter(event)">
-                <datalist id="item-master-suggestions"></datalist>
+                <!-- NAYA CUSTOM SEARCH DROPDOWN -->
+                <div style="position:relative; flex:2; min-width:140px;">
+                    <input type="text" id="i_desc" placeholder="Search / Item Description" style="width:100%; box-sizing:border-box;" autocomplete="off" onfocus="showItemSuggestions()" onblur="hideItemSuggestions()" oninput="filterItemSuggestions()" onkeypress="handleAddItemEnter(event)">
+                    <div id="custom-item-list" style="display:none; position:absolute; top:100%; left:0; width:100%; max-height:200px; overflow-y:auto; background:white; border:1px solid #cbd5e1; border-radius:0 0 8px 8px; z-index:1000; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);"></div>
+                </div>
                 
-                <input type="number" id="i_qty" placeholder="QTY" style="flex:1;" min="1" onkeypress="handleAddItemEnter(event)">
-                <input type="number" id="i_price" placeholder="Price (₹)" style="flex:1;" step="0.01" onkeypress="handleAddItemEnter(event)">
+                <input type="number" id="i_qty" placeholder="QTY" style="flex:1; min-width:60px;" min="1" onkeypress="handleAddItemEnter(event)">
+                <input type="number" id="i_price" placeholder="Price (₹)" style="flex:1; min-width:80px;" step="0.01" onkeypress="handleAddItemEnter(event)">
                 <button class="btn-add" onclick="addItem()"><i class="fas fa-plus"></i> Add Item</button>
             </div>
             <table class="editor-table">
@@ -503,39 +473,6 @@
     <!-- MODALS OVERLAY -->
     <div class="overlay" id="edit-overlay"><div class="modal-lg" id="edit-modal-content"></div></div>
     
-    <div class="overlay" id="utr-approve-modal">
-        <div class="modal-sm">
-            <h3 style="margin-top:0; color:#1e293b;">Verify & Approve UTR</h3>
-            <p style="font-size:13px; color:#64748b; margin-bottom:15px;">Customer ne online payment ka UTR bheja hai. Amount verify karke approve karein.</p>
-            
-            <div style="background:#f8fafc; padding:15px; border-radius:10px; border:1px solid #e2e8f0; margin-bottom:15px; font-size:14px;">
-                <div style="margin-bottom:8px;"><b>UTR Number:</b> <span id="modal-utr-num" style="font-family:monospace; color:#d97706;">-</span></div>
-                <div style="margin-bottom:8px;"><b>Customer Claimed:</b> <span id="modal-claimed-amt" style="font-weight:bold; color:#10b981;">₹0</span></div>
-            </div>
-
-            <label>Approved Amount (Aap apne bank me check karke edit kar sakte hain)</label>
-            <input type="number" id="modal-approved-amt" placeholder="Enter amount received" step="0.01">
-
-            <div style="display:flex; gap:10px; margin-top:15px;">
-                <button onclick="document.getElementById('utr-approve-modal').style.display='none'" style="flex:1; padding:12px; background:#f1f5f9; border:none; border-radius:8px; font-weight:bold; color:#475569; cursor:pointer;">Cancel</button>
-                <button onclick="rejectUtr()" style="flex:1; padding:12px; background:#dc2626; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Reject</button>
-                <button onclick="confirmApproveUtr()" style="flex:1; padding:12px; background:#059669; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Approve & Save</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="overlay" id="confirm-overlay" style="z-index: 1000000;">
-        <div class="modal-sm" style="text-align: center; max-width: 320px; padding: 30px 20px;">
-            <i class="fas fa-exclamation-circle" style="font-size: 45px; color: #f59e0b; margin-bottom: 15px;"></i>
-            <h3 id="confirm-title" style="margin-top:0; color:#1e293b; font-size:20px;">Are you sure?</h3>
-            <p id="confirm-msg" style="font-size:14px; color:#64748b; margin-bottom:25px; line-height:1.5;">This action cannot be undone.</p>
-            <div style="display:flex; gap:12px;">
-                <button onclick="closeConfirmModal()" style="flex:1; padding:12px; background:#f1f5f9; border:none; border-radius:8px; font-weight:bold; color:#475569; cursor:pointer;">Cancel</button>
-                <button id="confirm-btn-yes" style="flex:1; padding:12px; background:#ef4444; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; box-shadow:0 4px 10px rgba(239, 68, 68, 0.2);">Yes, Delete</button>
-            </div>
-        </div>
-    </div>
-
     <div class="overlay" id="payment-modal">
         <div class="modal-sm">
             <h3 style="margin-top:0; color:#1e293b;">Manage Payments</h3>
@@ -588,19 +525,36 @@
         let activeUtrInvoiceId = null;
         let itemMaster = [];
 
+        // NAYA CUSTOM ITEM MASTER DROPDOWN LOGIC
         function renderItemMasterSuggestions() {
-            const dl = document.getElementById('item-master-suggestions');
-            if(dl) {
-                dl.innerHTML = '';
-                itemMaster.forEach(x => {
-                    const opt = document.createElement('option');
-                    opt.value = String(x.name);
-                    dl.appendChild(opt);
-                });
-            }
             const c = document.getElementById('item-master-count'); 
             if(c) c.innerText = `${itemMaster.length} item${itemMaster.length===1?'':'s'} saved`;
         }
+        function filterItemSuggestions() {
+            const descEl = document.getElementById('i_desc');
+            const listEl = document.getElementById('custom-item-list');
+            if(!descEl || !listEl) return;
+            const q = descEl.value.trim().toLowerCase();
+            listEl.innerHTML = '';
+            
+            const filtered = q === '' ? itemMaster : itemMaster.filter(x => String(x.name).toLowerCase().includes(q));
+            
+            filtered.forEach(item => {
+                const div = document.createElement('div');
+                div.style.cssText = "padding:12px; border-bottom:1px solid #f1f5f9; cursor:pointer; font-size:14px; color:#1e293b; display:flex; justify-content:space-between;";
+                div.innerHTML = `<span>${item.name}</span> <span style="color:#10b981; font-weight:bold;">₹${item.price}</span>`;
+                div.onmousedown = function(e) { 
+                    e.preventDefault();
+                    document.getElementById('i_desc').value = item.name;
+                    document.getElementById('i_price').value = item.price;
+                    listEl.style.display = 'none';
+                };
+                listEl.appendChild(div);
+            });
+            listEl.style.display = filtered.length > 0 ? 'block' : 'none';
+        }
+        function showItemSuggestions() { filterItemSuggestions(); }
+        function hideItemSuggestions() { document.getElementById('custom-item-list').style.display = 'none'; }
 
         function loadItemMaster() {
             if(!activeUserId) return;
@@ -613,13 +567,6 @@
         function saveItemMaster() {
             if(!activeUserId) return Promise.resolve();
             return database.ref('item_master/' + activeUserId).set(itemMaster);
-        }
-        function autoFillItemPrice() {
-            const descEl=document.getElementById('i_desc'), priceEl=document.getElementById('i_price');
-            if(!descEl||!priceEl) return;
-            const q=descEl.value.trim().toLowerCase();
-            const item=itemMaster.find(x=>String(x.name).trim().toLowerCase()===q);
-            if(item) { priceEl.value = Number(item.price||0); }
         }
         function importItemMaster(event) {
             const file=event.target.files && event.target.files[0]; if(!file) return;
@@ -698,25 +645,13 @@
         function toggleUpiEdit(show) {
             const container = document.getElementById('upi-edit-container');
             const btn = document.getElementById('btn-edit-upi');
-            if(show) {
-                container.style.display = 'block';
-                btn.innerText = "Close";
-            } else {
-                container.style.display = 'none';
-                btn.innerText = "Edit";
-            }
+            if(show) { container.style.display = 'block'; btn.innerText = "Close"; } else { container.style.display = 'none'; btn.innerText = "Edit"; }
         }
 
         function togglePassEdit(show) {
             const container = document.getElementById('pass-edit-container');
             const btn = document.getElementById('btn-edit-pass');
-            if(show) {
-                container.style.display = 'block';
-                btn.innerText = "Close";
-            } else {
-                container.style.display = 'none';
-                btn.innerText = "Change";
-            }
+            if(show) { container.style.display = 'block'; btn.innerText = "Close"; } else { container.style.display = 'none'; btn.innerText = "Change"; }
         }
 
         function saveMerchantUpi() {
@@ -789,7 +724,7 @@
             document.getElementById('f_cdate').addEventListener('change', () => { autoGenerateInvoice(); });
             document.getElementById('pay_amt').addEventListener('input', function() { document.getElementById('payment_controls').style.display = (parseFloat(this.value) > 0) ? 'flex' : 'none'; });
 
-            ['i_desc', 'i_qty', 'i_price'].forEach(id => { document.getElementById(id).addEventListener('input', function() { this.classList.remove('error-border'); }); });
+            ['i_qty', 'i_price'].forEach(id => { document.getElementById(id).addEventListener('input', function() { this.classList.remove('error-border'); }); });
 
             window.addEventListener('resize', adjustPreviewScale);
             document.getElementById('create-tab-body').appendChild(document.getElementById('editor-container'));
@@ -979,11 +914,9 @@
                 const paid = (inv.payments||[]).reduce((s, p) => s + p.amt, 0); 
                 const bal = total - paid;
                 
-                // ACTUAL FINANCIAL STATUS (UNPAID/PARTIAL/PAID)
                 let actualStatus = paid >= total && total > 0 ? 'PAID' : (paid > 0 ? 'PARTIAL' : 'UNPAID');
                 let badgeHtml = `<span class="badge ${actualStatus}">${actualStatus}</span>`;
                 
-                // DUAL STATUS: ADD PENDING UTR TAG IF APPLICABLE
                 if(inv.status === "Pending Verification" || inv.utrNumber) {
                     badgeHtml += `<span class="badge PENDING" style="margin-top:2px;">PENDING UTR</span>`;
                 }
@@ -1247,7 +1180,6 @@
             const message = buildPaymentMessage(inv, code, checkoutUrl);
             showToast(`Payment Code: ${code}`, 'success');
             if(navigator.share) {
-                // FIXED DOUBLE LINK ISSUE: Removed `url: checkoutUrl` parameter.
                 try { await navigator.share({ title: `Payment - ${inv.invNo}`, text: message }); } catch(err) {}
             } else {
                 window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`, '_blank');
@@ -1262,7 +1194,6 @@
             const message = buildPaymentMessage(inv, code, checkoutUrl);
             showToast(`Payment Code: ${code}`, 'success');
             if(navigator.share) {
-                // FIXED DOUBLE LINK ISSUE: Removed `url: checkoutUrl` parameter.
                 try { await navigator.share({ title: `Payment - ${inv.invNo}`, text: message }); } catch(err) {}
             } else {
                 window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`, '_blank');
