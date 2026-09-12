@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- JALDI UPDATE KE LIYE NO-CACHE TAGS -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -888,8 +887,8 @@
             makeVisibleForExport(doShareAsImage); 
         }
 
-        // SEPARATE PAYMENT LINK SHARE FUNCTIONS
-        function sharePaymentLinkFromPreview() {
+        // NATIVE SHARE MENU FOR PAYMENT LINK (Supports WhatsApp, Telegram, SMS, etc.)
+        async function sharePaymentLinkFromPreview() {
             if(checkRequireSave()) return;
             const invNo = document.getElementById('f_inv').value || 'Bill';
             const customerName = document.getElementById('f_to').value || 'Customer';
@@ -897,19 +896,43 @@
             const checkoutUrl = `${window.location.origin}/checkout.html?user=${activeUserId}&invoice=${currentInvId}`;
             const message = `Hello ${customerName}, your invoice #${invNo} is ready. Pay securely via QR and submit your UTR here: ${checkoutUrl}`;
             
-            const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
-            window.open(whatsappUrl, '_blank');
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: `Invoice #${invNo}`,
+                        text: message,
+                        url: checkoutUrl
+                    });
+                } catch (err) {
+                    console.log('Share canceled');
+                }
+            } else {
+                const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+                window.open(whatsappUrl, '_blank');
+            }
         }
 
-        function sharePaymentLinkList(id) {
+        async function sharePaymentLinkList(id) {
             const inv = invoices.find(i => i.id === id);
             if(!inv) return;
             
             const checkoutUrl = `${window.location.origin}/checkout.html?user=${activeUserId}&invoice=${inv.id}`;
             const message = `Hello ${inv.to || 'Customer'}, your invoice #${inv.invNo} is ready. Pay securely via QR and submit your UTR here: ${checkoutUrl}`;
             
-            const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
-            window.open(whatsappUrl, '_blank');
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: `Invoice #${inv.invNo}`,
+                        text: message,
+                        url: checkoutUrl
+                    });
+                } catch (err) {
+                    console.log('Share canceled');
+                }
+            } else {
+                const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+                window.open(whatsappUrl, '_blank');
+            }
         }
 
         function doGeneratePDF() { 
