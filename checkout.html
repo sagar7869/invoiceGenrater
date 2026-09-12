@@ -18,27 +18,20 @@
                 <h2 class="text-3xl font-extrabold text-emerald-600 mt-1" id="billAmount">₹0</h2>
             </div>
 
-            <!-- Direct UPI App Redirect Buttons -->
-            <div id="upiButtonsSection" class="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-4 text-center" style="display:none;">
-                <p class="text-xs font-semibold text-blue-800 mb-3">Direct App se pay karne ke liye click karein:</p>
-                <div class="grid grid-cols-3 gap-2">
-                    <a id="gpayBtn" href="#" class="bg-white border border-blue-300 py-2 px-1 rounded-xl text-xs font-bold text-slate-700 shadow-sm flex flex-col items-center justify-center hover:bg-blue-100">
-                        <span class="text-blue-600 text-sm mb-1">🟢</span> Google Pay
-                    </a>
-                    <a id="phonepeBtn" href="#" class="bg-white border border-blue-300 py-2 px-1 rounded-xl text-xs font-bold text-slate-700 shadow-sm flex flex-col items-center justify-center hover:bg-blue-100">
-                        <span class="text-purple-600 text-sm mb-1">🟣</span> PhonePe
-                    </a>
-                    <a id="paytmBtn" href="#" class="bg-white border border-blue-300 py-2 px-1 rounded-xl text-xs font-bold text-slate-700 shadow-sm flex flex-col items-center justify-center hover:bg-blue-100">
-                        <span class="text-cyan-600 text-sm mb-1">🔵</span> Paytm
-                    </a>
-                </div>
+            <!-- Pay with UPI Intent Box (Clean with App Icons) -->
+            <div id="upiButtonsSection" class="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-4 text-center shadow-sm" style="display:none;">
+                <p class="text-xs font-semibold text-blue-800 mb-2">Kisi bhi UPI App se direct pay karne ke liye click karein:</p>
+                <a id="directPayBtn" href="#" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl transition duration-200 shadow-md flex items-center justify-center gap-2 text-sm">
+                    <span>⚡ Pay with UPI</span>
+                    <span class="text-xs bg-blue-700 px-2 py-0.5 rounded text-blue-100">GPay | PhonePe | Paytm</span>
+                </a>
             </div>
 
-            <!-- Payment Box -->
+            <!-- Payment Box with QR -->
             <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-center mb-6 shadow-sm">
-                <p class="text-sm font-medium text-slate-600 mb-2">Ya kisi bhi UPI App se QR scan karein:</p>
+                <p class="text-sm font-medium text-slate-600 mb-2">Ya is QR Code ko scan karein:</p>
                 <div class="bg-white p-2 inline-block rounded-xl border border-slate-200 shadow-inner mb-2">
-                    <img id="qrCodeImg" src="https://via.placeholder.com/150" alt="UPI QR Code" class="w-36 h-36 mx-auto object-contain">
+                    <img id="qrCodeImg" src="https://via.placeholder.com/150" alt="UPI QR Code" class="w-40 h-40 mx-auto object-contain">
                 </div>
                 <p class="text-xs text-slate-500">UPI ID: <span id="upiIdText" class="font-semibold text-slate-700">loading...</span></p>
             </div>
@@ -107,17 +100,16 @@
                     document.getElementById('shopName').innerText = shopNameText;
                     document.getElementById('billAmount').innerText = "₹" + pendingBalance;
                     
+                    // Priority: Invoice mein saved UPI, warna merchant profile ki UPI, warna default
                     merchantUpi = inv.upiId || "merchant@upi";
                     document.getElementById('upiIdText').innerText = merchantUpi;
                     
+                    // Correct QR Code generator using actual merchant shop name and real UPI ID
                     document.getElementById('qrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${merchantUpi}&pn=${encodeURIComponent(shopNameText)}&am=${pendingBalance}&cu=INR`;
 
-                    // Set Direct UPI App Intent links
+                    // Direct Pay with UPI Intent Link
                     const upiIntent = `upi://pay?pa=${merchantUpi}&pn=${encodeURIComponent(shopNameText)}&am=${pendingBalance}&cu=INR`;
-                    document.getElementById('gpaybd')?.setAttribute('href', upiIntent);
-                    document.getElementById('phonepeBtn').setAttribute('href', upiIntent);
-                    document.getElementById('paytmBtn').setAttribute('href', upiIntent);
-                    document.getElementById('gpayBtn').setAttribute('href', upiIntent);
+                    document.getElementById('directPayBtn').setAttribute('href', upiIntent);
                     document.getElementById('upiButtonsSection').style.display = 'block';
 
                     if (pendingBalance <= 0) {
@@ -155,7 +147,7 @@
                         found = true;
                         inv.status = "Pending Verification";
                         inv.utrNumber = utr;
-                        inv.submittedAmount = pendingBalance; // Kitna pay kiya claim kiya
+                        inv.submittedAmount = pendingBalance;
                         inv.submittedAt = new Date().toISOString();
                     }
                     return inv;
