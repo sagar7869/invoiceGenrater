@@ -14,21 +14,39 @@
         <div>
             <div class="text-center mb-6">
                 <h1 class="text-xl font-bold text-slate-800" id="shopName">Loading...</h1>
-                <p class="text-sm text-slate-500">Invoice Amount</p>
+                <p class="text-sm text-slate-500">Balance Due / Payable Amount</p>
                 <h2 class="text-3xl font-extrabold text-emerald-600 mt-1" id="billAmount">₹0</h2>
             </div>
 
-            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-5 text-center mb-6 shadow-sm">
-                <p class="text-sm font-medium text-slate-600 mb-3">Is QR Code ko kisi bhi UPI App se scan karein:</p>
-                <div class="bg-white p-3 inline-block rounded-xl border border-slate-200 shadow-inner mb-3">
-                    <img id="qrCodeImg" src="https://via.placeholder.com/180" alt="UPI QR Code" class="w-44 h-44 mx-auto object-contain">
+            <!-- Direct UPI App Redirect Buttons -->
+            <div id="upiButtonsSection" class="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-4 text-center" style="display:none;">
+                <p class="text-xs font-semibold text-blue-800 mb-3">Direct App se pay karne ke liye click karein:</p>
+                <div class="grid grid-cols-3 gap-2">
+                    <a id="gpayBtn" href="#" class="bg-white border border-blue-300 py-2 px-1 rounded-xl text-xs font-bold text-slate-700 shadow-sm flex flex-col items-center justify-center hover:bg-blue-100">
+                        <span class="text-blue-600 text-sm mb-1">🟢</span> Google Pay
+                    </a>
+                    <a id="phonepeBtn" href="#" class="bg-white border border-blue-300 py-2 px-1 rounded-xl text-xs font-bold text-slate-700 shadow-sm flex flex-col items-center justify-center hover:bg-blue-100">
+                        <span class="text-purple-600 text-sm mb-1">🟣</span> PhonePe
+                    </a>
+                    <a id="paytmBtn" href="#" class="bg-white border border-blue-300 py-2 px-1 rounded-xl text-xs font-bold text-slate-700 shadow-sm flex flex-col items-center justify-center hover:bg-blue-100">
+                        <span class="text-cyan-600 text-sm mb-1">🔵</span> Paytm
+                    </a>
+                </div>
+            </div>
+
+            <!-- Payment Box -->
+            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-center mb-6 shadow-sm">
+                <p class="text-sm font-medium text-slate-600 mb-2">Ya kisi bhi UPI App se QR scan karein:</p>
+                <div class="bg-white p-2 inline-block rounded-xl border border-slate-200 shadow-inner mb-2">
+                    <img id="qrCodeImg" src="https://via.placeholder.com/150" alt="UPI QR Code" class="w-36 h-36 mx-auto object-contain">
                 </div>
                 <p class="text-xs text-slate-500">UPI ID: <span id="upiIdText" class="font-semibold text-slate-700">loading...</span></p>
             </div>
 
+            <!-- UTR Submission Form -->
             <div id="utrFormSection" class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6">
-                <h3 class="text-sm font-bold text-amber-800 mb-1">Payment karne ke baad yahan UTR dalein:</h3>
-                <p class="text-xs text-amber-600 mb-3">Payment successful hone ke baad 12-digit UTR/Reference Number yahan enter karein.</p>
+                <h3 class="text-sm font-bold text-amber-800 mb-1">Payment ke baad UTR dalein:</h3>
+                <p class="text-xs text-amber-600 mb-3">12-digit UTR/Reference Number yahan enter karein.</p>
                 
                 <input type="text" id="utrInput" placeholder="Enter 12-digit UTR Number" maxlength="12" class="w-full px-4 py-3 border border-amber-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 text-center font-mono text-lg tracking-wider bg-white mb-3">
                 
@@ -62,6 +80,9 @@
         const invoiceId = urlParams.get('invoice');
 
         let invoiceDataRef = null;
+        let pendingBalance = 0;
+        let merchantUpi = "";
+        let shopNameText = "";
 
         if (!userId || !invoiceId) {
             alert("Invalid Invoice Link!");
@@ -78,20 +99,33 @@
 
                 if (inv) {
                     const totalAmt = (inv.items || []).reduce((s, item) => s + (item.qty * item.price), 0);
-                    document.getElementById('shopName').innerText = inv.from || "My Dukaan";
-                    document.getElementById('billAmount').innerText = "₹" + totalAmt;
-                    
-                    const upiId = inv.upiId || "merchant@upi";
-                    document.getElementById('upiIdText').innerText = upiId;
-                    
-                    document.getElementById('qrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${upiId}&pn=${encodeURIComponent(inv.from || 'Dukaan')}&am=${totalAmt}&cu=INR`;
+                    const paidAmt = (inv.payments || []).reduce((s, p) => s + p.amt, 0);
+                    pendingBalance = totalAmt - paidAmt;
+                    if(pendingBalance < 0) pendingBalance = 0;
 
-                    if (inv.status === "Pending Verification") {
+                    shopNameText = inv.from || "My Dukaan";
+                    document.getElementById('shopName').innerText = shopNameText;
+                    document.getElementById('billAmount').innerText = "₹" + pendingBalance;
+                    
+                    merchantUpi = inv.upiId || "merchant@upi";
+                    document.getElementById('upiIdText').innerText = merchantUpi;
+                    
+                    document.getElementById('qrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${merchantUpi}&pn=${encodeURIComponent(shopNameText)}&am=${pendingBalance}&cu=INR`;
+
+                    // Set Direct UPI App Intent links
+                    const upiIntent = `upi://pay?pa=${merchantUpi}&pn=${encodeURIComponent(shopNameText)}&am=${pendingBalance}&cu=INR`;
+                    document.getElementById('gpaybd')?.setAttribute('href', upiIntent);
+                    document.getElementById('phonepeBtn').setAttribute('href', upiIntent);
+                    document.getElementById('paytmBtn').setAttribute('href', upiIntent);
+                    document.getElementById('gpayBtn').setAttribute('href', upiIntent);
+                    document.getElementById('upiButtonsSection').style.display = 'block';
+
+                    if (pendingBalance <= 0) {
+                        document.getElementById('utrFormSection').style.display = 'none';
+                        document.getElementById('statusMessage').innerHTML = "<span class='text-emerald-600 font-bold'>✅ This invoice is already fully paid! Thank you.</span>";
+                    } else if (inv.status === "Pending Verification") {
                         document.getElementById('utrFormSection').style.display = 'none';
                         document.getElementById('statusMessage').innerHTML = `<span class='text-amber-600 font-bold'>⏳ UTR Submitted (${inv.utrNumber || ''}). Waiting for merchant approval.</span>`;
-                    } else if (inv.status === "PAID") {
-                        document.getElementById('utrFormSection').style.display = 'none';
-                        document.getElementById('statusMessage').innerHTML = "<span class='text-emerald-600 font-bold'>✅ Payment Verified & Approved! Thank you.</span>";
                     }
                 } else {
                     alert("Invoice not found in database!");
@@ -121,6 +155,7 @@
                         found = true;
                         inv.status = "Pending Verification";
                         inv.utrNumber = utr;
+                        inv.submittedAmount = pendingBalance; // Kitna pay kiya claim kiya
                         inv.submittedAt = new Date().toISOString();
                     }
                     return inv;
@@ -145,4 +180,3 @@
     </script>
 </body>
 </html>
-
