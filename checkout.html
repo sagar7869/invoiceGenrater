@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Secure Checkout - Pay & Verify</title>
-    <!-- Tailwind CSS for modern styling -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Firebase SDKs (v8 matching index.html) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 </head>
 <body class="bg-slate-50 font-sans">
 
@@ -14,9 +16,9 @@
         <!-- Header -->
         <div>
             <div class="text-center mb-6">
-                <h1 class="text-xl font-bold text-slate-800" id="shopName">Dukaan ka Naam</h1>
+                <h1 class="text-xl font-bold text-slate-800" id="shopName">Loading...</h1>
                 <p class="text-sm text-slate-500">Invoice Amount</p>
-                <h2 class="text-3xl font-extrabold text-emerald-600 mt-1" id="billAmount">₹500</h2>
+                <h2 class="text-3xl font-extrabold text-emerald-600 mt-1" id="billAmount">₹0</h2>
             </div>
 
             <!-- Payment Box -->
@@ -32,7 +34,7 @@
             </div>
 
             <!-- UTR Submission Form -->
-            <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6">
+            <div id="utrFormSection" class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6">
                 <h3 class="text-sm font-bold text-amber-800 mb-1">Payment karne ke baad yahan UTR dalein:</h3>
                 <p class="text-xs text-amber-600 mb-3">Payment successful hone ke baad 12-digit UTR/Reference Number yahan enter karein.</p>
                 
@@ -51,47 +53,69 @@
 
     </div>
 
-    <!-- Firebase SDKs -->
-    <type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        // Aapki Firebase Configuration (Yahan apni details dalein)
+    <script>
+        // Firebase Configuration (Matching index.html)[span_1](start_span)[span_1](end_span)
         const firebaseConfig = {
-            apiKey: "AQUAP_AP_YOUR_KEY",
-            authDomain: "your-app.firebaseapp.com",
-            projectId: "your-app-id",
+            apiKey: "AIzaSyDI1bnT0cyKVHyH25PbIZqJfWFhuZlc2YA",
+            authDomain: "sagar-invoice-app.firebaseapp.com",
+            databaseURL: "https://sagar-invoice-app-default-rtdb.firebaseio.com",
+            projectId: "sagar-invoice-app",
+            storageBucket: "sagar-invoice-app.firebasestorage.app",
+            messagingSenderId: "733494306894",
+            appId: "1:733494306894:web:cbab88d65b1dbd08bcbb1f"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
 
-        // URL se Invoice ID nikalna (e.g. checkout.html?invoice=INV101)
+        // URL Parameters expected: checkout.html?user=USER_UID&invoice=INVOICE_ID
         const urlParams = new URLSearchParams(window.location.search);
-        const invoiceId = urlParams.get('invoice') || "INV_TEST";
+        const userId = urlParams.get('user');
+        const invoiceId = urlParams.get('invoice');
 
-        async function loadInvoiceDetails() {
-            try {
-                // Firestore se dukandaar aur bill ki details laana
-                const docRef = doc(db, "invoices", invoiceId);
-                const docSnap = await getDoc(docRef);
+        let invoiceDataRef = null;
 
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    document.getElementById('shopName').innerText = data.shopName;
-                    document.getElementById('billAmount').innerText = "₹" + data.amount;
-                    document.getElementById('upiIdText').innerText = data.upiId;
-                    document.getElementById('qrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${data.upiId}&pn=${data.shopName}&am=${data.amount}&cu=INR`;
-                } else {
-                    alert("Invoice not found!");
-                }
-            } catch (error) {
-                console.error("Error loading invoice:", error);
-            }
+        if (!userId || !invoiceId) {
+            alert("Invalid Invoice Link!");
+            document.getElementById('statusMessage').innerText = "Error: Invalid link parameters.";
+        } else {
+            invoiceDataRef = database.ref('user_invoices/' + userId);
+            loadInvoiceDetails();
         }
 
-        // Global scope mein function attach karna taaki HTML button click kaam kare
-        window.submitUtr = async function() {
+        function loadInvoiceDetails() {
+            invoiceDataRef.once('value', (snapshot) => {
+                const invoices = snapshot.val() || [];
+                const inv = invoices.find(i => String(i.id) === String(invoiceId));
+
+                if (inv) {
+                    const totalAmt = (inv.items || []).reduce((s, item) => s + (item.qty * item.price), 0);
+                    document.getElementById('shopName').innerText = inv.from || "My Dukaan";
+                    document.getElementById('billAmount').innerText = "₹" + totalAmt;
+                    
+                    // Aap default UPI ID yahan set kar sakte hain ya invoice object se le sakte hain
+                    const upiId = inv.upiId || "merchant@upi";
+                    document.getElementById('upiIdText').innerText = upiId;
+                    
+                    document.getElementById('qrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${upiId}&pn=${encodeURIComponent(inv.from || 'Dukaan')}&am=${totalAmt}&cu=INR`;
+
+                    if (inv.status === "Pending Verification") {
+                        document.getElementById('utrFormSection').style.display = 'none';
+                        document.getElementById('statusMessage').innerHTML = `<span class='text-amber-600 font-bold'>⏳ UTR Submitted (${inv.utrNumber || ''}). Waiting for merchant approval.</span>`;
+                    } else if (inv.status === "PAID") {
+                        document.getElementById('utrFormSection').style.display = 'none';
+                        document.getElementById('statusMessage').innerHTML = "<span class='text-emerald-600 font-bold'>✅ Payment Verified & Approved! Thank you.</span>";
+                    }
+                } else {
+                    alert("Invoice not found in database!");
+                }
+            }, (error) => {
+                console.error("Error loading invoice:", error);
+                alert("Failed to load invoice details.");
+            });
+        }
+
+        window.submitUtr = function() {
             const utr = document.getElementById('utrInput').value.trim();
             if (utr.length < 12) {
                 alert("Kripya poora 12-digit UTR number dalein.");
@@ -101,25 +125,36 @@
             document.getElementById('submitBtn').innerText = "Submitting...";
             document.getElementById('submitBtn').disabled = true;
 
-            try {
-                // UTR ko database mein save karna (Status: Pending)
-                await setDoc(doc(db, "invoices", invoiceId), {
-                    utrNumber: utr,
-                    status: "Pending Verification",
-                    submittedAt: new Date().toISOString()
-                }, { merge: true });
+            invoiceDataRef.once('value', (snapshot) => {
+                let invoices = snapshot.val() || [];
+                let found = false;
 
-                document.getElementById('statusMessage').innerHTML = "<span class='text-emerald-600 font-bold'>✓ UTR Submitted Successfully! Waiting for merchant approval.</span>";
-                document.querySelector('.bg-amber-50').style.display = 'none';
-            } catch (error) {
-                console.error("Error submitting UTR:", error);
-                alert("Kuch galat ho gaya. Phir se try karein.");
-                document.getElementById('submitBtn').innerText = "Submit UTR & Verify";
-                document.getElementById('submitBtn').disabled = false;
-            }
+                invoices = invoices.map(inv => {
+                    if (String(inv.id) === String(invoiceId)) {
+                        found = true;
+                        inv.status = "Pending Verification";
+                        inv.utrNumber = utr;
+                        inv.submittedAt = new Date().toISOString();
+                    }
+                    return inv;
+                });
+
+                if (found) {
+                    invoiceDataRef.set(invoices).then(() => {
+                        document.getElementById('statusMessage').innerHTML = "<span class='text-emerald-600 font-bold'>✓ UTR Submitted Successfully! Waiting for merchant approval.</span>";
+                        document.getElementById('utrFormSection').style.display = 'none';
+                    }).catch(err => {
+                        alert("Error saving UTR: " + err.message);
+                        document.getElementById('submitBtn').innerText = "Submit UTR & Verify";
+                        document.getElementById('submitBtn').disabled = false;
+                    });
+                } else {
+                    alert("Invoice update error.");
+                    document.getElementById('submitBtn').innerText = "Submit UTR & Verify";
+                    document.getElementById('submitBtn').disabled = false;
+                }
+            });
         }
-
-        loadInvoiceDetails();
     </script>
 </body>
 </html>
