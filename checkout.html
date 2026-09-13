@@ -5,66 +5,177 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Secure Checkout - Pay & Verify</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <style>
+        /* Hidden Print Wrapper used for PDF download */
+        #print-wrapper { display: none; }
+        .preview-box { padding: 20mm; width: 210mm; min-height: 297mm; background: white; font-family: 'Segoe UI', Arial, sans-serif; box-sizing: border-box; position:relative; }
+        .header { display: flex; justify-content: space-between; margin-bottom: 30px; border-bottom: 2px solid #f1f5f9; padding-bottom: 20px; }
+        .header h1 { font-size: 40px; margin: 0; color: #1e293b; letter-spacing: 2px; }
+        .meta-data table { text-align: right; font-size: 13px; }
+        .meta-data td { padding: 3px 8px; }
+        .meta-data td:first-child { font-weight: bold; text-align: left; color: #64748b; }
+        .addresses { display: flex; justify-content: space-between; margin-bottom: 30px; }
+        .address-box h3 { font-size: 12px; margin: 0 0 6px 0; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+        .address-box div { font-weight: bold; font-size: 16px; color: #334155; }
+        .print-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 1px solid #f1f5f9; }
+        .print-table th, .print-table td { padding: 12px 10px; text-align: right; border-bottom: 1px solid #f1f5f9; }
+        .print-table th { background: #f8fafc; font-weight: bold; border-top: 2px solid #cbd5e1; border-bottom: 2px solid #cbd5e1; color: #334155; text-transform: uppercase; font-size: 12px; }
+        .print-table th:first-child, .print-table td:first-child { text-align: left; }
+        .totals-container { display: flex; justify-content: flex-end; margin-top: 20px; }
+        .totals-box { width: 300px; font-size: 14px; background: #fdfdfd; padding: 15px 20px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .tot-row { display: flex; justify-content: space-between; padding: 5px 0; color: #64748b; }
+        .tot-row.bold { font-weight: bold; font-size: 16px; border-top: 1px solid #e2e8f0; margin-top: 8px; padding-top: 10px; color: #0f172a; }
+        .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 120px; font-weight: bold; border: 6px solid; padding: 10px 40px; border-radius: 10px; text-transform: uppercase; mix-blend-mode: multiply; z-index: 10; opacity: 1;}
+        .watermark.PAID { color: rgba(76, 175, 80, 0.25); border-color: rgba(76, 175, 80, 0.25); }
+        .watermark.PARTIAL { color: rgba(255, 152, 0, 0.25); border-color: rgba(255, 152, 0, 0.25); }
+        .watermark.UNPAID { color: rgba(244, 67, 54, 0.15); border-color: rgba(244, 67, 54, 0.15); }
+        .payment-info { margin-top: 30px; position: relative; z-index: 1; display: inline-block; padding-right: 20px; }
+        .payment-info h3 { font-size: 12px; margin: 0 0 5px 0; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+        #p_payment_text { font-weight: bold; font-size: 15px; }
+        .ledger-table { width: 100%; max-width: 350px; font-size: 12px; margin-top: 10px; border-collapse: collapse; background: transparent; }
+        .ledger-table th, .ledger-table td { padding: 6px; border-bottom: 1px solid #e2e8f0; text-align: left; }
+    </style>
 </head>
-<body class="bg-slate-50 font-sans">
+<body class="bg-slate-100 font-sans p-4">
 
-    <div class="max-w-md mx-auto min-h-screen bg-white shadow-lg flex flex-col justify-between p-6">
-        <div>
-            <div class="text-center mb-6">
-                <h1 class="text-xl font-bold text-slate-800" id="shopName">Loading...</h1>
-                <p class="text-sm text-slate-500">Balance Due / Payable Amount</p>
-                <h2 class="text-3xl font-extrabold text-emerald-600 mt-1" id="billAmount">₹0</h2>
+    <!-- HIDDEN PRINT AREA FOR PDF GENERATION -->
+    <div id="print-wrapper">
+        <div class="preview-box" id="print-area">
+            <div id="p_watermark" class="watermark UNPAID">UNPAID</div>
+            <div class="header">
+                <h1>INVOICE</h1>
+                <div class="meta-data">
+                    <table>
+                        <tr><td>INVOICE #</td><td id="p_inv"></td></tr>
+                        <tr><td>DATE</td><td id="p_cdate"></td></tr>
+                        <tr id="row_ddate" style="display:none;"><td>DUE DATE</td><td id="p_ddate"></td></tr>
+                    </table>
+                </div>
+            </div>
+            <div class="addresses">
+                <div class="address-box"><h3>FROM</h3><div id="p_from"></div></div>
+                <div class="address-box"><h3>BILL TO</h3><div id="p_to"></div></div>
+            </div>
+            <table class="print-table">
+                <thead><tr><th>Description</th><th>QTY</th><th>Price</th><th>Amount</th></tr></thead>
+                <tbody id="p_items"></tbody>
+            </table>
+            <div class="totals-container">
+                <div class="totals-box">
+                    <div class="tot-row"><span>Total Amount:</span> <span id="p_total">₹0.00</span></div>
+                    <div class="tot-row"><span>Total Paid:</span> <span id="p_paid_amt">₹0.00</span></div>
+                    <div class="tot-row bold"><span>Balance Due:</span> <span id="p_balance" style="color:#dc2626;">₹0.00</span></div>
+                </div>
+            </div>
+            <div class="payment-info" id="p_payment_section">
+                <h3>PAYMENT STATUS</h3>
+                <div id="p_payment_text">Unpaid</div>
+                <table class="ledger-table" id="p_ledger" style="display:none;">
+                    <thead><tr><th>Date</th><th>Mode</th><th>Amount</th></tr></thead>
+                    <tbody id="p_ledger_body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CHECKOUT UI -->
+    <div class="max-w-md mx-auto bg-white shadow-xl rounded-2xl overflow-hidden flex flex-col my-2">
+        
+        <!-- Header details -->
+        <div class="bg-slate-800 text-white p-5 text-center">
+            <h1 class="text-xl font-extrabold tracking-wide mb-1" id="shopName">Loading Shop...</h1>
+            <p class="text-xs text-slate-300" id="shopContact"></p>
+        </div>
+
+        <!-- Bill Details -->
+        <div class="p-5 border-b border-slate-100 bg-slate-50">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Invoice No</span>
+                <span class="text-sm font-extrabold text-slate-800" id="uiInvNo">-</span>
+            </div>
+            <div class="flex justify-between items-center">
+                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Customer</span>
+                <span class="text-sm font-extrabold text-slate-800 text-right" id="uiCustomerName">-</span>
+            </div>
+            
+            <button onclick="downloadInvoicePDF()" class="w-full mt-4 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-bold py-2.5 rounded-lg shadow-sm text-sm flex items-center justify-center gap-2 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> 
+                Download Your Invoice
+            </button>
+        </div>
+
+        <div class="p-5">
+            <div class="text-center mb-5" id="balanceHeaderSection">
+                <p class="text-sm font-semibold text-slate-500 uppercase tracking-wider">Payable Balance</p>
+                <h2 class="text-4xl font-extrabold text-emerald-600 mt-1 drop-shadow-sm" id="billAmount">₹0</h2>
+            </div>
+
+            <!-- SUCCESS MESSAGE FOR 0 BALANCE (At the top, nicely styled) -->
+            <div id="successMessage" class="hidden bg-emerald-50 border border-emerald-200 text-emerald-800 px-5 py-6 rounded-xl text-center shadow-sm mb-4">
+                <div class="text-4xl mb-2">✅</div>
+                <h3 class="text-lg font-extrabold">Amount Already Paid</h3>
+                <p class="font-medium text-emerald-600 mt-1">Zero due amount remaining.</p>
             </div>
 
             <!-- Payment Choice -->
-            <div id="paymentChoiceSection" class="bg-violet-50 border border-violet-200 rounded-2xl p-4 mb-4">
-                <p class="text-sm font-bold text-violet-900 mb-3 text-center">Payment Option Choose Karein</p>
+            <div id="paymentChoiceSection" class="bg-violet-50 border border-violet-100 rounded-xl p-4 mb-4">
+                <p class="text-xs font-bold text-violet-800 mb-3 text-center uppercase tracking-wide">Select Payment Option</p>
                 <div class="grid grid-cols-2 gap-3">
-                    <button id="fullPayBtn" onclick="selectPaymentType('full')" class="font-bold py-3 px-3 rounded-xl border bg-white">Full Payment</button>
-                    <button id="partPayBtn" onclick="selectPaymentType('part')" class="font-bold py-3 px-3 rounded-xl border bg-white">Part Payment</button>
+                    <button id="fullPayBtn" onclick="selectPaymentType('full')" class="font-bold py-2.5 px-2 rounded-lg border bg-emerald-600 text-white shadow-sm text-sm">Full Pay</button>
+                    <button id="partPayBtn" onclick="selectPaymentType('part')" class="font-bold py-2.5 px-2 rounded-lg border bg-white text-slate-700 shadow-sm text-sm">Part Pay</button>
                 </div>
-                <div id="partAmountBox" class="mt-3" style="display:none;">
-                    <label class="text-xs font-semibold text-slate-700">Part Payment Amount</label>
-                    <input type="number" id="partAmountInput" min="1" step="0.01" class="w-full mt-1 px-4 py-3 border border-violet-300 rounded-xl" placeholder="Enter amount manually">
+                <div id="partAmountBox" class="mt-4" style="display:none;">
+                    <label class="text-xs font-bold text-slate-600">Enter Partial Amount</label>
+                    <input type="number" id="partAmountInput" min="1" step="0.01" class="w-full mt-1.5 px-4 py-3 border border-violet-200 rounded-lg focus:ring-2 focus:ring-violet-400 outline-none font-bold text-lg text-slate-800" placeholder="₹0">
                 </div>
             </div>
 
             <!-- Pay with UPI Intent Box -->
-            <div id="upiButtonsSection" class="bg-blue-50 border border-blue-200 rounded-2xl p-4 mb-4 text-center shadow-sm" style="display:none;">
-                <p class="text-xs font-semibold text-blue-800 mb-2">Kisi bhi UPI App se direct pay karne ke liye click karein:</p>
-                <a id="directPayBtn" href="#" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl transition duration-200 shadow-md flex items-center justify-center gap-2 text-sm">
-                    <span>⚡ Pay with UPI</span>
-                    <span class="text-xs bg-blue-700 px-2 py-0.5 rounded text-blue-100">GPay | PhonePe | Paytm</span>
+            <div id="upiButtonsSection" class="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-4 text-center" style="display:none;">
+                <p class="text-xs font-bold text-blue-800 mb-2 uppercase tracking-wide">Direct UPI App Payment</p>
+                <a id="directPayBtn" href="#" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-lg shadow-md flex items-center justify-center gap-2 text-sm transition transform active:scale-95">
+                    <span>⚡ Pay using UPI App</span>
+                    <span class="text-[10px] bg-blue-800 px-2 py-0.5 rounded text-blue-100">GPay/PhonePe</span>
                 </a>
             </div>
 
             <!-- Payment Box with QR -->
-            <div id="qrCodeContainer" class="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-center mb-6 shadow-sm">
-                <p class="text-sm font-medium text-slate-600 mb-2">Ya is QR Code ko scan karein:</p>
-                <div class="bg-white p-2 inline-block rounded-xl border border-slate-200 shadow-inner mb-2">
+            <div id="qrCodeContainer" class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-center mb-5">
+                <p class="text-xs font-bold text-slate-500 mb-3 uppercase tracking-wide">Or Scan QR Code</p>
+                <div class="bg-white p-2 inline-block rounded-lg shadow-sm border border-slate-100 mb-2">
                     <img id="qrCodeImg" src="https://via.placeholder.com/150" alt="UPI QR Code" class="w-40 h-40 mx-auto object-contain">
                 </div>
-                <p class="text-xs text-slate-500">UPI ID: <span id="upiIdText" class="font-semibold text-slate-700">Loading...</span></p>
+                <p class="text-[11px] text-slate-400 font-mono mt-1">UPI ID: <span id="upiIdText" class="font-bold text-slate-600"></span></p>
             </div>
 
             <!-- UTR Submission Form -->
-            <div id="utrFormSection" class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6">
-                <h3 class="text-sm font-bold text-amber-800 mb-1">Payment ke baad UTR dalein:</h3>
-                <p class="text-xs text-amber-600 mb-3">12-digit UTR/Reference Number yahan enter karein.</p>
+            <div id="utrFormSection" class="bg-amber-50 border border-amber-100 rounded-xl p-4 mb-2">
+                <h3 class="text-xs font-bold text-amber-800 mb-1 uppercase tracking-wide">Submit Verification</h3>
+                <p class="text-xs text-amber-600 mb-3">After payment, please enter your 12-digit UTR/Ref No.</p>
                 
-                <div id="submittedAmountDisplay" class="text-center text-sm font-bold text-emerald-700 mb-3">Payment Amount: ₹0</div>
-                <input type="text" id="utrInput" placeholder="Enter 12-digit UTR Number" maxlength="12" class="w-full px-4 py-3 border border-amber-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 text-center font-mono text-lg tracking-wider bg-white mb-3">
+                <div id="submittedAmountDisplay" class="text-center text-sm font-extrabold text-amber-700 mb-2 bg-amber-100 py-1 rounded">Paying: ₹0</div>
+                <input type="text" id="utrInput" placeholder="12-digit UTR Number" maxlength="12" class="w-full px-4 py-3 border border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 text-center font-mono text-lg tracking-widest bg-white mb-3 font-bold text-slate-700 shadow-inner">
                 
-                <button onclick="submitUtr()" id="submitBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition duration-200 shadow-md">
-                    Submit UTR & Verify
+                <button onclick="submitUtr()" id="submitBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-3.5 rounded-lg shadow-md transition transform active:scale-95 text-sm uppercase tracking-wide">
+                    Submit UTR
                 </button>
             </div>
-        </div>
 
-        <div id="statusMessage" class="text-center text-sm text-slate-500 pb-2">
-            Status: Waiting for payment...
+            <!-- Status Indicator -->
+            <div id="statusMessage" class="text-center text-sm font-bold text-slate-500 mt-2 mb-4">
+                Waiting for payment...
+            </div>
+
+            <!-- Read Only Payment History -->
+            <div class="border-t border-slate-200 mt-6 pt-5">
+                <h3 class="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2"><svg class="w-4 h-4 text-slate-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path></svg> Payment History</h3>
+                <div id="paymentHistoryList" class="space-y-2">
+                    <p class="text-xs text-slate-400 italic">No payments recorded yet.</p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -88,10 +199,10 @@
 
         let pendingBalance = 0;
         let selectedPaymentType = "full";
-        let selectedPaymentAmount = 0;
-        let merchantUpi = "";
+        let merchantUpi = "", merchantMobile = "", merchantAddress = "";
         let shopNameText = "";
         let currentInvoice = null;
+        let formatMoney = (amt) => '₹' + parseFloat(amt).toLocaleString('en-IN', {minimumFractionDigits: 2});
 
         if (!userId || !invoiceId) {
             alert("Invalid Invoice Link!");
@@ -104,11 +215,13 @@
             try {
                 // Fetch Merchant Profile Once
                 const profileSnap = await database.ref('merchant_profile/' + userId).once('value');
-                if (profileSnap.exists() && profileSnap.val().upiId) {
-                    merchantUpi = profileSnap.val().upiId;
+                if (profileSnap.exists()) {
+                    merchantUpi = profileSnap.val().upiId || "";
+                    merchantMobile = profileSnap.val().mobile || "";
+                    merchantAddress = profileSnap.val().address || "";
                 }
 
-                // 🔴 REAL TIME LISTENER (.on): Agar merchant approve karega, toh yahan automatic update ho jayega bina refresh kiye!
+                // 🔴 REAL TIME LISTENER: Live syncs amount and approval status
                 database.ref('user_invoices/' + userId).on('value', (snapshot) => {
                     const invoices = snapshot.val() || [];
                     const inv = invoices.find(i => String(i.id) === String(invoiceId));
@@ -116,55 +229,66 @@
                     if (inv) {
                         currentInvoice = inv;
 
+                        // Link Expiration Check
                         if (inv.paymentCode && paymentCode && paymentCode !== inv.paymentCode) {
-                            document.getElementById('paymentChoiceSection').style.display = 'none';
-                            document.getElementById('upiButtonsSection').style.display = 'none';
-                            document.getElementById('utrFormSection').style.display = 'none';
-                            document.getElementById('qrCodeContainer').style.display = 'none';
-                            document.getElementById('statusMessage').innerHTML = '<span class="text-red-600 font-bold">⚠️ This payment link has expired. Please use the latest payment link sent by the merchant.</span>';
+                            hideAllActionSections();
+                            document.getElementById('statusMessage').innerHTML = '<div class="bg-red-50 border border-red-200 text-red-800 p-4 rounded-lg shadow-sm text-sm">⚠️ This payment link has expired. Please ask the merchant for a new link.</div>';
                             return;
                         }
 
+                        // Calculate Financials
                         const totalAmt = (inv.items || []).reduce((s, item) => s + (item.qty * item.price), 0);
                         const paidAmt = (inv.payments || []).reduce((s, p) => s + p.amt, 0);
                         pendingBalance = totalAmt - paidAmt;
                         if(pendingBalance < 0) pendingBalance = 0;
 
-                        shopNameText = inv.from || "My Dukaan";
+                        // Set UI Headers
+                        shopNameText = inv.from || "My Shop";
                         document.getElementById('shopName').innerText = shopNameText;
-                        document.getElementById('billAmount').innerText = "₹" + pendingBalance.toFixed(2);
                         
+                        let contactInfo = [];
+                        if(merchantMobile) contactInfo.push(`M: ${merchantMobile}`);
+                        if(merchantAddress) contactInfo.push(merchantAddress);
+                        document.getElementById('shopContact').innerText = contactInfo.join(' | ');
+
+                        document.getElementById('uiInvNo').innerText = `#${inv.invNo || inv.id}`;
+                        document.getElementById('uiCustomerName').innerText = inv.to || "Customer";
+                        
+                        document.getElementById('billAmount').innerText = "₹" + pendingBalance.toLocaleString('en-IN', {minimumFractionDigits: 2});
+                        
+                        // Setup Hidden PDF Area
+                        populateHiddenPrintArea(inv, totalAmt, paidAmt, pendingBalance);
+                        renderPaymentHistory(inv.payments || []);
+
                         if (!merchantUpi) merchantUpi = inv.upiId || "";
 
+                        // 🔴 ZERO BALANCE LOGIC (Already Paid)
+                        if (pendingBalance <= 0) {
+                            hideAllActionSections();
+                            document.getElementById('balanceHeaderSection').style.display = 'none';
+                            document.getElementById('successMessage').classList.remove('hidden');
+                            document.getElementById('statusMessage').innerHTML = "";
+                            return; 
+                        }
+
                         if (!merchantUpi) {
-                            document.getElementById('upiIdText').innerText = "Error: UPI ID Not Configured by Merchant!";
-                            document.getElementById('upiIdText').style.color = "red";
+                            hideAllActionSections();
+                            document.getElementById('statusMessage').innerHTML = "<div class='text-red-600 font-bold bg-red-50 p-3 rounded-lg border border-red-200'>Merchant UPI ID missing. Cannot accept payments.</div>";
                             return;
                         }
 
                         document.getElementById('upiIdText').innerText = merchantUpi;
-
-                        // 🔴 FULLY PAID / ZERO DUE LOGIC (NO REFRESH GLITCH)
-                        if (pendingBalance <= 0) {
-                            document.getElementById('paymentChoiceSection').style.display = 'none';
-                            document.getElementById('upiButtonsSection').style.display = 'none';
-                            document.getElementById('utrFormSection').style.display = 'none';
-                            document.getElementById('qrCodeContainer').style.display = 'none';
-                            document.getElementById('statusMessage').innerHTML = "<div class='bg-emerald-100 border border-emerald-300 text-emerald-800 px-4 py-4 rounded-xl mt-4 shadow-sm'><span class='text-lg font-extrabold'>✅ Amount already paid.</span><br><span class='font-medium'>Zero due amount.</span></div>";
-                            return; // Stop any further UI rendering
-                        }
-
                         document.getElementById('qrCodeContainer').style.display = 'block';
                         
                         if (inv.status === "Pending Verification") {
                             document.getElementById('utrFormSection').style.display = 'none';
                             document.getElementById('paymentChoiceSection').style.display = 'none';
-                            document.getElementById('statusMessage').innerHTML = `<span class='text-amber-600 font-bold text-base'>⏳ UTR Submitted (${inv.utrNumber || ''}). Waiting for merchant approval.</span>`;
+                            document.getElementById('statusMessage').innerHTML = `<div class='bg-amber-100 border border-amber-300 text-amber-800 p-3 rounded-lg text-sm shadow-sm'>⏳ UTR Submitted <b>(${inv.utrNumber || ''})</b>. Waiting for merchant approval.</div>`;
                         } else {
                             document.getElementById('utrFormSection').style.display = 'block';
                             document.getElementById('paymentChoiceSection').style.display = 'block';
                             document.getElementById('statusMessage').innerHTML = "Status: Waiting for payment...";
-                            selectPaymentType(selectedPaymentType);
+                            selectPaymentType(selectedPaymentType); // Refresh QR & Intent
                         }
                     } else {
                         document.getElementById('statusMessage').innerText = "Invoice not found in database!";
@@ -176,6 +300,38 @@
             }
         }
 
+        function hideAllActionSections() {
+            document.getElementById('paymentChoiceSection').style.display = 'none';
+            document.getElementById('upiButtonsSection').style.display = 'none';
+            document.getElementById('utrFormSection').style.display = 'none';
+            document.getElementById('qrCodeContainer').style.display = 'none';
+        }
+
+        function renderPaymentHistory(payments) {
+            const listEl = document.getElementById('paymentHistoryList');
+            if(payments.length === 0) {
+                listEl.innerHTML = '<p class="text-xs text-slate-400 italic bg-slate-50 p-3 rounded-lg border border-slate-100">No payments recorded yet.</p>';
+                return;
+            }
+            listEl.innerHTML = '';
+            // Reverse so newest is on top
+            [...payments].reverse().forEach(p => {
+                const div = document.createElement('div');
+                div.className = "flex justify-between items-center bg-slate-50 p-3 rounded-lg border border-slate-100 shadow-sm";
+                div.innerHTML = `
+                    <div class="flex flex-col">
+                        <span class="font-bold text-slate-700 text-sm">₹${parseFloat(p.amt).toLocaleString('en-IN', {minimumFractionDigits: 2})}</span>
+                        <span class="text-[10px] text-slate-400 font-medium uppercase tracking-wide">${p.mode}</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs font-semibold text-slate-500">${p.date}</span>
+                        <div class="text-[10px] text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded inline-block ml-2">VERIFIED</div>
+                    </div>
+                `;
+                listEl.appendChild(div);
+            });
+        }
+
         function getSelectedAmount() {
             if(selectedPaymentType === 'part') {
                 return parseFloat(document.getElementById('partAmountInput').value) || 0;
@@ -185,12 +341,10 @@
 
         function updatePaymentMethods() {
             const amount = getSelectedAmount();
-            selectedPaymentAmount = amount;
-            document.getElementById('submittedAmountDisplay').innerText = 'Payment Amount: ₹' + (amount || 0);
+            document.getElementById('submittedAmountDisplay').innerText = 'Paying: ₹' + (amount || 0).toLocaleString('en-IN', {minimumFractionDigits: 2});
             if(!merchantUpi || amount <= 0) return;
             const invoiceNumber = (currentInvoice && currentInvoice.invNo) ? currentInvoice.invNo : invoiceId;
-            const note = paymentCode ? `Invoice ${invoiceNumber} | ${paymentCode}` : `Invoice ${invoiceNumber}`;
-            const intent = `upi://pay?pa=${encodeURIComponent(merchantUpi)}&pn=${encodeURIComponent(shopNameText)}&am=${encodeURIComponent(amount.toFixed(2))}&cu=INR&tn=${encodeURIComponent(note)}`;
+            const intent = `upi://pay?pa=${encodeURIComponent(merchantUpi)}&pn=${encodeURIComponent(shopNameText)}&am=${encodeURIComponent(amount.toFixed(2))}&cu=INR&tn=${encodeURIComponent('Invoice ' + invoiceNumber)}`;
             document.getElementById('directPayBtn').setAttribute('href', intent);
             document.getElementById('qrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(intent)}`;
             document.getElementById('upiButtonsSection').style.display = 'block';
@@ -199,8 +353,8 @@
         window.selectPaymentType = function(type) {
             selectedPaymentType = type;
             document.getElementById('partAmountBox').style.display = type === 'part' ? 'block' : 'none';
-            document.getElementById('fullPayBtn').className = type === 'full' ? 'font-bold py-3 px-3 rounded-xl border bg-emerald-600 text-white' : 'font-bold py-3 px-3 rounded-xl border bg-white';
-            document.getElementById('partPayBtn').className = type === 'part' ? 'font-bold py-3 px-3 rounded-xl border bg-emerald-600 text-white' : 'font-bold py-3 px-3 rounded-xl border bg-white';
+            document.getElementById('fullPayBtn').className = type === 'full' ? 'font-bold py-2.5 px-2 rounded-lg border bg-emerald-600 text-white shadow-sm text-sm' : 'font-bold py-2.5 px-2 rounded-lg border bg-white text-slate-700 shadow-sm text-sm';
+            document.getElementById('partPayBtn').className = type === 'part' ? 'font-bold py-2.5 px-2 rounded-lg border bg-emerald-600 text-white shadow-sm text-sm' : 'font-bold py-2.5 px-2 rounded-lg border bg-white text-slate-700 shadow-sm text-sm';
             if(type === 'full') document.getElementById('partAmountInput').value = '';
             updatePaymentMethods();
         }
@@ -222,7 +376,7 @@
                 return;
             }
 
-            document.getElementById('submitBtn').innerText = "Submitting...";
+            document.getElementById('submitBtn').innerHTML = '<svg class="animate-spin h-5 w-5 mr-3 inline-block" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Submitting...';
             document.getElementById('submitBtn').disabled = true;
 
             database.ref('user_invoices/' + userId).once('value', (snapshot) => {
@@ -248,15 +402,98 @@
                         document.getElementById('utrFormSection').style.display = 'none';
                     }).catch(err => {
                         alert("Error saving UTR: " + err.message);
-                        document.getElementById('submitBtn').innerText = "Submit UTR & Verify";
+                        document.getElementById('submitBtn').innerText = "Submit UTR";
                         document.getElementById('submitBtn').disabled = false;
                     });
                 } else {
                     alert("Invoice update error.");
-                    document.getElementById('submitBtn').innerText = "Submit UTR & Verify";
+                    document.getElementById('submitBtn').innerText = "Submit UTR";
                     document.getElementById('submitBtn').disabled = false;
                 }
             });
+        }
+
+        // --- HIDDEN PDF GENERATION LOGIC ---
+        function populateHiddenPrintArea(inv, totalAmt, paidAmt, pendingBalance) {
+            let fromText = inv.from || '';
+            if(merchantMobile) fromText += `<br><span style="font-size:12px; font-weight:normal;">M: ${merchantMobile}</span>`;
+            if(merchantAddress) fromText += `<br><span style="font-size:11px; font-weight:normal; color:#64748b;">${merchantAddress}</span>`;
+            document.getElementById('p_from').innerHTML = fromText;
+
+            let toText = inv.to || '';
+            if(inv.mobile) toText += `<br><span style="font-size:12px; font-weight:normal;">M: ${inv.mobile}</span>`;
+            document.getElementById('p_to').innerHTML = toText;
+
+            document.getElementById('p_inv').innerText = inv.invNo || inv.id;
+            document.getElementById('p_cdate').innerText = inv.date ? inv.date.split('-').reverse().join('/') : '';
+            
+            let status = 'UNPAID';
+            if (totalAmt > 0) {
+                if (paidAmt >= totalAmt) status = 'PAID';
+                else if (paidAmt > 0) status = 'PARTIAL';
+            }
+
+            const ddContainer = document.getElementById('row_ddate');
+            if (totalAmt > 0 && status !== 'PAID' && inv.dueDate) {
+                document.getElementById('p_ddate').innerText = inv.dueDate.split('-').reverse().join('/');
+                ddContainer.style.display = 'table-row';
+            } else {
+                ddContainer.style.display = 'none';
+            }
+
+            const pbody = document.getElementById('p_items');
+            pbody.innerHTML = '';
+            (inv.items || []).forEach(i => {
+                pbody.innerHTML += `<tr><td>${i.desc}</td><td>${i.qty}</td><td>${formatMoney(i.price)}</td><td>${formatMoney(i.qty * i.price)}</td></tr>`;
+            });
+
+            document.getElementById('p_total').innerText = formatMoney(totalAmt);
+            document.getElementById('p_paid_amt').innerText = formatMoney(paidAmt);
+            document.getElementById('p_balance').innerText = formatMoney(pendingBalance);
+
+            const wm = document.getElementById('p_watermark');
+            const pTxt = document.getElementById('p_payment_text');
+            const pLdg = document.getElementById('p_ledger');
+            const pLdgBody = document.getElementById('p_ledger_body');
+            
+            wm.className = `watermark ${status}`; wm.innerText = status;
+            
+            pLdgBody.innerHTML = '';
+            if((inv.payments || []).length > 0) { 
+                pLdg.style.display = 'table'; 
+                inv.payments.forEach(p => pLdgBody.innerHTML += `<tr><td>${p.date}</td><td>${p.mode}</td><td>${formatMoney(p.amt)}</td></tr>`); 
+            } else { pLdg.style.display = 'none'; }
+
+            if (status === 'PAID') { pTxt.innerText = "Payment Complete"; pTxt.style.color = "var(--paid-text)"; } 
+            else if (status === 'PARTIAL') { pTxt.innerText = "Partially Paid"; pTxt.style.color = "var(--partial-text)"; } 
+            else { pTxt.innerText = "Unpaid / Pending"; pTxt.style.color = "var(--unpaid-text)"; }
+        }
+
+        async function downloadInvoicePDF() {
+            if(!currentInvoice) return;
+            const originalBtnHtml = event.currentTarget.innerHTML;
+            event.currentTarget.innerHTML = '<svg class="animate-spin w-4 h-4" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Generating PDF...';
+            
+            // Cloning logic similar to index.html for correct CSS rendering without showing it
+            const original = document.getElementById('print-area');
+            const clone = original.cloneNode(true);
+            clone.style.position = 'fixed'; clone.style.top = '0'; clone.style.left = '-9999px'; clone.style.transform = 'none'; clone.style.width = '794px'; clone.style.height = 'auto'; clone.style.margin = '0'; clone.style.display = 'block';
+            document.body.appendChild(clone);
+            
+            await new Promise(r => setTimeout(r, 100));
+            
+            try {
+                await html2pdf().set({ 
+                    margin: 0, 
+                    filename: `${currentInvoice.invNo || 'Invoice'}.pdf`, 
+                    image: { type: 'jpeg', quality: 0.98 }, 
+                    html2canvas: { scale: 2, useCORS: true, logging: false }, 
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
+                }).from(clone).save();
+            } finally {
+                clone.remove();
+                event.currentTarget.innerHTML = originalBtnHtml;
+            }
         }
     </script>
 </body>
