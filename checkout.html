@@ -65,7 +65,9 @@
             </table>
             <div class="totals-container">
                 <div class="totals-box">
-                    <div class="tot-row"><span>Total Amount:</span> <span id="p_total">₹0.00</span></div>
+                    <div class="tot-row"><span>Sub Total:</span> <span id="p_subtotal">₹0.00</span></div>
+                    <div class="tot-row" id="p_discount_row" style="display:none;"><span>Discount:</span> <span id="p_discount_amt" style="color:#10b981;">₹0.00</span></div>
+                    <div class="tot-row"><span>Final Amount:</span> <span id="p_total">₹0.00</span></div>
                     <div class="tot-row"><span>Total Paid:</span> <span id="p_paid_amt">₹0.00</span></div>
                     <div class="tot-row bold"><span>Balance Due:</span> <span id="p_balance" style="color:#dc2626;">₹0.00</span></div>
                 </div>
@@ -89,7 +91,6 @@
             <p class="text-[11px] text-slate-300" id="shopContact"></p>
         </div>
 
-        <!-- COMPACT INFO SECTION -->
         <div class="p-3 border-b border-slate-100 bg-slate-50">
             <div class="flex justify-between items-center mb-1">
                 <span class="text-[11px] font-bold text-slate-500 uppercase">Invoice No</span>
@@ -128,7 +129,6 @@
                 <p class="text-xs font-medium text-emerald-600">Zero due amount remaining.</p>
             </div>
 
-            <!-- PAYMENT OPTIONS (HIDDEN ON ZERO BALANCE) -->
             <div id="paymentChoiceSection" class="bg-violet-50 border border-violet-100 rounded-xl p-3 mb-3">
                 <div class="grid grid-cols-2 gap-2">
                     <button id="fullPayBtn" onclick="selectPaymentType('full')" class="font-bold py-2 px-2 rounded-lg border bg-emerald-600 text-white shadow-sm text-xs">Full Pay</button>
@@ -218,7 +218,6 @@
                 if (inv) {
                     currentInvoice = inv;
 
-                    // SECURITY BYPASS FIX: Require strict matching of paymentCode
                     if (inv.paymentCode && paymentCode !== inv.paymentCode) {
                         hideAllActionSections();
                         document.getElementById('balanceHeaderSection').style.display = 'none';
@@ -226,7 +225,11 @@
                         return;
                     }
 
-                    const totalAmt = (inv.items || []).reduce((s, item) => s + (item.qty * item.price), 0);
+                    const subTotal = (inv.items || []).reduce((s, item) => s + (item.qty * item.price), 0);
+                    const discPercent = parseFloat(inv.discount) || 0;
+                    const discountAmt = (subTotal * discPercent) / 100;
+                    const totalAmt = subTotal - discountAmt;
+                    
                     const paidAmt = (inv.payments || []).reduce((s, p) => s + p.amt, 0);
                     pendingBalance = totalAmt - paidAmt;
                     if(pendingBalance < 0) pendingBalance = 0;
@@ -247,7 +250,7 @@
                     document.getElementById('uiPaidAmt').innerText = formatMoney(paidAmt);
                     document.getElementById('billAmount').innerText = formatMoney(pendingBalance);
                     
-                    populateHiddenPrintArea(inv, totalAmt, paidAmt, pendingBalance);
+                    populateHiddenPrintArea(inv, subTotal, discountAmt, totalAmt, paidAmt, pendingBalance);
                     renderPaymentHistory(inv.payments || []);
 
                     if (!merchantUpi) merchantUpi = inv.upiId || "";
@@ -355,6 +358,7 @@
             if(e.target && e.target.id === 'partAmountInput') updatePaymentMethods();
         });
 
+        // 100% FIXED UTR SUBMIT (TARGETED UPDATE INSTEAD OF ARRAY REWRITE)
         window.submitUtr = function() {
             const utr = document.getElementById('utrInput').value.trim();
             if (utr.length < 12) { alert("Enter 12-digit UTR"); return; }
@@ -366,27 +370,32 @@
 
             database.ref('user_invoices/' + userId).once('value', (snapshot) => {
                 let invoices = snapshot.val() || [];
-                let found = false;
-                invoices = invoices.map(inv => {
-                    if (String(inv.id) === String(invoiceId)) {
-                        found = true;
-                        inv.status = "Pending Verification";
-                        inv.utrNumber = utr;
-                        inv.submittedAmount = amountToSubmit;
-                        inv.paymentType = selectedPaymentType;
-                        inv.paymentCode = paymentCode || inv.paymentCode || '';
-                        inv.submittedAt = new Date().toISOString();
-                    }
-                    return inv;
-                });
+                let foundIndex = -1;
+                for(let i=0; i<invoices.length; i++) {
+                    if(String(invoices[i].id) === String(invoiceId)) { foundIndex = i; break; }
+                }
 
-                if (found) {
-                    database.ref('user_invoices/' + userId).set(invoices);
+                if (foundIndex !== -1) {
+                    // Update only this specific invoice so it's super fast and doesn't freeze
+                    database.ref(`user_invoices/${userId}/${foundIndex}`).update({
+                        status: "Pending Verification",
+                        utrNumber: utr,
+                        submittedAmount: amountToSubmit,
+                        paymentType: selectedPaymentType,
+                        paymentCode: paymentCode || invoices[foundIndex].paymentCode || '',
+                        submittedAt: new Date().toISOString()
+                    }).then(() => {
+                        // Success happens silently, UI updates via .on listener automatically
+                    }).catch(err => {
+                        alert("Error saving UTR: " + err.message);
+                        document.getElementById('submitBtn').innerText = "Submit UTR";
+                        document.getElementById('submitBtn').disabled = false;
+                    });
                 }
             });
         }
 
-        function populateHiddenPrintArea(inv, totalAmt, paidAmt, pendingBalance) {
+        function populateHiddenPrintArea(inv, subTotal, discountAmt, totalAmt, paidAmt, pendingBalance) {
             let fromText = inv.from || '';
             if(merchantMobile) fromText += `<br><span style="font-size:12px; font-weight:normal;">M: ${merchantMobile}</span>`;
             if(merchantAddress) fromText += `<br><span style="font-size:11px; font-weight:normal; color:#64748b;">${merchantAddress}</span>`;
@@ -410,6 +419,14 @@
 
             const pbody = document.getElementById('p_items'); pbody.innerHTML = '';
             (inv.items || []).forEach(i => { pbody.innerHTML += `<tr><td>${i.desc}</td><td>${i.qty}</td><td>${formatMoney(i.price)}</td><td>${formatMoney(i.qty * i.price)}</td></tr>`; });
+            
+            document.getElementById('p_subtotal').innerText = formatMoney(subTotal);
+            if(discountAmt > 0) {
+                document.getElementById('p_discount_row').style.display = 'flex';
+                document.getElementById('p_discount_amt').innerText = "- " + formatMoney(discountAmt);
+            } else {
+                document.getElementById('p_discount_row').style.display = 'none';
+            }
             document.getElementById('p_total').innerText = formatMoney(totalAmt);
             document.getElementById('p_paid_amt').innerText = formatMoney(paidAmt);
             document.getElementById('p_balance').innerText = formatMoney(pendingBalance);
