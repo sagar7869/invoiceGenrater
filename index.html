@@ -121,7 +121,7 @@
 
         .action-icon { display: inline-flex; align-items: center; justify-content: center; cursor: pointer; border: none; border-radius: 6px; color: white; transition: 0.15s; }
         .action-icon:active { transform: scale(0.92); }
-        .bg-view { background: #3b82f6; } .bg-edit { background: #64748b; } .bg-img { background: #25D366; } .bg-pdf { background: #8b5cf6; } .bg-pay { background: #10b981; } .bg-del { background: #ef4444; } .bg-link { background: #6366f1; } .bg-approve { background: #059669; }
+        .bg-view { background: #3b82f6; } .bg-edit { background: #64748b; } .bg-img { background: #25D366; } .bg-pdf { background: #8b5cf6; } .bg-pay { background: #10b981; } .bg-del { background: #ef4444; } .bg-link { background: #6366f1; } .bg-approve { background: #059669; } .bg-remind { background: #3b82f6; }
         
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); align-items: center; justify-content: center; z-index: 100000; overflow-y: auto; padding: 15px; backdrop-filter: blur(3px); }
         #btn-close-edit-top { display: none; position: absolute; top: -15px; right: -15px; background: #ef4444; color: white; border: 2px solid white; border-radius: 50%; width: 40px; height: 40px; font-size: 18px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 1001; align-items: center; justify-content: center; }
@@ -228,7 +228,7 @@
     <div id="toast-container"></div> 
 
     <!-- UTR APPROVAL MODAL -->
-    <div class="overlay" id="utr-approve-modal">
+    <div class="overlay" id="utr-approve-modal" style="z-index: 9999990;">
         <div class="modal-sm" style="padding:25px;">
             <h3 style="margin-top:0; color:#1e293b;">Verify & Approve UTR</h3>
             <p style="font-size:13px; color:#64748b; margin-bottom:15px;">Customer ne online payment ka UTR bheja hai. Amount verify karke approve karein.</p>
@@ -247,7 +247,7 @@
     </div>
 
     <!-- EXPORT EXCEL MODAL -->
-    <div class="overlay" id="export-modal" style="z-index: 100005;">
+    <div class="overlay" id="export-modal" style="z-index: 9999990;">
         <div class="modal-sm" style="padding:25px;">
             <h3 style="margin-top:0; color:#1e293b;"><i class="fas fa-file-excel" style="color:#10b981;"></i> Export to Excel</h3>
             <p style="font-size:13px; color:#64748b; margin-bottom:15px;">Date range select karein jiska data export karna hai.</p>
@@ -279,7 +279,7 @@
     </div>
 
     <!-- PAYMENT MODAL -->
-    <div class="overlay" id="payment-modal">
+    <div class="overlay" id="payment-modal" style="z-index: 9999990;">
         <div class="modal-sm" style="padding:25px;">
             <h3 style="margin-top:0; color:#1e293b;">Manage Payments</h3>
             <div style="margin-bottom:15px; font-size:14px; background:#f8fafc; padding:15px; border-radius:10px; border:1px solid #e2e8f0;">
@@ -305,13 +305,13 @@
     </div>
 
     <!-- LOGIN OVERLAY -->
-    <div class="overlay" id="login-overlay" style="background: rgba(244, 246, 249, 1); display:none;">
+    <div class="overlay" id="login-overlay" style="background: rgba(244, 246, 249, 1); display:none; z-index: 9999995;">
         <div class="modal-sm" style="text-align: center; max-width:380px; padding:30px;">
             <i class="fas fa-file-invoice-dollar" style="font-size: 50px; color: var(--primary); margin-bottom: 15px;"></i>
             <h2 style="margin-top: 0; color: #1e293b; margin-bottom: 5px;">Smart Invoices</h2>
             <p style="font-size: 14px; color: #64748b; margin-bottom: 30px;">Login securely to access your cloud data.</p>
             <button onclick="loginWithGoogle()" style="width:100%; padding:14px; background:#fff; color:#333; border:1px solid #dce1e6; border-radius:10px; font-weight:bold; cursor:pointer; font-size:15px; margin-bottom:20px; display:flex; align-items:center; justify-content:center; gap:10px; box-shadow:0 4px 10px rgba(0,0,0,0.03);">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="22px" height="22px"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/></svg> Continue with Google
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="22px" height="22px"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/></svg> Continue with Google
             </button>
             <div style="display:flex; align-items:center; margin: 25px 0; color:#cbd5e1; font-size:12px; font-weight:bold;"><hr style="flex:1; border:none; border-top:1px solid #e2e8f0;"> <span style="padding:0 12px;">OR EMAIL LOGIN</span> <hr style="flex:1; border:none; border-top:1px solid #e2e8f0;"></div>
             <div style="text-align: left;">
@@ -324,7 +324,7 @@
     </div>
 
     <!-- SIGNUP MODAL -->
-    <div class="overlay" id="signup-overlay">
+    <div class="overlay" id="signup-overlay" style="z-index: 9999996;">
         <div class="modal-sm" style="padding:25px;">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #f1f5f9; padding-bottom:15px; margin-bottom:20px;">
                 <h3 style="margin:0; color:#1e293b; font-size:20px;">Register User</h3>
@@ -738,7 +738,7 @@
             }).then(() => {
                 showToast("Business profile saved!", "success");
                 showProfileSection('profile-menu-view');
-                updatePreview(); // update preview if active
+                updatePreview(); 
             }).catch(err => showToast("Error saving profile: " + err.message, "error"));
         }
 
@@ -922,7 +922,7 @@
             const iBody = document.getElementById('edit-items-body'), pBody = document.getElementById('edit-payments-body');
             iBody.innerHTML = ''; pBody.innerHTML = '';
             currentItems.forEach(i => { iBody.innerHTML += `<tr><td><input type="text" class="desc" placeholder="Desc" value="${i.desc}" onchange="updateItem(${i.id}, 'desc', this.value)"></td><td><input type="number" placeholder="Qty" value="${i.qty}" onchange="updateItem(${i.id}, 'qty', this.value)"></td><td><input type="number" placeholder="Price" value="${i.price}" onchange="updateItem(${i.id}, 'price', this.value)"></td><td>${formatMoney(i.qty * i.price)}</td><td><button class="btn-del" onclick="deleteItem(${i.id})"><i class="fas fa-trash"></i></button></td></tr>`; });
-            currentPayments.forEach(p => { pBody.innerHTML += `<tr><td>${p.date}</td><td><select onchange="updatePayment(${p.id}, 'mode', this.value)"><option value="Cash" ${p.mode==='Cash'?'selected':''}>Cash</option><option value="Online" ${p.mode==='Online'?'selected':''}>Online</option><option value="Online (Customer UTR)" ${p.mode==='Online (Customer UTR)'?'selected':''}>Online (Customer UTR)</option></select></td><td><input type="number" value="${p.amt}" onchange="updatePayment(${p.id}, 'amt', this.value)"></td><td><button class="btn-del" onclick="deletePayment(${p.id})"><i class="fas fa-trash"></i></button></td></tr>`; });
+            currentPayments.forEach(p => { pBody.innerHTML += `<tr><td>${p.date}</td><td><select onchange="updatePayment(${p.id}, 'mode', this.value)"><option value="Cash" ${p.mode==='Cash'?'selected':''}>Cash</option><option value="Online" ${p.mode==='Online'?'selected':''}>Online</option></select></td><td><input type="number" value="${p.amt}" onchange="updatePayment(${p.id}, 'amt', this.value)"></td><td><button class="btn-del" onclick="deletePayment(${p.id})"><i class="fas fa-trash"></i></button></td></tr>`; });
             updatePreview();
         }
 
@@ -1023,6 +1023,14 @@
                     badgeHtml += `<span class="badge PENDING">PENDING UTR</span>`;
                 }
 
+                // NUE DUE DATE ALERT LOGIC
+                if(inv.dueDate && bal > 0) {
+                    const today = new Date().toISOString().split('T')[0];
+                    if(inv.dueDate <= today) {
+                        badgeHtml += `<span class="badge" style="background:#ef4444; color:white; margin-top:2px;">DUE</span>`;
+                    }
+                }
+
                 let approveBtnHtml = '';
                 if(inv.status === "Pending Verification" || inv.utrNumber) {
                     approveBtnHtml = `<button class="action-icon btn-request" onclick="openUtrModal('${inv.id}')" title="Approve UTR"><i class="fas fa-bell"></i><span>APPROVE</span></button>`;
@@ -1045,11 +1053,12 @@
                     <td class="actions-cell">
                         ${approveBtnHtml}
                         <button class="action-icon bg-link" onclick="sharePaymentLinkList('${inv.id}')" title="Share Pay Link"><i class="fas fa-link"></i><span>LINK</span></button>
-                        <button class="action-icon bg-view" onclick="openPreviewFromList('${inv.id}')" title="Preview Bill"><i class="fas fa-eye"></i><span>VIEW</span></button>
+                        <button class="action-icon" style="background:#0ea5e9;" onclick="sendReminderWhatsApp('${inv.id}')" title="Send WhatsApp Reminder"><i class="fab fa-whatsapp"></i><span>REMIND</span></button>
                         <button class="action-icon bg-edit" onclick="openEditMode('${inv.id}')" title="Edit Bill"><i class="fas fa-edit"></i><span>EDIT</span></button>
                         <button class="action-icon bg-pay" onclick="openQuickPayment('${inv.id}')" title="Manage Payments"><i class="fas fa-rupee-sign"></i><span>PAY</span></button>
                         <button class="action-icon bg-img" onclick="shareAsImageList('${inv.id}', this)" title="Share Image"><i class="fab fa-whatsapp"></i><span>IMG</span></button>
                         <button class="action-icon bg-pdf" onclick="generatePDFList('${inv.id}', this)" title="Download PDF"><i class="fas fa-file-pdf"></i><span>PDF</span></button>
+                        <button class="action-icon bg-view" onclick="openPreviewFromList('${inv.id}')" title="Preview Bill"><i class="fas fa-eye"></i><span>VIEW</span></button>
                         <button class="action-icon bg-del" onclick="deleteInvoice('${inv.id}')" title="Delete"><i class="fas fa-trash"></i><span>DEL</span></button>
                     </td>
                 </tr>`;
@@ -1261,6 +1270,20 @@
             const code = saveNewPaymentCode(inv); const checkoutUrl = getCheckoutUrl(inv.id, code); const message = buildPaymentMessage(inv, code, checkoutUrl);
             showToast(`Payment Code: ${code}`, 'success');
             if(navigator.share) { try { await navigator.share({ title: `Payment - ${inv.invNo}`, text: message }); } catch(err) {} } else { window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`, '_blank'); }
+        }
+
+        // NEW TEXT REMINDER LOGIC
+        function sendReminderWhatsApp(id) {
+            const inv = invoices.find(i => String(i.id) === String(id)); if(!inv) return;
+            const amount = getInvoiceDue(inv);
+            if(amount <= 0) return showToast("Amount already paid.", "info");
+            
+            const code = inv.paymentCode || saveNewPaymentCode(inv);
+            const checkoutUrl = getCheckoutUrl(inv.id, code);
+            const message = `Hello ${inv.to || 'Customer'} 👋\n\nThis is a friendly reminder that your payment of ₹${amount.toFixed(2)} for Invoice #${inv.invNo || inv.id} is DUE.\n\nPlease pay securely using this link:\n${checkoutUrl}\n\nThank you!`;
+            
+            let phoneParam = inv.mobile ? `phone=91${inv.mobile}&` : '';
+            window.open(`https://api.whatsapp.com/send?${phoneParam}text=${encodeURIComponent(message)}`, '_blank');
         }
 
         async function doGeneratePDF(invNo) { 
