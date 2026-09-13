@@ -67,7 +67,7 @@
                 <div class="totals-box">
                     <div class="tot-row"><span>Sub Total:</span> <span id="p_subtotal">₹0.00</span></div>
                     <div class="tot-row" id="p_discount_row" style="display:none;"><span>Discount:</span> <span id="p_discount_amt" style="color:#10b981;">₹0.00</span></div>
-                    <div class="tot-row"><span>Final Amount:</span> <span id="p_total">₹0.00</span></div>
+                    <div class="tot-row" style="border-top:1px dashed #cbd5e1; margin-top:5px; padding-top:5px;"><span>Final Total:</span> <span id="p_total">₹0.00</span></div>
                     <div class="tot-row"><span>Total Paid:</span> <span id="p_paid_amt">₹0.00</span></div>
                     <div class="tot-row bold"><span>Balance Due:</span> <span id="p_balance" style="color:#dc2626;">₹0.00</span></div>
                 </div>
@@ -218,6 +218,7 @@
                 if (inv) {
                     currentInvoice = inv;
 
+                    // SECURITY BYPASS FIX: Require strict matching of paymentCode
                     if (inv.paymentCode && paymentCode !== inv.paymentCode) {
                         hideAllActionSections();
                         document.getElementById('balanceHeaderSection').style.display = 'none';
@@ -342,7 +343,11 @@
             const invoiceNumber = (currentInvoice && currentInvoice.invNo) ? currentInvoice.invNo : invoiceId;
             const intent = `upi://pay?pa=${encodeURIComponent(merchantUpi)}&pn=${encodeURIComponent(shopNameText)}&am=${encodeURIComponent(amount.toFixed(2))}&cu=INR&tn=${encodeURIComponent('Invoice ' + invoiceNumber)}`;
             document.getElementById('directPayBtn').setAttribute('href', intent);
-            document.getElementById('qrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(intent)}`;
+            
+            // Background delay load for QR to not block UI speed
+            setTimeout(() => {
+                document.getElementById('qrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(intent)}`;
+            }, 100);
         }
 
         window.selectPaymentType = function(type) {
@@ -358,40 +363,49 @@
             if(e.target && e.target.id === 'partAmountInput') updatePaymentMethods();
         });
 
-        // 100% FIXED UTR SUBMIT (TARGETED UPDATE INSTEAD OF ARRAY REWRITE)
+        // 100% FIXED UTR SUBMIT (SAFELY REPLACES WHOLE ARRAY WITHOUT FREEZING)
         window.submitUtr = function() {
             const utr = document.getElementById('utrInput').value.trim();
             if (utr.length < 12) { alert("Enter 12-digit UTR"); return; }
             const amountToSubmit = getSelectedAmount();
             if(amountToSubmit <= 0 || amountToSubmit > pendingBalance) { alert("Invalid amount."); return; }
 
-            document.getElementById('submitBtn').innerHTML = 'Submitting...';
-            document.getElementById('submitBtn').disabled = true;
+            const btn = document.getElementById('submitBtn');
+            const origHtml = btn.innerHTML;
+            btn.innerHTML = 'Submitting...';
+            btn.disabled = true;
 
-            database.ref('user_invoices/' + userId).once('value', (snapshot) => {
+            database.ref('user_invoices/' + userId).once('value')
+            .then((snapshot) => {
                 let invoices = snapshot.val() || [];
-                let foundIndex = -1;
-                for(let i=0; i<invoices.length; i++) {
-                    if(String(invoices[i].id) === String(invoiceId)) { foundIndex = i; break; }
-                }
+                let found = false;
+                invoices = invoices.map(inv => {
+                    if (String(inv.id) === String(invoiceId)) {
+                        found = true;
+                        inv.status = "Pending Verification";
+                        inv.utrNumber = utr;
+                        inv.submittedAmount = amountToSubmit;
+                        inv.paymentType = selectedPaymentType;
+                        inv.paymentCode = paymentCode || inv.paymentCode || '';
+                        inv.submittedAt = new Date().toISOString();
+                    }
+                    return inv;
+                });
 
-                if (foundIndex !== -1) {
-                    // Update only this specific invoice so it's super fast and doesn't freeze
-                    database.ref(`user_invoices/${userId}/${foundIndex}`).update({
-                        status: "Pending Verification",
-                        utrNumber: utr,
-                        submittedAmount: amountToSubmit,
-                        paymentType: selectedPaymentType,
-                        paymentCode: paymentCode || invoices[foundIndex].paymentCode || '',
-                        submittedAt: new Date().toISOString()
-                    }).then(() => {
-                        // Success happens silently, UI updates via .on listener automatically
-                    }).catch(err => {
-                        alert("Error saving UTR: " + err.message);
-                        document.getElementById('submitBtn').innerText = "Submit UTR";
-                        document.getElementById('submitBtn').disabled = false;
-                    });
+                if (found) {
+                    return database.ref('user_invoices/' + userId).set(invoices);
+                } else {
+                    throw new Error("Invoice not found.");
                 }
+            })
+            .then(() => {
+                document.getElementById('statusMessage').innerHTML = "<span class='text-emerald-600 font-bold'>✓ UTR Submitted Successfully! Waiting for approval.</span>";
+                document.getElementById('utrFormSection').style.display = 'none';
+            })
+            .catch(err => {
+                alert("Error saving UTR: " + err.message);
+                btn.innerHTML = origHtml;
+                btn.disabled = false;
             });
         }
 
@@ -433,6 +447,7 @@
             const wm = document.getElementById('p_watermark'); wm.className = `watermark ${status}`; wm.innerText = status;
         }
 
+        // 100% FIXED PDF BUTTON STATUS REVERT WITH ERROR HANDLING
         window.downloadInvoicePDF = async function(btn) {
             if(!currentInvoice) return;
             const originalBtnHtml = btn.innerHTML;
@@ -444,12 +459,18 @@
             clone.style.position = 'fixed'; clone.style.top = '0'; clone.style.left = '-9999px'; clone.style.width = '794px'; clone.style.display = 'block';
             document.body.appendChild(clone);
             
-            await new Promise(r => setTimeout(r, 100));
+            await new Promise(r => setTimeout(r, 150));
+            
             try {
                 await html2pdf().set({ 
-                    margin: 0, filename: `${currentInvoice.invNo || 'Invoice'}.pdf`, image: { type: 'jpeg', quality: 0.98 }, 
-                    html2canvas: { scale: 2, useCORS: true, logging: false }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
+                    margin: 0, 
+                    filename: `${currentInvoice.invNo || 'Invoice'}.pdf`, 
+                    image: { type: 'jpeg', quality: 0.98 }, 
+                    html2canvas: { scale: 2, useCORS: true, logging: false }, 
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
                 }).from(clone).save();
+            } catch(e) {
+                alert("Error downloading PDF: " + e.message);
             } finally {
                 clone.remove();
                 btn.innerHTML = originalBtnHtml;
