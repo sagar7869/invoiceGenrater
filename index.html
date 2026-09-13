@@ -199,7 +199,6 @@
     <div id="print-holder"></div>
     <div id="toast-container"></div> 
 
-    <!-- UTR APPROVE MODAL -->
     <div class="overlay" id="utr-approve-modal" style="z-index: 9999990;">
         <div class="modal-sm" style="padding:25px;">
             <h3 style="margin-top:0; color:#1e293b; font-weight:800;">Verify & Approve UTR</h3>
@@ -218,7 +217,6 @@
         </div>
     </div>
 
-    <!-- EXPORT MODAL -->
     <div class="overlay" id="export-modal" style="z-index: 9999990;">
         <div class="modal-sm" style="padding:25px;">
             <h3 style="margin-top:0; color:#1e293b; font-weight:800;"><i class="fas fa-file-excel" style="color:#10b981;"></i> Export to Excel</h3>
@@ -232,7 +230,6 @@
         </div>
     </div>
 
-    <!-- CONFIRM MODAL -->
     <div class="overlay" id="confirm-overlay" style="z-index: 9999999 !important;">
         <div class="modal-sm" style="text-align: center; max-width: 320px; padding: 30px 20px;">
             <i class="fas fa-exclamation-circle" style="font-size: 45px; color: #f59e0b; margin-bottom: 15px;"></i>
@@ -244,7 +241,6 @@
         </div>
     </div>
 
-    <!-- QUICK PAYMENT MODAL -->
     <div class="overlay" id="payment-modal" style="z-index: 9999990;">
         <div class="modal-sm" style="padding:25px;">
             <h3 style="margin-top:0; color:#1e293b; font-weight:800;">Manage Payments</h3>
@@ -336,7 +332,7 @@
         </div>
     </div>
 
-    <!-- TABS BAR WITH FIX ROUTING -->
+    <!-- TABS BAR -->
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('create-tab')"><i class="fas fa-edit"></i> <span class="tab-text">Create</span></button>
         <button class="tab-btn" onclick="switchTab('preview-tab')"><i class="fas fa-eye"></i> <span class="tab-text">Preview</span></button>
@@ -471,6 +467,7 @@
                 <div class="totals-container">
                     <div class="totals-box">
                         <div class="tot-row"><span>Sub Total:</span> <span id="p_subtotal">₹0.00</span></div>
+                        <!-- FIXED NULL ERROR IN PREVIEW: Display is managed properly now -->
                         <div class="tot-row" id="p_discount_row" style="display:none;"><span>Discount:</span> <span id="p_discount_amt" style="color:#10b981;">₹0.00</span></div>
                         <div class="tot-row" style="border-top:1px dashed #cbd5e1; margin-top:5px; padding-top:5px;"><span>Final Total:</span> <span id="p_total">₹0.00</span></div>
                         <div class="tot-row"><span>Total Paid:</span> <span id="p_paid_amt">₹0.00</span></div>
@@ -503,7 +500,6 @@
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:10px;">
             <div style="flex:1; display:flex; align-items:center; gap:8px; position:relative;">
                 <label style="font-size:12px; font-weight:800; color:#475569; white-space:nowrap; text-transform:uppercase;">Filter Month:</label>
-                <!-- VISUAL MASK FIX FOR DASHES -->
                 <div style="position:relative; width:100%;">
                     <input type="month" id="month-filter" class="search-bar" onchange="document.getElementById('month-cover').style.display = this.value ? 'none' : 'flex'; renderList(true);" style="margin-bottom:0; width:100%;">
                     <div id="month-cover" style="position:absolute; top:2px; left:2px; bottom:2px; right:40px; background:#f8fafc; border-radius:6px; display:flex; align-items:center; padding-left:8px; color:#64748b; pointer-events:none; font-size:13px; font-weight:500;">Select Month...</div>
@@ -868,7 +864,6 @@
         }
 
         function switchTab(tabId) {
-            // FIX: Array mapped EXACTLY to HTML button positions
             const allowed = ['create-tab','preview-tab','list-tab','utr-tab','alerts-tab'];
             if(!allowed.includes(tabId)) tabId = 'create-tab';
             document.querySelectorAll('.tab-content, .tab-btn').forEach(t => t.classList.remove('active'));
@@ -1001,14 +996,15 @@
 
             document.getElementById('p_subtotal').innerText = formatMoney(calc.subTotal);
             
+            // UI AFTER DISCOUNT LOGIC FIXED: Element exists now, safely updating if present.
+            const discountRow = document.getElementById('p_discount_row');
             if(calc.discountAmt > 0) {
-                document.getElementById('ui_after_discount').style.display = 'block';
-                document.getElementById('ui_after_discount').innerText = "New Total: " + formatMoney(calc.total);
-                document.getElementById('p_discount_row').style.display = 'flex';
-                document.getElementById('p_discount_amt').innerText = "- " + formatMoney(calc.discountAmt);
+                if(discountRow) {
+                    discountRow.style.display = 'flex';
+                    document.getElementById('p_discount_amt').innerText = "- " + formatMoney(calc.discountAmt);
+                }
             } else {
-                document.getElementById('ui_after_discount').style.display = 'none';
-                document.getElementById('p_discount_row').style.display = 'none';
+                if(discountRow) discountRow.style.display = 'none';
             }
 
             document.getElementById('p_total').innerText = formatMoney(calc.total); document.getElementById('p_paid_amt').innerText = formatMoney(calc.paid); document.getElementById('p_balance').innerText = formatMoney(calc.bal);
@@ -1110,7 +1106,7 @@
                         <button class="action-icon bg-pay" onclick="openQuickPayment('${inv.id}')" title="Manage Payments"><i class="fas fa-rupee-sign"></i><span>PAY</span></button>
                         <button class="action-icon bg-img" onclick="shareAsImageList('${inv.id}', this)" title="Share Image"><i class="fab fa-whatsapp"></i><span>IMG</span></button>
                         <button class="action-icon bg-pdf" onclick="generatePDFList('${inv.id}', this)" title="Download PDF"><i class="fas fa-file-pdf"></i><span>PDF</span></button>
-                        <button class="action-icon bg-del" onclick="deleteInvoice('${inv.id}')" title="Delete"><i class="fas fa-trash"></i><span>DEL</span></button>
+                        <button class="action-icon bg-del" onclick="deleteInvoiceNative('${inv.id}')" title="Delete"><i class="fas fa-trash"></i><span>DEL</span></button>
                     </td>
                 </tr>`;
             });
@@ -1118,7 +1114,6 @@
         }
         function loadMore() { listLimit += 30; renderList(); }
         
-        // --- UTR REQUESTS PANEL ---
         function renderUtrRequests() {
             const listEl = document.getElementById('utr-list-body');
             const badgeEl = document.getElementById('badge-utr');
@@ -1166,7 +1161,6 @@
             }
         }
 
-        // --- ALERTS PANEL WITH SMART BADGE (READ/UNREAD LOGIC) ---
         function renderAlerts() {
             const listEl = document.getElementById('alerts-list-body');
             const badgeEl = document.getElementById('badge-alerts');
@@ -1258,7 +1252,9 @@
             }
         }
 
-        function deleteInvoice(id) { showCustomConfirm("Permanently delete this invoice?", () => { invoices = invoices.filter(i => String(i.id) !== String(id)); syncToFirebase(); showToast("Invoice deleted.", "success"); }); }
+        function deleteInvoiceNative(id) {
+            showCustomConfirm("Permanently delete this invoice?", () => { invoices = invoices.filter(i => String(i.id) !== String(id)); syncToFirebase(); showToast("Invoice deleted.", "success"); });
+        }
 
         function openUtrModal(id) {
             const inv = invoices.find(i => String(i.id) === String(id)); if(!inv) return;
@@ -1325,9 +1321,9 @@
             if(p) { p.amt = parseFloat(document.getElementById(`qm_amt_${pid}`).value) || 0; p.mode = document.getElementById(`qm_mode_${pid}`).value; recalcInvStatus(inv); syncToFirebase(); const btn = event.currentTarget; btn.innerHTML = '<i class="fas fa-check"></i>'; setTimeout(() => { btn.innerHTML = '<i class="fas fa-save"></i>'; }, 1000); showToast("Payment updated.", "success"); }
         }
         function deleteQMPayment(pid) { 
-            if(confirm("Delete this payment record?")) {
+            showCustomConfirm("Delete this payment record?", () => {
                 const inv = invoices.find(i => String(i.id) === String(activePayId)); inv.payments = inv.payments.filter(x => String(x.id) !== String(pid)); recalcInvStatus(inv); syncToFirebase(); showToast("Payment removed.", "success"); 
-            }
+            });
         }
         
         function confirmQuickPayment() {
@@ -1426,10 +1422,9 @@
             const inv = invoices.find(i => String(i.id) === String(id)); if(!inv) return;
             const amount = getInvoiceDue(inv); if(amount <= 0) return showToast("Amount already paid.", "info");
             
-            // SMART BADGE UPDATE: Mark as reminded today
             const todayStr = new Date().toISOString().split('T')[0];
             inv.lastReminded = todayStr;
-            syncToFirebase(); // Updates DB which auto updates badges
+            syncToFirebase(); 
             
             const code = inv.paymentCode || saveNewPaymentCode(inv); const checkoutUrl = getCheckoutUrl(inv.id, code);
             const message = `Hello ${inv.to || 'Customer'} 👋\n\nThis is a friendly reminder that your payment of ₹${amount.toFixed(2)} for Invoice #${inv.invNo || inv.id} is DUE.\n\nPlease pay securely using this link:\n${checkoutUrl}\n\nThank you!`;
