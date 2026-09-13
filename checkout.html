@@ -41,7 +41,7 @@
             </div>
 
             <!-- Payment Box with QR -->
-            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-center mb-6 shadow-sm">
+            <div id="qrCodeContainer" class="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-center mb-6 shadow-sm">
                 <p class="text-sm font-medium text-slate-600 mb-2">Ya is QR Code ko scan karein:</p>
                 <div class="bg-white p-2 inline-block rounded-xl border border-slate-200 shadow-inner mb-2">
                     <img id="qrCodeImg" src="https://via.placeholder.com/150" alt="UPI QR Code" class="w-40 h-40 mx-auto object-contain">
@@ -102,68 +102,77 @@
 
         async function loadCheckoutData() {
             try {
-                // 1. Fetch Merchant UPI Profile first
+                // Fetch Merchant Profile Once
                 const profileSnap = await database.ref('merchant_profile/' + userId).once('value');
                 if (profileSnap.exists() && profileSnap.val().upiId) {
                     merchantUpi = profileSnap.val().upiId;
                 }
 
-                // 2. Fetch Invoice Details
-                const invSnap = await database.ref('user_invoices/' + userId).once('value');
-                const invoices = invSnap.val() || [];
-                const inv = invoices.find(i => String(i.id) === String(invoiceId));
+                // 🔴 REAL TIME LISTENER (.on): Agar merchant approve karega, toh yahan automatic update ho jayega bina refresh kiye!
+                database.ref('user_invoices/' + userId).on('value', (snapshot) => {
+                    const invoices = snapshot.val() || [];
+                    const inv = invoices.find(i => String(i.id) === String(invoiceId));
 
-                if (inv) {
-                    currentInvoice = inv;
+                    if (inv) {
+                        currentInvoice = inv;
 
-                    // Only the latest payment link/code is valid. Old shared links expire automatically.
-                    if (inv.paymentCode && paymentCode !== inv.paymentCode) {
-                        document.getElementById('paymentChoiceSection').style.display = 'none';
-                        document.getElementById('upiButtonsSection').style.display = 'none';
-                        document.getElementById('utrFormSection').style.display = 'none';
-                        document.getElementById('qrCodeImg').style.display = 'none';
-                        document.getElementById('statusMessage').innerHTML = '<span class="text-red-600 font-bold">⚠️ This payment link has expired. Please use the latest payment link sent by the merchant.</span>';
-                        return;
+                        if (inv.paymentCode && paymentCode && paymentCode !== inv.paymentCode) {
+                            document.getElementById('paymentChoiceSection').style.display = 'none';
+                            document.getElementById('upiButtonsSection').style.display = 'none';
+                            document.getElementById('utrFormSection').style.display = 'none';
+                            document.getElementById('qrCodeContainer').style.display = 'none';
+                            document.getElementById('statusMessage').innerHTML = '<span class="text-red-600 font-bold">⚠️ This payment link has expired. Please use the latest payment link sent by the merchant.</span>';
+                            return;
+                        }
+
+                        const totalAmt = (inv.items || []).reduce((s, item) => s + (item.qty * item.price), 0);
+                        const paidAmt = (inv.payments || []).reduce((s, p) => s + p.amt, 0);
+                        pendingBalance = totalAmt - paidAmt;
+                        if(pendingBalance < 0) pendingBalance = 0;
+
+                        shopNameText = inv.from || "My Dukaan";
+                        document.getElementById('shopName').innerText = shopNameText;
+                        document.getElementById('billAmount').innerText = "₹" + pendingBalance.toFixed(2);
+                        
+                        if (!merchantUpi) merchantUpi = inv.upiId || "";
+
+                        if (!merchantUpi) {
+                            document.getElementById('upiIdText').innerText = "Error: UPI ID Not Configured by Merchant!";
+                            document.getElementById('upiIdText').style.color = "red";
+                            return;
+                        }
+
+                        document.getElementById('upiIdText').innerText = merchantUpi;
+
+                        // 🔴 FULLY PAID / ZERO DUE LOGIC (NO REFRESH GLITCH)
+                        if (pendingBalance <= 0) {
+                            document.getElementById('paymentChoiceSection').style.display = 'none';
+                            document.getElementById('upiButtonsSection').style.display = 'none';
+                            document.getElementById('utrFormSection').style.display = 'none';
+                            document.getElementById('qrCodeContainer').style.display = 'none';
+                            document.getElementById('statusMessage').innerHTML = "<div class='bg-emerald-100 border border-emerald-300 text-emerald-800 px-4 py-4 rounded-xl mt-4 shadow-sm'><span class='text-lg font-extrabold'>✅ Amount already paid.</span><br><span class='font-medium'>Zero due amount.</span></div>";
+                            return; // Stop any further UI rendering
+                        }
+
+                        document.getElementById('qrCodeContainer').style.display = 'block';
+                        
+                        if (inv.status === "Pending Verification") {
+                            document.getElementById('utrFormSection').style.display = 'none';
+                            document.getElementById('paymentChoiceSection').style.display = 'none';
+                            document.getElementById('statusMessage').innerHTML = `<span class='text-amber-600 font-bold text-base'>⏳ UTR Submitted (${inv.utrNumber || ''}). Waiting for merchant approval.</span>`;
+                        } else {
+                            document.getElementById('utrFormSection').style.display = 'block';
+                            document.getElementById('paymentChoiceSection').style.display = 'block';
+                            document.getElementById('statusMessage').innerHTML = "Status: Waiting for payment...";
+                            selectPaymentType(selectedPaymentType);
+                        }
+                    } else {
+                        document.getElementById('statusMessage').innerText = "Invoice not found in database!";
                     }
-
-                    const totalAmt = (inv.items || []).reduce((s, item) => s + (item.qty * item.price), 0);
-                    const paidAmt = (inv.payments || []).reduce((s, p) => s + p.amt, 0);
-                    pendingBalance = totalAmt - paidAmt;
-                    if(pendingBalance < 0) pendingBalance = 0;
-
-                    shopNameText = inv.from || "My Dukaan";
-                    document.getElementById('shopName').innerText = shopNameText;
-                    document.getElementById('billAmount').innerText = "₹" + pendingBalance; // Total Due / remaining balance
-                    
-                    // Agar invoice mein alag UPI hai ya profile mein, usko use karo. Fallback hata diya hai taaki galat naam na aaye.
-                    if (!merchantUpi) {
-                        merchantUpi = inv.upiId || "";
-                    }
-
-                    if (!merchantUpi) {
-                        document.getElementById('upiIdText').innerText = "Error: UPI ID Not Configured by Merchant!";
-                        document.getElementById('upiIdText').style.color = "red";
-                        alert("Kripya pehle apni profile mein jaakar valid UPI ID save karein!");
-                        return;
-                    }
-
-                    document.getElementById('upiIdText').innerText = merchantUpi;
-                    
-                    selectPaymentType('full');
-
-                    if (pendingBalance <= 0) {
-                        document.getElementById('utrFormSection').style.display = 'none';
-                        document.getElementById('statusMessage').innerHTML = "<span class='text-emerald-600 font-bold'>✅ This invoice is already fully paid! Thank you.</span>";
-                    } else if (inv.status === "Pending Verification") {
-                        document.getElementById('utrFormSection').style.display = 'none';
-                        document.getElementById('statusMessage').innerHTML = `<span class='text-amber-600 font-bold'>⏳ UTR Submitted (${inv.utrNumber || ''}). Waiting for merchant approval.</span>`;
-                    }
-                } else {
-                    alert("Invoice not found in database!");
-                }
+                });
             } catch (error) {
                 console.error("Error loading checkout:", error);
-                alert("Failed to load details.");
+                document.getElementById('statusMessage').innerText = "Failed to load details.";
             }
         }
 
