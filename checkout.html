@@ -129,35 +129,44 @@
                 <p class="text-xs font-medium text-emerald-600">Zero due amount remaining.</p>
             </div>
 
-            <div id="paymentChoiceSection" class="bg-violet-50 border border-violet-100 rounded-xl p-3 mb-3">
-                <div class="grid grid-cols-2 gap-2">
-                    <button id="fullPayBtn" onclick="selectPaymentType('full')" class="font-bold py-2 px-2 rounded-lg border bg-emerald-600 text-white shadow-sm text-xs">Full Pay</button>
-                    <button id="partPayBtn" onclick="selectPaymentType('part')" class="font-bold py-2 px-2 rounded-lg border bg-white text-slate-700 shadow-sm text-xs">Part Pay</button>
+            <!-- PARALLEL PAYMENT OPTIONS & QR CODE -->
+            <div id="paymentChoiceSection" class="grid grid-cols-2 gap-3 mb-3">
+                
+                <!-- Left Box: Payment Options -->
+                <div class="bg-violet-50 border border-violet-100 rounded-xl p-3 flex flex-col justify-center">
+                    <p class="text-[10px] font-bold text-violet-800 mb-2 uppercase text-center tracking-wide">Payment Type</p>
+                    <div class="flex flex-col gap-2">
+                        <button id="fullPayBtn" onclick="selectPaymentType('full')" class="font-bold py-2 px-2 rounded-lg border bg-emerald-600 text-white shadow-sm text-xs transition">Full Pay</button>
+                        <button id="partPayBtn" onclick="selectPaymentType('part')" class="font-bold py-2 px-2 rounded-lg border bg-white text-slate-700 shadow-sm text-xs transition">Part Pay</button>
+                    </div>
+                    <div id="partAmountBox" class="mt-2" style="display:none;">
+                        <input type="number" id="partAmountInput" min="1" step="0.01" class="w-full px-2 py-1.5 border border-violet-200 rounded-lg outline-none font-bold text-sm text-slate-800 text-center" placeholder="Amount">
+                    </div>
+                    <div id="submittedAmountDisplay" class="mt-2 text-center text-[11px] font-extrabold text-emerald-700 bg-emerald-100 py-1 rounded">Paying: ₹0</div>
                 </div>
-                <div id="partAmountBox" class="mt-2" style="display:none;">
-                    <input type="number" id="partAmountInput" min="1" step="0.01" class="w-full px-3 py-2 border border-violet-200 rounded-lg outline-none font-bold text-sm text-slate-800" placeholder="Enter custom amount">
+
+                <!-- Right Box: QR Code & Small UPI Button -->
+                <div id="qrCodeContainer" class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-center flex flex-col justify-center items-center relative">
+                    <p class="text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Scan & Pay</p>
+                    <div class="bg-white p-1 rounded-lg shadow-sm border border-slate-100 mb-1.5">
+                        <img id="qrCodeImg" src="https://via.placeholder.com/150" alt="QR" class="w-20 h-20 object-contain">
+                    </div>
+                    <a id="directPayBtn" href="#" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-1.5 px-2 rounded shadow-sm flex items-center justify-center gap-1 text-[10px] transition">
+                        <span>⚡ Direct UPI Pay</span>
+                    </a>
                 </div>
             </div>
 
-            <div id="qrCodeContainer" class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-center mb-3">
-                <p class="text-[11px] font-bold text-slate-500 mb-2 uppercase">Scan to Pay securely</p>
-                <div class="bg-white p-1.5 inline-block rounded-lg shadow-sm border border-slate-100">
-                    <img id="qrCodeImg" src="https://via.placeholder.com/150" alt="UPI QR Code" class="w-32 h-32 mx-auto object-contain">
-                </div>
-                <a id="directPayBtn" href="#" class="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-lg shadow-md flex items-center justify-center gap-2 text-xs transition">
-                    <span>⚡ Direct UPI App Link</span>
-                </a>
-            </div>
-
-            <div id="utrFormSection" class="bg-amber-50 border border-amber-100 rounded-xl p-3 mb-2">
-                <div id="submittedAmountDisplay" class="text-center text-xs font-extrabold text-amber-700 mb-2 bg-amber-100 py-1 rounded">Paying: ₹0</div>
-                <input type="text" id="utrInput" placeholder="Enter 12-digit UTR No." maxlength="12" class="w-full px-3 py-2.5 border border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 text-center font-mono text-sm bg-white mb-2 font-bold text-slate-700">
-                <button onclick="submitUtr()" id="submitBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-lg shadow-md transition text-xs uppercase tracking-wide">
-                    Submit UTR
+            <!-- UTR Form -->
+            <div id="utrFormSection" class="bg-amber-50 border border-amber-100 rounded-xl p-3 mb-2 mt-2">
+                <p class="text-[11px] text-amber-700 mb-2 font-bold uppercase text-center">Submit 12-Digit UTR Below</p>
+                <input type="text" id="utrInput" placeholder="Enter UTR No." maxlength="12" class="w-full px-3 py-2 border border-amber-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-400 text-center font-mono text-sm bg-white mb-2 font-bold text-slate-700">
+                <button onclick="submitUtr()" id="submitBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 rounded-lg shadow-md transition text-xs uppercase tracking-wide">
+                    Verify Payment
                 </button>
             </div>
 
-            <div id="statusMessage" class="text-center text-[11px] font-bold text-slate-500 mb-2"></div>
+            <div id="statusMessage" class="text-center text-[11px] font-bold text-slate-500 mb-2 mt-2"></div>
 
             <div class="border-t border-slate-200 mt-3 pt-3">
                 <button onclick="togglePaymentHistory()" class="w-full text-left text-xs font-extrabold text-slate-700 flex items-center justify-between outline-none bg-slate-50 p-2.5 rounded-lg border border-slate-200 shadow-sm">
@@ -218,7 +227,6 @@
                 if (inv) {
                     currentInvoice = inv;
 
-                    // SECURITY BYPASS FIX: Require strict matching of paymentCode
                     if (inv.paymentCode && paymentCode !== inv.paymentCode) {
                         hideAllActionSections();
                         document.getElementById('balanceHeaderSection').style.display = 'none';
@@ -271,7 +279,6 @@
                     }
 
                     document.getElementById('upiIdText').innerText = merchantUpi;
-                    document.getElementById('qrCodeContainer').style.display = 'block';
                     
                     if (inv.status === "Pending Verification") {
                         document.getElementById('utrFormSection').style.display = 'none';
@@ -279,7 +286,7 @@
                         document.getElementById('statusMessage').innerHTML = `<div class='bg-amber-100 border border-amber-300 text-amber-800 p-2 rounded-lg text-xs font-bold'>⏳ UTR ${inv.utrNumber || ''} Verification Pending.</div>`;
                     } else {
                         document.getElementById('utrFormSection').style.display = 'block';
-                        document.getElementById('paymentChoiceSection').style.display = 'block';
+                        document.getElementById('paymentChoiceSection').style.display = 'grid';
                         document.getElementById('statusMessage').innerHTML = "Waiting for payment...";
                         selectPaymentType(selectedPaymentType); 
                     }
@@ -291,7 +298,6 @@
 
         function hideAllActionSections() {
             document.getElementById('paymentChoiceSection').style.display = 'none';
-            document.getElementById('qrCodeContainer').style.display = 'none';
             document.getElementById('utrFormSection').style.display = 'none';
         }
 
@@ -342,12 +348,11 @@
             if(!merchantUpi || amount <= 0) return;
             const invoiceNumber = (currentInvoice && currentInvoice.invNo) ? currentInvoice.invNo : invoiceId;
             const intent = `upi://pay?pa=${encodeURIComponent(merchantUpi)}&pn=${encodeURIComponent(shopNameText)}&am=${encodeURIComponent(amount.toFixed(2))}&cu=INR&tn=${encodeURIComponent('Invoice ' + invoiceNumber)}`;
+            
             document.getElementById('directPayBtn').setAttribute('href', intent);
             
-            // Background delay load for QR to not block UI speed
-            setTimeout(() => {
-                document.getElementById('qrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(intent)}`;
-            }, 100);
+            // Fast Image Load (No Delay)
+            document.getElementById('qrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(intent)}`;
         }
 
         window.selectPaymentType = function(type) {
@@ -363,7 +368,7 @@
             if(e.target && e.target.id === 'partAmountInput') updatePaymentMethods();
         });
 
-        // 100% FIXED UTR SUBMIT (SAFELY REPLACES WHOLE ARRAY WITHOUT FREEZING)
+        // FIXED UTR SUBMIT 
         window.submitUtr = function() {
             const utr = document.getElementById('utrInput').value.trim();
             if (utr.length < 12) { alert("Enter 12-digit UTR"); return; }
@@ -378,29 +383,26 @@
             database.ref('user_invoices/' + userId).once('value')
             .then((snapshot) => {
                 let invoices = snapshot.val() || [];
-                let found = false;
-                invoices = invoices.map(inv => {
-                    if (String(inv.id) === String(invoiceId)) {
-                        found = true;
-                        inv.status = "Pending Verification";
-                        inv.utrNumber = utr;
-                        inv.submittedAmount = amountToSubmit;
-                        inv.paymentType = selectedPaymentType;
-                        inv.paymentCode = paymentCode || inv.paymentCode || '';
-                        inv.submittedAt = new Date().toISOString();
-                    }
-                    return inv;
-                });
+                let foundIndex = -1;
+                for(let i=0; i<invoices.length; i++) {
+                    if(String(invoices[i].id) === String(invoiceId)) { foundIndex = i; break; }
+                }
 
-                if (found) {
-                    return database.ref('user_invoices/' + userId).set(invoices);
+                if (foundIndex !== -1) {
+                    return database.ref(`user_invoices/${userId}/${foundIndex}`).update({
+                        status: "Pending Verification",
+                        utrNumber: utr,
+                        submittedAmount: amountToSubmit,
+                        paymentType: selectedPaymentType,
+                        paymentCode: paymentCode || invoices[foundIndex].paymentCode || '',
+                        submittedAt: new Date().toISOString()
+                    });
                 } else {
                     throw new Error("Invoice not found.");
                 }
             })
             .then(() => {
-                document.getElementById('statusMessage').innerHTML = "<span class='text-emerald-600 font-bold'>✓ UTR Submitted Successfully! Waiting for approval.</span>";
-                document.getElementById('utrFormSection').style.display = 'none';
+                // UI automatically updates via live listener
             })
             .catch(err => {
                 alert("Error saving UTR: " + err.message);
@@ -447,11 +449,10 @@
             const wm = document.getElementById('p_watermark'); wm.className = `watermark ${status}`; wm.innerText = status;
         }
 
-        // 100% FIXED PDF BUTTON STATUS REVERT WITH ERROR HANDLING
         window.downloadInvoicePDF = async function(btn) {
             if(!currentInvoice) return;
             const originalBtnHtml = btn.innerHTML;
-            btn.innerHTML = 'Generating PDF...';
+            btn.innerHTML = '<svg class="animate-spin w-4 h-4 inline" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Generating PDF...';
             btn.disabled = true;
             
             const original = document.getElementById('print-area');
