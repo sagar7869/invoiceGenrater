@@ -41,7 +41,7 @@
 </head>
 <body class="bg-slate-100 font-sans p-2 md:p-4">
 
-    <!-- HIDDEN PRINT AREA -->
+    <!-- HIDDEN PRINT AREA FOR PDF -->
     <div id="print-wrapper">
         <div class="preview-box" id="print-area">
             <div id="p_watermark" class="watermark UNPAID">UNPAID</div>
@@ -129,7 +129,7 @@
                 <p class="text-xs font-medium text-emerald-600">Zero due amount remaining.</p>
             </div>
 
-            <!-- PARALLEL PAYMENT OPTIONS & QR CODE -->
+            <!-- PARALLEL PAYMENT OPTIONS & FAST BIG QR CODE -->
             <div id="paymentChoiceSection" class="grid grid-cols-2 gap-3 mb-3">
                 
                 <!-- Left Box: Payment Options -->
@@ -142,17 +142,17 @@
                     <div id="partAmountBox" class="mt-2" style="display:none;">
                         <input type="number" id="partAmountInput" min="1" step="0.01" class="w-full px-2 py-1.5 border border-violet-200 rounded-lg outline-none font-bold text-sm text-slate-800 text-center" placeholder="Amount">
                     </div>
-                    <!-- HIDDEN BY DEFAULT: 'Paying: 0' error solved -->
-                    <div id="submittedAmountDisplay" style="display:none;" class="mt-2 text-center text-[11px] font-extrabold text-emerald-700 bg-emerald-100 py-1 rounded">Paying: ₹0</div>
+                    <!-- Display block defaults to none, shown dynamically in JS -->
+                    <div id="submittedAmountDisplay" style="display:none;" class="mt-2 text-center text-[11px] font-extrabold text-emerald-700 bg-emerald-100 py-1.5 rounded border border-emerald-200 shadow-sm"></div>
                 </div>
 
-                <!-- Right Box: FAST QR Code & Small UPI Button -->
+                <!-- Right Box: Big QR Code & Small UPI Button -->
                 <div id="qrCodeContainer" class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-center flex flex-col justify-center items-center relative">
                     <p class="text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wide">Scan & Pay</p>
-                    <div class="bg-white p-1 rounded-lg shadow-sm border border-slate-100 mb-1.5">
-                        <img id="qrCodeImg" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" alt="QR" class="w-20 h-20 object-contain">
+                    <div class="bg-white p-1 rounded-lg shadow-sm border border-slate-100 mb-1.5 w-full flex justify-center">
+                        <img id="qrCodeImg" src="" alt="QR" class="w-32 h-32 object-contain" style="min-width:120px; min-height:120px;">
                     </div>
-                    <a id="directPayBtn" href="#" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-1.5 px-2 rounded shadow-sm flex items-center justify-center gap-1 text-[10px] transition">
+                    <a id="directPayBtn" href="#" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-1.5 px-1 rounded shadow-sm flex items-center justify-center gap-1 text-[10px] transition">
                         <span>⚡ Direct UPI Pay</span>
                     </a>
                 </div>
@@ -240,7 +240,7 @@
                     const discountAmt = (subTotal * discPercent) / 100;
                     const totalAmt = subTotal - discountAmt;
                     
-                    const paidAmt = (inv.payments || []).reduce((s, p) => s + p.amt, 0);
+                    const paidAmt = (inv.payments || []).reduce((s, p) => s + parseFloat(p.amt), 0);
                     pendingBalance = totalAmt - paidAmt;
                     if(pendingBalance < 0) pendingBalance = 0;
 
@@ -279,7 +279,7 @@
                         return;
                     }
 
-                    document.getElementById('upiIdText').innerText = merchantUpi;
+                    document.getElementById('qrCodeContainer').style.display = 'flex';
                     
                     if (inv.status === "Pending Verification") {
                         document.getElementById('utrFormSection').style.display = 'none';
@@ -290,6 +290,8 @@
                         document.getElementById('paymentChoiceSection').style.display = 'grid';
                         document.getElementById('statusMessage').innerHTML = "Waiting for payment...";
                         selectPaymentType(selectedPaymentType); 
+                        // Call immediately to render box and fast QR
+                        updatePaymentMethods();
                     }
                 } else {
                     document.getElementById('statusMessage').innerText = "Invoice not found!";
@@ -348,7 +350,7 @@
             const amount = getSelectedAmount();
             const displayEl = document.getElementById('submittedAmountDisplay');
             
-            // Fix Paying: 0 issue
+            // Only show Paying amount box if amount is properly entered
             if(amount > 0) {
                 displayEl.innerText = 'Paying: ₹' + amount.toLocaleString('en-IN', {minimumFractionDigits: 2});
                 displayEl.style.display = 'block';
@@ -357,7 +359,7 @@
             }
 
             if(!merchantUpi || amount <= 0) {
-                document.getElementById('qrCodeImg').src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='; // blank image
+                document.getElementById('qrCodeImg').src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs='; 
                 document.getElementById('directPayBtn').removeAttribute('href');
                 return;
             }
@@ -366,9 +368,8 @@
             const intent = `upi://pay?pa=${encodeURIComponent(merchantUpi)}&pn=${encodeURIComponent(shopNameText)}&am=${encodeURIComponent(amount.toFixed(2))}&cu=INR&tn=${encodeURIComponent('Invoice ' + invoiceNumber)}`;
             
             document.getElementById('directPayBtn').setAttribute('href', intent);
-            
-            // FAST QR CODE API WITHOUT SETTIMEOUT
-            document.getElementById('qrCodeImg').src = `https://quickchart.io/qr?text=${encodeURIComponent(intent)}&size=200`;
+            // DIRECT LOAD FAST QR
+            document.getElementById('qrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(intent)}`;
         }
 
         window.selectPaymentType = function(type) {
@@ -384,7 +385,7 @@
             if(e.target && e.target.id === 'partAmountInput') updatePaymentMethods();
         });
 
-        // FIXED FAST UTR SUBMIT 
+        // FAST UTR SUBMIT (SAFE OVERWRITE WITHOUT FREEZING)
         window.submitUtr = function() {
             const utr = document.getElementById('utrInput').value.trim();
             if (utr.length < 12) { alert("Enter 12-digit UTR"); return; }
@@ -418,7 +419,7 @@
                 }
             })
             .then(() => {
-                // UI automatically updates via live listener
+                // Background update happens via listener
             })
             .catch(err => {
                 alert("Error saving UTR: " + err.message);
@@ -440,7 +441,7 @@
             
             let status = 'UNPAID';
             if (totalAmt > 0) {
-                if (paidAmt >= totalAmt) status = 'PAID';
+                if (paidAmt >= totalAmt - 0.01) status = 'PAID';
                 else if (paidAmt > 0) status = 'PARTIAL';
             }
             const ddContainer = document.getElementById('row_ddate');
@@ -465,7 +466,7 @@
             const wm = document.getElementById('p_watermark'); wm.className = `watermark ${status}`; wm.innerText = status;
         }
 
-        // FIXED PDF BUTTON STATUS REVERT WITH ERROR HANDLING
+        // FIXED PDF BUTTON REVERT STATUS
         window.downloadInvoicePDF = async function(btn) {
             if(!currentInvoice) return;
             const originalBtnHtml = btn.innerHTML;
