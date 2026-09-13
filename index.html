@@ -26,8 +26,10 @@
         body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: var(--bg); color: #333; overscroll-behavior-y: none; }
         
         .tabs { display: flex; background: #fff; border-bottom: 2px solid var(--border); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .tab-btn { flex: 1; background: transparent; color: #64748b; border: none; padding: 15px 5px; cursor: pointer; font-size: 14px; font-weight: 600; border-bottom: 3px solid transparent; transition: 0.3s; display:flex; align-items:center; justify-content:center; gap:6px;}
+        .tab-btn { flex: 1; position: relative; background: transparent; color: #64748b; border: none; padding: 15px 5px; cursor: pointer; font-size: 14px; font-weight: 600; border-bottom: 3px solid transparent; transition: 0.3s; display:flex; align-items:center; justify-content:center; gap:6px;}
         .tab-btn.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
+        .tab-badge { position: absolute; top: 6px; right: 8px; background: #ef4444; color: white; border-radius: 50%; padding: 2px 5px; font-size: 10px; font-weight: 800; line-height: 1; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        
         .container { padding: 15px; max-width: 1200px; margin: auto; }
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
@@ -97,7 +99,6 @@
         .ledger-table th, .ledger-table td { padding: 6px; border-bottom: 1px solid #e2e8f0; text-align: left; }
         .ledger-table th { background: transparent; }
 
-        /* PREMIUM LIST TABLE (FLOATING CARDS) */
         .list-table { width: 100%; border-collapse: separate; border-spacing: 0 10px; background: transparent; }
         .list-table th { background: transparent; color: #475569; font-weight: 800; text-transform: uppercase; font-size: 11px; padding: 0 15px 5px 15px; border: none; }
         .list-table tbody tr { background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border-radius: 12px; transition: transform 0.2s, box-shadow 0.2s; }
@@ -106,7 +107,6 @@
         .list-table td:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; border-left: 3px solid transparent; }
         .list-table td:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
         
-        /* DYNAMIC LEFT BORDER STATUS */
         .list-table tbody tr.row-PAID td:first-child { border-left-color: #10b981; }
         .list-table tbody tr.row-PARTIAL td:first-child { border-left-color: #f59e0b; }
         .list-table tbody tr.row-UNPAID td:first-child { border-left-color: #ef4444; }
@@ -148,9 +148,10 @@
             body { padding-bottom: 70px; } 
             .container { padding: 6px !important; } 
             .tabs { position: fixed; top: auto; bottom: 0; left: 0; width: 100%; border-top: 1px solid var(--border); border-bottom: none; z-index: 99999; display: flex; justify-content: space-around; box-shadow: 0 -4px 15px rgba(0,0,0,0.05); padding-bottom: env(safe-area-inset-bottom); background: #fff;}
-            .tab-btn { flex-direction: column; font-size: 10px; padding: 8px 2px; gap: 3px; border-bottom: none !important; border-top: 3px solid transparent; }
+            .tab-btn { flex-direction: column; font-size: 9px; padding: 6px 1px; gap: 3px; border-bottom: none !important; border-top: 3px solid transparent; }
             .tab-btn.active { border-top: 3px solid var(--primary); background: rgba(33, 150, 243, 0.05); }
-            .tab-btn i { font-size: 18px; }
+            .tab-btn i { font-size: 16px; }
+            .tab-badge { top: 2px; right: 2px; font-size: 8px; padding: 1px 4px; }
             
             .btn-close, .btn-new { grid-column: span 2; }
             .editor-table thead { display: none; }
@@ -231,14 +232,14 @@
         </div>
     </div>
 
-    <!-- CONFIRM MODAL -->
+    <!-- CONFIRM MODAL (FIXED) -->
     <div class="overlay" id="confirm-overlay" style="z-index: 9999999 !important;">
         <div class="modal-sm" style="text-align: center; max-width: 320px; padding: 30px 20px;">
             <i class="fas fa-exclamation-circle" style="font-size: 45px; color: #f59e0b; margin-bottom: 15px;"></i>
             <h3 id="confirm-title" style="margin-top:0; color:#1e293b; font-size:20px; font-weight:800;">Are you sure?</h3>
-            <div style="display:flex; gap:12px;">
+            <div style="display:flex; gap:12px; margin-top:20px;">
                 <button onclick="closeConfirmModal()" style="flex:1; padding:12px; background:#f1f5f9; border:none; border-radius:8px; font-weight:bold; color:#475569; cursor:pointer;">Cancel</button>
-                <button id="confirm-btn-yes" style="flex:1; padding:12px; background:#ef4444; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Yes, Confirm</button>
+                <button onclick="executeConfirmAction()" style="flex:1; padding:12px; background:#ef4444; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Yes, Confirm</button>
             </div>
         </div>
     </div>
@@ -313,6 +314,7 @@
                 <h4 style="margin:0 0 20px 0; display:flex; align-items:center; gap:12px; font-size: 18px; color:#1e293b; font-weight:800;"><button onclick="showProfileSection('profile-menu-view')" style="border:none; background:transparent; font-size:18px; cursor:pointer; color:#64748b;"><i class="fas fa-arrow-left"></i></button> Business Profile</h4>
                 <label style="font-weight:800; font-size:11px; text-transform:uppercase;">Receiving UPI ID</label><input type="text" id="prof-upi-id" placeholder="e.g. yourname@paytm" style="margin:8px 0 15px; width:100%;">
                 <label style="font-weight:800; font-size:11px; text-transform:uppercase;">Shop Mobile</label><input type="tel" id="prof-mobile" inputmode="numeric" placeholder="+91" style="margin:8px 0 15px; width:100%;">
+                <label style="font-weight:800; font-size:11px; text-transform:uppercase;">GST Number (Optional)</label><input type="text" id="prof-gst" placeholder="e.g. 22AAAAA0000A1Z5" style="margin:8px 0 15px; width:100%; text-transform:uppercase;">
                 <label style="font-weight:800; font-size:11px; text-transform:uppercase;">Shop Address</label><input type="text" id="prof-address" onblur="capitalizeInput(this)" placeholder="Address" style="margin:8px 0 20px; width:100%;">
                 <button onclick="saveMerchantProfile()" style="width:100%; padding:14px; background:#10b981; color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">Save Details</button>
             </div>
@@ -334,12 +336,13 @@
         </div>
     </div>
 
-    <!-- TABS BAR -->
+    <!-- TABS BAR WITH NEW UTR TAB -->
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('create-tab')"><i class="fas fa-edit"></i> <span class="tab-text">Create</span></button>
         <button class="tab-btn" onclick="switchTab('preview-tab')"><i class="fas fa-eye"></i> <span class="tab-text">Preview</span></button>
         <button class="tab-btn" onclick="switchTab('list-tab')"><i class="fas fa-list"></i> <span class="tab-text">Cx List</span></button>
-        <button class="tab-btn" onclick="switchTab('alerts-tab')"><i class="fas fa-bell"></i> <span class="tab-text">Alerts</span></button>
+        <button class="tab-btn" onclick="switchTab('utr-tab')"><i class="fas fa-university"></i> <span class="tab-text">UTR Req</span><span id="badge-utr" class="tab-badge" style="display:none;">0</span></button>
+        <button class="tab-btn" onclick="switchTab('alerts-tab')"><i class="fas fa-bell"></i> <span class="tab-text">Alerts</span><span id="badge-alerts" class="tab-badge" style="display:none;">0</span></button>
         <button class="tab-btn" id="btn-profile-tab" onclick="openProfileModal()" title="My Profile"><i class="fas fa-user-circle"></i> <span class="tab-text">Profile</span></button>
     </div>
 
@@ -357,7 +360,7 @@
                 <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px;">
                     <div class="form-panel" style="flex:1; min-width:250px; margin-bottom:0;">
                         <label>Customer Details <span style="color:red">*</span></label>
-                        <input type="text" id="f_to" placeholder="Customer Name" onblur="capitalizeInput(this)" oninput="autoGenerateInvoice()" style="margin-bottom:10px;">
+                        <input type="text" id="f_to" placeholder="Customer Name (Mandatory)" onblur="capitalizeInput(this)" oninput="autoGenerateInvoice()" style="margin-bottom:10px;">
                         <input type="tel" id="f_mobile" inputmode="numeric" placeholder="Mobile Number (10 Digits)" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,10)">
                     </div>
                     <div class="form-panel" style="flex:1; min-width:250px; margin-bottom:0;">
@@ -515,7 +518,16 @@
         <button id="btn-load-more" onclick="loadMore()" style="display:none; width:100%; padding:14px; margin-top:10px; cursor:pointer; background:#fff; border:1px solid #cbd5e1; border-radius:10px; font-weight:bold; color:#475569;">Load More History</button>
     </div>
 
-    <!-- TAB 4: ALERTS PANEL -->
+    <!-- NEW TAB 4: UTR REQUESTS -->
+    <div id="utr-tab" class="tab-content container">
+        <div class="form-panel" style="background:#f0fdf4; border:1px solid #bbf7d0;">
+            <h2 style="margin:0 0 10px 0; color:#166534; font-size:16px; font-weight:800; text-transform:uppercase;"><i class="fas fa-university"></i> Pending UTR Requests</h2>
+            <p style="font-size:12px; color:#15803d; margin-bottom:15px;">Customers ne jo UTR submit kiye hain, unhe yahan se verify aur approve karein.</p>
+            <div id="utr-list-body" style="display:flex; flex-direction:column; gap:10px;"></div>
+        </div>
+    </div>
+
+    <!-- TAB 5: ALERTS PANEL -->
     <div id="alerts-tab" class="tab-content container">
         <div class="form-panel" style="background:#fffaf0; border:1px solid #fde68a;">
             <h2 style="margin:0 0 10px 0; color:#d97706; font-size:16px; font-weight:800; text-transform:uppercase;"><i class="fas fa-bell"></i> Payment Alerts & Dues</h2>
@@ -541,7 +553,7 @@
         const database = firebase.database();
 
         let invoices = [];
-        let merchantUpiId = ""; let merchantMobile = ""; let merchantAddress = "";
+        let merchantUpiId = ""; let merchantMobile = ""; let merchantAddress = ""; let merchantGst = "";
         let currentInvId = null, currentItems = [], currentPayments = [], listLimit = 30, activePayId = null;
         let isEditMode = false, hasUnsavedChanges = false, activeUserId = null; 
         let confirmActionCallback = null; let activeUtrInvoiceId = null; let itemMaster = [];
@@ -561,7 +573,7 @@
         // CAPITALIZATION FUNCTION
         function capitalizeWords(str) {
             if(!str) return '';
-            return str.replace(/\b\w/g, char => char.toUpperCase());
+            return str.replace(/\b\w/g, char => char.charAt(0).toUpperCase() + char.slice(1));
         }
         function capitalizeInput(el) {
             if(el.value) el.value = capitalizeWords(el.value);
@@ -583,7 +595,7 @@
             if(!descEl || !listEl) return;
             const q = descEl.value.trim().toLowerCase();
             listEl.innerHTML = '';
-            currentSuggestFocus = -1; // Reset focus on new search
+            currentSuggestFocus = -1; 
             
             const filtered = q === '' ? itemMaster : itemMaster.filter(x => String(x.name).toLowerCase().includes(q));
             filtered.forEach((item, index) => {
@@ -598,14 +610,13 @@
                     document.getElementById('i_price').value = item.price;
                     listEl.style.display = 'none';
                     updateItemTempTotal();
-                    document.getElementById('i_qty').focus(); // Auto jump to qty
+                    document.getElementById('i_qty').focus(); 
                 };
                 listEl.appendChild(div);
             });
             listEl.style.display = filtered.length > 0 ? 'block' : 'none';
         }
         
-        // KEYBOARD ARROW NAVIGATION FOR ITEMS
         function handleItemSearchKey(e) {
             let listEl = document.getElementById('custom-item-list');
             if (listEl.style.display === 'block') {
@@ -619,7 +630,7 @@
                     if (currentSuggestFocus > -1 && items[currentSuggestFocus]) {
                         items[currentSuggestFocus].click();
                     } else {
-                        addItem(); // Direct add if typing custom item
+                        addItem(); 
                     }
                 }
             } else if (e.key === 'Enter') {
@@ -690,16 +701,17 @@
             setTimeout(() => { if(toast.parentNode) toast.parentNode.removeChild(toast); }, 3000);
         }
 
+        // CONFIRM MODAL FIXED NATIVELY
         function showCustomConfirm(message, callback) {
             document.getElementById('confirm-msg').innerText = message;
             confirmActionCallback = callback; document.getElementById('confirm-overlay').style.display = 'flex';
         }
         function closeConfirmModal() { document.getElementById('confirm-overlay').style.display = 'none'; confirmActionCallback = null; }
         
-        document.getElementById('confirm-btn-yes').addEventListener('click', () => {
+        function executeConfirmAction() {
             if(confirmActionCallback) confirmActionCallback();
             closeConfirmModal();
-        });
+        }
 
         function openExportModal() { document.getElementById('export-modal').style.display = 'flex'; }
         function confirmExport() {
@@ -738,6 +750,7 @@
                 
                 document.getElementById('prof-upi-id').value = merchantUpiId || "";
                 document.getElementById('prof-mobile').value = merchantMobile || "";
+                document.getElementById('prof-gst').value = merchantGst || "";
                 document.getElementById('prof-address').value = merchantAddress || "";
                 document.getElementById('prof-new-pass').value = '';
                 
@@ -752,8 +765,10 @@
             const upi = document.getElementById('prof-upi-id').value.trim();
             const mob = document.getElementById('prof-mobile').value.trim();
             const addr = document.getElementById('prof-address').value.trim();
-            merchantUpiId = upi; merchantMobile = mob; merchantAddress = addr;
-            database.ref('merchant_profile/' + activeUserId).set({ upiId: upi, mobile: mob, address: addr }).then(() => {
+            const gst = document.getElementById('prof-gst').value.trim();
+            
+            merchantUpiId = upi; merchantMobile = mob; merchantAddress = addr; merchantGst = gst;
+            database.ref('merchant_profile/' + activeUserId).set({ upiId: upi, mobile: mob, address: addr, gst: gst }).then(() => {
                 showToast("Business profile saved!", "success"); showProfileSection('profile-menu-view'); updatePreview(); 
             }).catch(err => showToast("Error saving profile: " + err.message, "error"));
         }
@@ -792,7 +807,7 @@
                 loadFirebaseData(); loadItemMaster(); 
                 setTimeout(() => { if(Notification.permission !== 'granted') Notification.requestPermission(); }, 5000); 
             } else {
-                activeUserId = null; invoices = []; itemMaster = []; renderItemMasterSuggestions(); renderList(); renderAlerts(); document.getElementById('login-overlay').style.display = 'flex'; 
+                activeUserId = null; invoices = []; itemMaster = []; renderItemMasterSuggestions(); renderList(); renderAlerts(); renderUtrRequests(); document.getElementById('login-overlay').style.display = 'flex'; 
             }
         });
 
@@ -803,7 +818,7 @@
             window.addEventListener('resize', adjustPreviewScale);
             startNewInvoice();
             const savedTab = sessionStorage.getItem('invoiceActiveTab');
-            if(['list-tab', 'preview-tab', 'alerts-tab'].includes(savedTab)) setTimeout(() => switchTab(savedTab), 0);
+            if(['list-tab', 'preview-tab', 'alerts-tab', 'utr-tab'].includes(savedTab)) setTimeout(() => switchTab(savedTab), 0);
             
             setInterval(checkAndNotifyDues, 7200000); 
         }
@@ -812,7 +827,12 @@
             if(!activeUserId) return;
             document.getElementById('db-loader').style.display = 'block'; document.getElementById('db-table').style.display = 'none';
             database.ref('merchant_profile/' + activeUserId).once('value', (snap) => {
-                if(snap.exists()) { merchantUpiId = snap.val().upiId || ""; merchantMobile = snap.val().mobile || ""; merchantAddress = snap.val().address || ""; }
+                if(snap.exists()) { 
+                    merchantUpiId = snap.val().upiId || ""; 
+                    merchantMobile = snap.val().mobile || ""; 
+                    merchantGst = snap.val().gst || "";
+                    merchantAddress = snap.val().address || ""; 
+                }
             });
             database.ref('user_invoices/' + activeUserId).on('value', (snapshot) => {
                 document.getElementById('db-loader').style.display = 'none'; document.getElementById('db-table').style.display = 'table';
@@ -820,6 +840,7 @@
                 if(data) { invoices = Array.isArray(data) ? data : Object.values(data); invoices.forEach(inv => { if(inv.paidAmount !== undefined && !inv.payments) { inv.payments = inv.paidAmount > 0 ? [{id: Date.now(), amt: inv.paidAmount, mode: 'Cash', date: inv.date}] : []; delete inv.paidAmount; } }); } else { invoices = []; }
                 renderList(true); 
                 renderAlerts(); 
+                renderUtrRequests();
                 if(activePayId) renderQuickPaymentsList(); 
             }, (error) => { showToast("Database load fail: " + error.message, "error"); });
         }
@@ -830,14 +851,10 @@
 
         function autoGenerateInvoice() {
             const date = document.getElementById('f_cdate').value;
-            const name = document.getElementById('f_to').value.trim();
-            if(!date || !name) return;
-            
-            let namePrefix = name.replace(/[^a-zA-Z]/g, '').substring(0, 3).toUpperCase();
-            if(namePrefix.length === 0) namePrefix = "INV";
+            if(!date) return document.getElementById('f_inv').value = '';
             
             const day = date.split('-').reverse().join('').substring(0,6); 
-            const prefix = `${namePrefix}-${day}-`;
+            const prefix = `INV-${day}-`;
             
             const used = invoices.map(x => String(x.invNo || '')).filter(x => x.startsWith(prefix));
             let max = 0;
@@ -848,18 +865,19 @@
         }
 
         function switchTab(tabId) {
-            const allowed = ['create-tab','preview-tab','list-tab','alerts-tab'];
+            const allowed = ['create-tab','preview-tab','list-tab','alerts-tab','utr-tab'];
             if(!allowed.includes(tabId)) tabId = 'create-tab';
             document.querySelectorAll('.tab-content, .tab-btn').forEach(t => t.classList.remove('active'));
             const tab = document.getElementById(tabId);
             if(!tab) return;
             tab.classList.add('active');
-            const btnIndex = tabId === 'create-tab' ? 0 : (tabId === 'preview-tab' ? 1 : (tabId === 'list-tab' ? 2 : 3));
+            const btnIndex = allowed.indexOf(tabId);
             const btns = document.querySelectorAll('.tab-btn');
             if(btns[btnIndex]) btns[btnIndex].classList.add('active');
             sessionStorage.setItem('invoiceActiveTab', tabId);
             if(tabId === 'list-tab') renderList(true);
             if(tabId === 'alerts-tab') renderAlerts();
+            if(tabId === 'utr-tab') renderUtrRequests();
             if(tabId === 'preview-tab') { updatePreview(); setTimeout(adjustPreviewScale, 50); }
         }
 
@@ -879,7 +897,7 @@
             isEditMode = false;
             document.getElementById('btn-close-edit').style.display = 'none'; document.getElementById('btn-close-edit-top').style.display = 'none'; document.getElementById('btn-new-bill').style.display = 'inline-flex';
             if(document.getElementById('editor-container').parentNode.id !== 'create-tab-body') { document.getElementById('create-tab-body').appendChild(document.getElementById('editor-container')); }
-            setTodayDate(); renderTables(); hasUnsavedChanges = true; 
+            setTodayDate(); autoGenerateInvoice(); renderTables(); hasUnsavedChanges = true; 
         }
 
         function addItem() {
@@ -958,6 +976,7 @@
         function updatePreview() {
             let fromText = document.getElementById('f_from').value;
             if(merchantMobile) fromText += `<br><span style="font-size:12px; font-weight:normal;">M: ${merchantMobile}</span>`;
+            if(merchantGst) fromText += `<br><span style="font-size:12px; font-weight:bold; color:#b45309;">GST: ${merchantGst}</span>`;
             if(merchantAddress) fromText += `<br><span style="font-size:11px; font-weight:normal; color:#64748b;">${merchantAddress}</span>`;
             document.getElementById('p_from').innerHTML = fromText;
             
@@ -979,9 +998,12 @@
             document.getElementById('p_subtotal').innerText = formatMoney(calc.subTotal);
             
             if(calc.discountAmt > 0) {
+                document.getElementById('ui_after_discount').style.display = 'block';
+                document.getElementById('ui_after_discount').innerText = "New Total: " + formatMoney(calc.total);
                 document.getElementById('p_discount_row').style.display = 'flex';
                 document.getElementById('p_discount_amt').innerText = "- " + formatMoney(calc.discountAmt);
             } else {
+                document.getElementById('ui_after_discount').style.display = 'none';
                 document.getElementById('p_discount_row').style.display = 'none';
             }
 
@@ -1061,6 +1083,7 @@
                     approveBtnHtml = `<button class="action-icon btn-request" onclick="openUtrModal('${inv.id}')" title="Approve UTR"><i class="fas fa-bell"></i><span>APPROVE</span></button>`;
                 }
 
+                // FIXED 100%: Replaced old custom confirm wrapper inline for safety
                 tbody.innerHTML += `<tr class="${trClass}">
                     <td data-label="Date" class="desktop-only">${inv.date ? inv.date.split('-').reverse().join('/') : '-'}</td>
                     <td data-label="Invoice #"><b>${inv.invNo}</b></td>
@@ -1083,7 +1106,7 @@
                         <button class="action-icon bg-pay" onclick="openQuickPayment('${inv.id}')" title="Manage Payments"><i class="fas fa-rupee-sign"></i><span>PAY</span></button>
                         <button class="action-icon bg-img" onclick="shareAsImageList('${inv.id}', this)" title="Share Image"><i class="fab fa-whatsapp"></i><span>IMG</span></button>
                         <button class="action-icon bg-pdf" onclick="generatePDFList('${inv.id}', this)" title="Download PDF"><i class="fas fa-file-pdf"></i><span>PDF</span></button>
-                        <button class="action-icon bg-del" onclick="deleteInvoice('${inv.id}')" title="Delete"><i class="fas fa-trash"></i><span>DEL</span></button>
+                        <button class="action-icon bg-del" onclick="deleteInvoiceNative('${inv.id}')" title="Delete"><i class="fas fa-trash"></i><span>DEL</span></button>
                     </td>
                 </tr>`;
             });
@@ -1091,8 +1114,58 @@
         }
         function loadMore() { listLimit += 30; renderList(); }
         
+        // --- UTR REQUESTS PANEL ---
+        function renderUtrRequests() {
+            const listEl = document.getElementById('utr-list-body');
+            const badgeEl = document.getElementById('badge-utr');
+            listEl.innerHTML = '';
+            let utrCount = 0;
+
+            invoices.forEach(inv => {
+                if(inv.status === "Pending Verification") {
+                    utrCount++;
+                    const subTotal = (inv.items||[]).reduce((s, i) => s + (i.qty * i.price), 0); 
+                    const discPercent = parseFloat(inv.discount) || 0;
+                    const total = subTotal - ((subTotal * discPercent)/100);
+                    const paid = (inv.payments||[]).reduce((s, p) => s + parseFloat(p.amt), 0); 
+                    const bal = total - paid;
+                    const reqDate = inv.submittedAt ? new Date(inv.submittedAt).toLocaleString('en-IN') : 'N/A';
+
+                    listEl.innerHTML += `
+                        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #10b981; border-radius:8px; padding:12px; box-shadow:0 2px 5px rgba(0,0,0,0.05); display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px;">
+                            <div style="flex:1; min-width:200px;">
+                                <div style="font-weight:800; font-size:15px; color:#1e293b; margin-bottom:2px;">${inv.to} <span style="font-size:11px; font-weight:normal; color:#64748b;">(#${inv.invNo})</span></div>
+                                <div style="font-size:11px; color:#64748b; margin-bottom:6px;"><i class="fas fa-clock"></i> Req Date: ${reqDate}</div>
+                                <div style="font-size:12px; color:#334155; margin-bottom:4px; display:flex; gap:8px; flex-wrap:wrap;">
+                                    <span style="background:#e0f2fe; padding:2px 6px; border-radius:4px; color:#0369a1;">Total: <b>₹${formatMoney(total)}</b></span>
+                                    <span style="background:#ecfdf5; padding:2px 6px; border-radius:4px; color:#047857;">Paid: <b>₹${formatMoney(paid)}</b></span>
+                                    <span style="background:#fef2f2; padding:2px 6px; border-radius:4px; color:#b91c1c;">Due: <b>₹${formatMoney(bal)}</b></span>
+                                </div>
+                                <div style="background:#fef3c7; border:1px solid #fde68a; padding:6px; border-radius:4px; font-size:12px; display:inline-block; margin-top:4px;">
+                                    UTR Submitted: <strong style="color:#d97706; font-family:monospace; letter-spacing:1px;">${inv.utrNumber}</strong> <br> Claimed Amt: <strong style="color:#059669;">₹${inv.submittedAmount}</strong>
+                                </div>
+                            </div>
+                            <div style="display:flex; flex-direction:column; gap:6px; min-width:120px;">
+                                <button onclick="openUtrModal('${inv.id}')" style="background:#10b981; color:white; border:none; padding:8px 12px; border-radius:6px; font-weight:bold; font-size:12px; cursor:pointer; width:100%; box-shadow:0 2px 4px rgba(16, 185, 129, 0.3);"><i class="fas fa-check-circle"></i> Verify UTR</button>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            if(utrCount > 0) {
+                badgeEl.innerText = utrCount;
+                badgeEl.style.display = 'block';
+            } else {
+                badgeEl.style.display = 'none';
+                listEl.innerHTML = '<div style="text-align:center; padding:20px; color:#64748b; font-weight:bold;"><i class="fas fa-inbox" style="font-size:30px; margin-bottom:10px;"></i><br>No Pending UTR Requests.</div>';
+            }
+        }
+
+        // --- ALERTS PANEL ---
         function renderAlerts() {
             const listEl = document.getElementById('alerts-list-body');
+            const badgeEl = document.getElementById('badge-alerts');
             listEl.innerHTML = '';
             const todayObj = new Date(); todayObj.setHours(0,0,0,0);
             let overdueCount = 0;
@@ -1132,7 +1205,11 @@
                 }
             });
 
-            if(overdueCount === 0) {
+            if(overdueCount > 0) {
+                badgeEl.innerText = overdueCount;
+                badgeEl.style.display = 'block';
+            } else {
+                badgeEl.style.display = 'none';
                 listEl.innerHTML = '<div style="text-align:center; padding:20px; color:#10b981; font-weight:bold;"><i class="fas fa-check-circle" style="font-size:30px; margin-bottom:10px;"></i><br>All Clear! No pending dues.</div>';
             }
         }
@@ -1167,7 +1244,13 @@
             }
         }
 
-        function deleteInvoice(id) { showCustomConfirm("Permanently delete this invoice?", () => { invoices = invoices.filter(i => String(i.id) !== String(id)); syncToFirebase(); showToast("Invoice deleted.", "success"); }); }
+        function deleteInvoiceNative(id) {
+            if(confirm("Are you sure you want to permanently delete this invoice?")) {
+                invoices = invoices.filter(i => String(i.id) !== String(id)); 
+                syncToFirebase(); 
+                showToast("Invoice deleted.", "success");
+            }
+        }
 
         function openUtrModal(id) {
             const inv = invoices.find(i => String(i.id) === String(id)); if(!inv) return;
@@ -1234,7 +1317,11 @@
             const inv = invoices.find(i => String(i.id) === String(activePayId)), p = inv.payments.find(x => String(x.id) === String(pid));
             if(p) { p.amt = parseFloat(document.getElementById(`qm_amt_${pid}`).value) || 0; p.mode = document.getElementById(`qm_mode_${pid}`).value; recalcInvStatus(inv); syncToFirebase(); const btn = event.currentTarget; btn.innerHTML = '<i class="fas fa-check"></i>'; setTimeout(() => { btn.innerHTML = '<i class="fas fa-save"></i>'; }, 1000); showToast("Payment updated.", "success"); }
         }
-        function deleteQMPayment(pid) { showCustomConfirm("Delete this payment record?", () => { const inv = invoices.find(i => String(i.id) === String(activePayId)); inv.payments = inv.payments.filter(x => String(x.id) !== String(pid)); recalcInvStatus(inv); syncToFirebase(); showToast("Payment removed.", "success"); }); }
+        function deleteQMPayment(pid) { 
+            if(confirm("Delete this payment record?")) {
+                const inv = invoices.find(i => String(i.id) === String(activePayId)); inv.payments = inv.payments.filter(x => String(x.id) !== String(pid)); recalcInvStatus(inv); syncToFirebase(); showToast("Payment removed.", "success"); 
+            }
+        }
         
         function confirmQuickPayment() {
             const amt = parseFloat(document.getElementById('pm_amount').value), mode = document.getElementById('pm_mode').value;
