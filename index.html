@@ -33,7 +33,6 @@
         .tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* HEAVY BOLD HEADINGS IN CREATE TAB */
         .form-panel { background: white; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; position: relative; padding: 12px; margin-bottom: 12px; }
         .form-panel label, .form-panel h4 { font-weight: 800 !important; color: #0f172a !important; text-transform: uppercase; font-size: 11px; margin-bottom: 6px; display: block; }
         
@@ -256,7 +255,7 @@
         </div>
     </div>
 
-    <!-- LOGIN & PROFILE OVERLAYS (OMITTED FOR BREVITY - SAME AS PREVIOUS) -->
+    <!-- LOGIN & PROFILE OVERLAYS (OMITTED FOR BREVITY) -->
     <div class="overlay" id="login-overlay" style="background: rgba(244, 246, 249, 1); display:none; z-index: 9999995;">
         <div class="modal-sm" style="text-align: center; max-width:380px; padding:30px;">
             <i class="fas fa-file-invoice-dollar" style="font-size: 50px; color: var(--primary); margin-bottom: 15px;"></i>
@@ -344,13 +343,13 @@
                 <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:12px;">
                     <div class="form-panel" style="flex:1; min-width:250px; margin-bottom:0;">
                         <label>Customer Details</label>
-                        <input type="text" id="f_to" placeholder="Customer Name" style="margin-bottom:10px;" oninput="autoGenerateInvoice()">
+                        <input type="text" id="f_to" placeholder="Customer Name" style="margin-bottom:10px;">
                         <input type="tel" id="f_mobile" placeholder="Mobile Number (10 Digits)" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0,10)">
                     </div>
                     <div class="form-panel" style="flex:1; min-width:250px; margin-bottom:0;">
                         <label>Invoice Info</label>
                         <input type="text" id="f_inv" placeholder="Invoice #" style="margin-bottom:10px;">
-                        <input type="date" id="f_cdate" onchange="autoGenerateInvoice()">
+                        <input type="date" id="f_cdate">
                     </div>
                 </div>
 
@@ -390,8 +389,8 @@
                             <input type="text" id="f_subtotal_disp" readonly style="background:#e2e8f0; border-color:#cbd5e1; color:#475569; font-weight:bold; cursor:not-allowed;">
                         </div>
                         <div>
-                            <label>Discount (%)</label>
                             <!-- LIVE DISCOUNT FIX -->
+                            <label>Discount (%)</label>
                             <input type="number" id="f_discount" placeholder="0" min="0" max="100" oninput="if(this.value.length > 4) this.value = this.value.slice(0,4); markUnsaved(); renderTables();">
                         </div>
                         <div>
@@ -414,7 +413,6 @@
                     
                     <div id="payment-table-wrapper" style="display:none; max-height:150px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:8px;">
                         <table class="editor-table" style="margin:0;">
-                            <!-- Payment table header correctly isolated -->
                             <thead><tr><th>Date</th><th>Mode</th><th>Amount Paid</th><th>Action</th></tr></thead>
                             <tbody id="edit-payments-body"></tbody>
                         </table>
@@ -457,6 +455,7 @@
                 <div class="totals-container">
                     <div class="totals-box">
                         <div class="tot-row"><span>Sub Total:</span> <span id="p_subtotal">₹0.00</span></div>
+                        <!-- FIXED NULL ERROR HERE -->
                         <div class="tot-row" id="p_discount_row" style="display:none;"><span>Discount:</span> <span id="p_discount_amt" style="color:#10b981;">₹0.00</span></div>
                         <div class="tot-row" style="border-top:1px dashed #cbd5e1; margin-top:5px; padding-top:5px;"><span>Final Total:</span> <span id="p_total">₹0.00</span></div>
                         <div class="tot-row"><span>Total Paid:</span> <span id="p_paid_amt">₹0.00</span></div>
@@ -647,7 +646,7 @@
                 return {
                     'Date': inv.date ? inv.date.split('-').reverse().join('/') : '', 'Invoice No': inv.invNo, 'Customer Name': inv.to, 'Customer Mobile': inv.mobile || '-',
                     'Total Amount': total, 'Total Payments': inv.payments ? inv.payments.length : 0, 'Paid Amount': paid, 'Remaining Due': Math.max(0, total - paid),
-                    'Status': paid >= total && total > 0 ? 'PAID' : (paid > 0 ? 'PARTIAL' : 'UNPAID')
+                    'Status': paid >= total - 0.01 && total > 0 ? 'PAID' : (paid > 0 ? 'PARTIAL' : 'UNPAID')
                 }
             });
             const ws = XLSX.utils.json_to_sheet(data); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Invoices Export");
@@ -762,17 +761,10 @@
 
         function autoGenerateInvoice() {
             const date = document.getElementById('f_cdate').value;
-            const name = document.getElementById('f_to').value.trim();
             if(!date) return document.getElementById('f_inv').value = '';
             
-            let namePrefix = "INV";
-            if(name.length > 0) {
-                let cleaned = name.replace(/[^a-zA-Z]/g, '');
-                if(cleaned.length > 0) namePrefix = cleaned.substring(0, 3).toUpperCase();
-            }
-            
             const day = date.split('-').reverse().join('').substring(0,6); 
-            const prefix = `${namePrefix}-${day}-`;
+            const prefix = `INV-${day}-`;
             
             const used = invoices.map(x => String(x.invNo || '')).filter(x => x.startsWith(prefix));
             let max = 0;
@@ -916,16 +908,15 @@
             document.getElementById('p_subtotal').innerText = formatMoney(calc.subTotal);
             
             if(calc.discountAmt > 0) {
-                document.getElementById('ui_after_discount').style.display = 'block';
-                document.getElementById('ui_after_discount').innerText = "New Total: " + formatMoney(calc.total);
                 document.getElementById('p_discount_row').style.display = 'flex';
                 document.getElementById('p_discount_amt').innerText = "- " + formatMoney(calc.discountAmt);
             } else {
-                document.getElementById('ui_after_discount').style.display = 'none';
                 document.getElementById('p_discount_row').style.display = 'none';
             }
 
-            document.getElementById('p_total').innerText = formatMoney(calc.total); document.getElementById('p_paid_amt').innerText = formatMoney(calc.paid); document.getElementById('p_balance').innerText = formatMoney(calc.bal);
+            document.getElementById('p_total').innerText = formatMoney(calc.total); 
+            document.getElementById('p_paid_amt').innerText = formatMoney(calc.paid); 
+            document.getElementById('p_balance').innerText = formatMoney(calc.bal);
 
             const wm = document.getElementById('p_watermark'), pTxt = document.getElementById('p_payment_text'), pLdg = document.getElementById('p_ledger'), pLdgBody = document.getElementById('p_ledger_body');
             wm.className = `watermark ${calc.status}`; wm.innerText = calc.status;
