@@ -8,8 +8,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Hidden Print Wrapper used for PDF download */
         #print-wrapper { display: none; }
         .preview-box { padding: 20mm; width: 210mm; min-height: 297mm; background: white; font-family: 'Segoe UI', Arial, sans-serif; box-sizing: border-box; position:relative; }
         .header { display: flex; justify-content: space-between; margin-bottom: 30px; border-bottom: 2px solid #f1f5f9; padding-bottom: 20px; }
@@ -41,7 +41,7 @@
 </head>
 <body class="bg-slate-100 font-sans p-4">
 
-    <!-- HIDDEN PRINT AREA FOR PDF GENERATION -->
+    <!-- HIDDEN PRINT AREA -->
     <div id="print-wrapper">
         <div class="preview-box" id="print-area">
             <div id="p_watermark" class="watermark UNPAID">UNPAID</div>
@@ -84,43 +84,46 @@
     <!-- MAIN CHECKOUT UI -->
     <div class="max-w-md mx-auto bg-white shadow-xl rounded-2xl overflow-hidden flex flex-col my-2">
         
-        <!-- Header details -->
         <div class="bg-slate-800 text-white p-5 text-center">
-            <h1 class="text-xl font-extrabold tracking-wide mb-1" id="shopName">Loading Shop...</h1>
+            <h1 class="text-xl font-extrabold tracking-wide mb-1" id="shopName">Loading Data...</h1>
             <p class="text-xs text-slate-300" id="shopContact"></p>
         </div>
 
-        <!-- Bill Details -->
+        <!-- NEW DETAILED INFO SECTION -->
         <div class="p-5 border-b border-slate-100 bg-slate-50">
-            <div class="flex justify-between items-center mb-2">
+            <div class="flex justify-between items-center mb-3">
                 <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Invoice No</span>
                 <span class="text-sm font-extrabold text-slate-800" id="uiInvNo">-</span>
             </div>
-            <div class="flex justify-between items-center">
+            <div class="flex justify-between items-start mb-3">
                 <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Customer</span>
-                <span class="text-sm font-extrabold text-slate-800 text-right" id="uiCustomerName">-</span>
+                <div class="text-right">
+                    <div class="text-sm font-extrabold text-slate-800" id="uiCustomerName">-</div>
+                    <div class="text-xs text-slate-500 font-mono mt-0.5" id="uiCustomerMobile"></div>
+                </div>
+            </div>
+            <div class="flex justify-between items-center mb-3">
+                <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Bill</span>
+                <span class="text-sm font-bold text-slate-800" id="uiTotalBill">₹0</span>
             </div>
             
-            <button onclick="downloadInvoicePDF()" class="w-full mt-4 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-bold py-2.5 rounded-lg shadow-sm text-sm flex items-center justify-center gap-2 transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg> 
-                Download Your Invoice
+            <button onclick="downloadInvoicePDF(this)" class="w-full mt-2 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 font-bold py-2.5 rounded-lg shadow-sm text-sm flex items-center justify-center gap-2 transition">
+                <i class="fas fa-file-pdf text-red-500"></i> Download Invoice
             </button>
         </div>
 
         <div class="p-5">
             <div class="text-center mb-5" id="balanceHeaderSection">
-                <p class="text-sm font-semibold text-slate-500 uppercase tracking-wider">Payable Balance</p>
-                <h2 class="text-4xl font-extrabold text-emerald-600 mt-1 drop-shadow-sm" id="billAmount">₹0</h2>
+                <p class="text-sm font-semibold text-slate-500 uppercase tracking-wider">Remaining Due</p>
+                <h2 class="text-4xl font-extrabold text-red-600 mt-1 drop-shadow-sm" id="billAmount">₹0</h2>
             </div>
 
-            <!-- SUCCESS MESSAGE FOR 0 BALANCE (At the top, nicely styled) -->
             <div id="successMessage" class="hidden bg-emerald-50 border border-emerald-200 text-emerald-800 px-5 py-6 rounded-xl text-center shadow-sm mb-4">
                 <div class="text-4xl mb-2">✅</div>
                 <h3 class="text-lg font-extrabold">Amount Already Paid</h3>
                 <p class="font-medium text-emerald-600 mt-1">Zero due amount remaining.</p>
             </div>
 
-            <!-- Payment Choice -->
             <div id="paymentChoiceSection" class="bg-violet-50 border border-violet-100 rounded-xl p-4 mb-4">
                 <p class="text-xs font-bold text-violet-800 mb-3 text-center uppercase tracking-wide">Select Payment Option</p>
                 <div class="grid grid-cols-2 gap-3">
@@ -133,7 +136,6 @@
                 </div>
             </div>
 
-            <!-- Pay with UPI Intent Box -->
             <div id="upiButtonsSection" class="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-4 text-center" style="display:none;">
                 <p class="text-xs font-bold text-blue-800 mb-2 uppercase tracking-wide">Direct UPI App Payment</p>
                 <a id="directPayBtn" href="#" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-4 rounded-lg shadow-md flex items-center justify-center gap-2 text-sm transition transform active:scale-95">
@@ -142,7 +144,6 @@
                 </a>
             </div>
 
-            <!-- Payment Box with QR -->
             <div id="qrCodeContainer" class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-center mb-5">
                 <p class="text-xs font-bold text-slate-500 mb-3 uppercase tracking-wide">Or Scan QR Code</p>
                 <div class="bg-white p-2 inline-block rounded-lg shadow-sm border border-slate-100 mb-2">
@@ -151,7 +152,6 @@
                 <p class="text-[11px] text-slate-400 font-mono mt-1">UPI ID: <span id="upiIdText" class="font-bold text-slate-600"></span></p>
             </div>
 
-            <!-- UTR Submission Form -->
             <div id="utrFormSection" class="bg-amber-50 border border-amber-100 rounded-xl p-4 mb-2">
                 <h3 class="text-xs font-bold text-amber-800 mb-1 uppercase tracking-wide">Submit Verification</h3>
                 <p class="text-xs text-amber-600 mb-3">After payment, please enter your 12-digit UTR/Ref No.</p>
@@ -164,16 +164,20 @@
                 </button>
             </div>
 
-            <!-- Status Indicator -->
             <div id="statusMessage" class="text-center text-sm font-bold text-slate-500 mt-2 mb-4">
-                Waiting for payment...
+                Loading...
             </div>
 
-            <!-- Read Only Payment History -->
+            <!-- COLLAPSIBLE PAYMENT HISTORY -->
             <div class="border-t border-slate-200 mt-6 pt-5">
-                <h3 class="text-sm font-extrabold text-slate-800 mb-3 flex items-center gap-2"><svg class="w-4 h-4 text-slate-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path></svg> Payment History</h3>
-                <div id="paymentHistoryList" class="space-y-2">
-                    <p class="text-xs text-slate-400 italic">No payments recorded yet.</p>
+                <button onclick="togglePaymentHistory()" class="w-full text-left text-sm font-extrabold text-slate-700 mb-2 flex items-center justify-between outline-none bg-slate-50 p-3 rounded-lg border border-slate-200 shadow-sm">
+                    <span class="flex items-center gap-2"><i class="fas fa-history text-slate-500"></i> View Payment History</span>
+                    <i id="phIcon" class="fas fa-chevron-down text-slate-400"></i>
+                </button>
+                <div id="paymentHistoryContainer" class="hidden mt-3">
+                    <div id="paymentHistoryList" class="space-y-2">
+                        <p class="text-xs text-slate-400 italic bg-slate-50 p-3 rounded-lg border border-slate-100">No payments recorded yet.</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -199,6 +203,7 @@
 
         let pendingBalance = 0;
         let selectedPaymentType = "full";
+        let selectedPaymentAmount = 0;
         let merchantUpi = "", merchantMobile = "", merchantAddress = "";
         let shopNameText = "";
         let currentInvoice = null;
@@ -211,93 +216,86 @@
             loadCheckoutData();
         }
 
-        async function loadCheckoutData() {
-            try {
-                // Fetch Merchant Profile Once
-                const profileSnap = await database.ref('merchant_profile/' + userId).once('value');
+        function loadCheckoutData() {
+            // Parallel Fetch to improve speed
+            database.ref('merchant_profile/' + userId).once('value').then((profileSnap) => {
                 if (profileSnap.exists()) {
                     merchantUpi = profileSnap.val().upiId || "";
                     merchantMobile = profileSnap.val().mobile || "";
                     merchantAddress = profileSnap.val().address || "";
                 }
+            });
 
-                // 🔴 REAL TIME LISTENER: Live syncs amount and approval status
-                database.ref('user_invoices/' + userId).on('value', (snapshot) => {
-                    const invoices = snapshot.val() || [];
-                    const inv = invoices.find(i => String(i.id) === String(invoiceId));
+            // Live Sync Listener
+            database.ref('user_invoices/' + userId).on('value', (snapshot) => {
+                const invoices = snapshot.val() || [];
+                const inv = invoices.find(i => String(i.id) === String(invoiceId));
 
-                    if (inv) {
-                        currentInvoice = inv;
+                if (inv) {
+                    currentInvoice = inv;
 
-                        // Link Expiration Check
-                        if (inv.paymentCode && paymentCode && paymentCode !== inv.paymentCode) {
-                            hideAllActionSections();
-                            document.getElementById('statusMessage').innerHTML = '<div class="bg-red-50 border border-red-200 text-red-800 p-4 rounded-lg shadow-sm text-sm">⚠️ This payment link has expired. Please ask the merchant for a new link.</div>';
-                            return;
-                        }
-
-                        // Calculate Financials
-                        const totalAmt = (inv.items || []).reduce((s, item) => s + (item.qty * item.price), 0);
-                        const paidAmt = (inv.payments || []).reduce((s, p) => s + p.amt, 0);
-                        pendingBalance = totalAmt - paidAmt;
-                        if(pendingBalance < 0) pendingBalance = 0;
-
-                        // Set UI Headers
-                        shopNameText = inv.from || "My Shop";
-                        document.getElementById('shopName').innerText = shopNameText;
-                        
-                        let contactInfo = [];
-                        if(merchantMobile) contactInfo.push(`M: ${merchantMobile}`);
-                        if(merchantAddress) contactInfo.push(merchantAddress);
-                        document.getElementById('shopContact').innerText = contactInfo.join(' | ');
-
-                        document.getElementById('uiInvNo').innerText = `#${inv.invNo || inv.id}`;
-                        document.getElementById('uiCustomerName').innerText = inv.to || "Customer";
-                        
-                        document.getElementById('billAmount').innerText = "₹" + pendingBalance.toLocaleString('en-IN', {minimumFractionDigits: 2});
-                        
-                        // Setup Hidden PDF Area
-                        populateHiddenPrintArea(inv, totalAmt, paidAmt, pendingBalance);
-                        renderPaymentHistory(inv.payments || []);
-
-                        if (!merchantUpi) merchantUpi = inv.upiId || "";
-
-                        // 🔴 ZERO BALANCE LOGIC (Already Paid)
-                        if (pendingBalance <= 0) {
-                            hideAllActionSections();
-                            document.getElementById('balanceHeaderSection').style.display = 'none';
-                            document.getElementById('successMessage').classList.remove('hidden');
-                            document.getElementById('statusMessage').innerHTML = "";
-                            return; 
-                        }
-
-                        if (!merchantUpi) {
-                            hideAllActionSections();
-                            document.getElementById('statusMessage').innerHTML = "<div class='text-red-600 font-bold bg-red-50 p-3 rounded-lg border border-red-200'>Merchant UPI ID missing. Cannot accept payments.</div>";
-                            return;
-                        }
-
-                        document.getElementById('upiIdText').innerText = merchantUpi;
-                        document.getElementById('qrCodeContainer').style.display = 'block';
-                        
-                        if (inv.status === "Pending Verification") {
-                            document.getElementById('utrFormSection').style.display = 'none';
-                            document.getElementById('paymentChoiceSection').style.display = 'none';
-                            document.getElementById('statusMessage').innerHTML = `<div class='bg-amber-100 border border-amber-300 text-amber-800 p-3 rounded-lg text-sm shadow-sm'>⏳ UTR Submitted <b>(${inv.utrNumber || ''})</b>. Waiting for merchant approval.</div>`;
-                        } else {
-                            document.getElementById('utrFormSection').style.display = 'block';
-                            document.getElementById('paymentChoiceSection').style.display = 'block';
-                            document.getElementById('statusMessage').innerHTML = "Status: Waiting for payment...";
-                            selectPaymentType(selectedPaymentType); // Refresh QR & Intent
-                        }
-                    } else {
-                        document.getElementById('statusMessage').innerText = "Invoice not found in database!";
+                    if (inv.paymentCode && paymentCode && paymentCode !== inv.paymentCode) {
+                        hideAllActionSections();
+                        document.getElementById('statusMessage').innerHTML = '<div class="bg-red-50 border border-red-200 text-red-800 p-4 rounded-lg shadow-sm text-sm">⚠️ This payment link has expired. Please ask the merchant for a new link.</div>';
+                        return;
                     }
-                });
-            } catch (error) {
-                console.error("Error loading checkout:", error);
-                document.getElementById('statusMessage').innerText = "Failed to load details.";
-            }
+
+                    const totalAmt = (inv.items || []).reduce((s, item) => s + (item.qty * item.price), 0);
+                    const paidAmt = (inv.payments || []).reduce((s, p) => s + p.amt, 0);
+                    pendingBalance = totalAmt - paidAmt;
+                    if(pendingBalance < 0) pendingBalance = 0;
+
+                    shopNameText = inv.from || "My Shop";
+                    document.getElementById('shopName').innerText = shopNameText;
+                    
+                    let contactInfo = [];
+                    if(merchantMobile) contactInfo.push(`M: ${merchantMobile}`);
+                    if(merchantAddress) contactInfo.push(merchantAddress);
+                    document.getElementById('shopContact').innerText = contactInfo.join(' | ');
+
+                    document.getElementById('uiInvNo').innerText = `#${inv.invNo || inv.id}`;
+                    document.getElementById('uiCustomerName').innerText = inv.to || "Customer";
+                    document.getElementById('uiCustomerMobile').innerText = inv.mobile ? `+91 ${inv.mobile}` : '';
+                    
+                    document.getElementById('uiTotalBill').innerText = formatMoney(totalAmt);
+                    document.getElementById('billAmount').innerText = formatMoney(pendingBalance);
+                    
+                    populateHiddenPrintArea(inv, totalAmt, paidAmt, pendingBalance);
+                    renderPaymentHistory(inv.payments || []);
+
+                    if (!merchantUpi) merchantUpi = inv.upiId || "";
+
+                    if (pendingBalance <= 0) {
+                        hideAllActionSections();
+                        document.getElementById('balanceHeaderSection').style.display = 'none';
+                        document.getElementById('successMessage').classList.remove('hidden');
+                        document.getElementById('statusMessage').innerHTML = "";
+                        return; 
+                    }
+
+                    if (!merchantUpi) {
+                        hideAllActionSections();
+                        document.getElementById('statusMessage').innerHTML = "<div class='text-red-600 font-bold bg-red-50 p-3 rounded-lg border border-red-200'>Merchant UPI ID missing. Cannot accept payments.</div>";
+                        return;
+                    }
+
+                    document.getElementById('upiIdText').innerText = merchantUpi;
+                    document.getElementById('qrCodeContainer').style.display = 'block';
+                    
+                    if (inv.status === "Pending Verification") {
+                        document.getElementById('utrFormSection').style.display = 'none';
+                        document.getElementById('paymentChoiceSection').style.display = 'none';
+                        document.getElementById('statusMessage').innerHTML = `<div class='bg-amber-100 border border-amber-300 text-amber-800 p-3 rounded-lg text-sm shadow-sm'>⏳ UTR Submitted <b>(${inv.utrNumber || ''})</b>. Waiting for merchant approval.</div>`;
+                    } else {
+                        document.getElementById('utrFormSection').style.display = 'block';
+                        document.getElementById('paymentChoiceSection').style.display = 'block';
+                        document.getElementById('statusMessage').innerHTML = "Status: Waiting for payment...";
+                        selectPaymentType(selectedPaymentType); 
+                    }
+                } else {
+                    document.getElementById('statusMessage').innerText = "Invoice not found in database!";
+                }
+            });
         }
 
         function hideAllActionSections() {
@@ -307,6 +305,18 @@
             document.getElementById('qrCodeContainer').style.display = 'none';
         }
 
+        window.togglePaymentHistory = function() {
+            const container = document.getElementById('paymentHistoryContainer');
+            const icon = document.getElementById('phIcon');
+            if(container.classList.contains('hidden')) {
+                container.classList.remove('hidden');
+                icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+            } else {
+                container.classList.add('hidden');
+                icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+            }
+        }
+
         function renderPaymentHistory(payments) {
             const listEl = document.getElementById('paymentHistoryList');
             if(payments.length === 0) {
@@ -314,7 +324,6 @@
                 return;
             }
             listEl.innerHTML = '';
-            // Reverse so newest is on top
             [...payments].reverse().forEach(p => {
                 const div = document.createElement('div');
                 div.className = "flex justify-between items-center bg-slate-50 p-3 rounded-lg border border-slate-100 shadow-sm";
@@ -333,14 +342,13 @@
         }
 
         function getSelectedAmount() {
-            if(selectedPaymentType === 'part') {
-                return parseFloat(document.getElementById('partAmountInput').value) || 0;
-            }
+            if(selectedPaymentType === 'part') return parseFloat(document.getElementById('partAmountInput').value) || 0;
             return pendingBalance;
         }
 
         function updatePaymentMethods() {
             const amount = getSelectedAmount();
+            selectedPaymentAmount = amount;
             document.getElementById('submittedAmountDisplay').innerText = 'Paying: ₹' + (amount || 0).toLocaleString('en-IN', {minimumFractionDigits: 2});
             if(!merchantUpi || amount <= 0) return;
             const invoiceNumber = (currentInvoice && currentInvoice.invNo) ? currentInvoice.invNo : invoiceId;
@@ -365,16 +373,10 @@
 
         window.submitUtr = function() {
             const utr = document.getElementById('utrInput').value.trim();
-            if (utr.length < 12) {
-                alert("Kripya poora 12-digit UTR number dalein.");
-                return;
-            }
+            if (utr.length < 12) { alert("Kripya poora 12-digit UTR number dalein."); return; }
 
             const amountToSubmit = getSelectedAmount();
-            if(amountToSubmit <= 0 || amountToSubmit > pendingBalance) {
-                alert("Please enter a valid payment amount up to the total due.");
-                return;
-            }
+            if(amountToSubmit <= 0 || amountToSubmit > pendingBalance) { alert("Please enter a valid payment amount."); return; }
 
             document.getElementById('submitBtn').innerHTML = '<svg class="animate-spin h-5 w-5 mr-3 inline-block" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Submitting...';
             document.getElementById('submitBtn').disabled = true;
@@ -382,7 +384,6 @@
             database.ref('user_invoices/' + userId).once('value', (snapshot) => {
                 let invoices = snapshot.val() || [];
                 let found = false;
-
                 invoices = invoices.map(inv => {
                     if (String(inv.id) === String(invoiceId)) {
                         found = true;
@@ -413,7 +414,6 @@
             });
         }
 
-        // --- HIDDEN PDF GENERATION LOGIC ---
         function populateHiddenPrintArea(inv, totalAmt, paidAmt, pendingBalance) {
             let fromText = inv.from || '';
             if(merchantMobile) fromText += `<br><span style="font-size:12px; font-weight:normal;">M: ${merchantMobile}</span>`;
@@ -437,15 +437,10 @@
             if (totalAmt > 0 && status !== 'PAID' && inv.dueDate) {
                 document.getElementById('p_ddate').innerText = inv.dueDate.split('-').reverse().join('/');
                 ddContainer.style.display = 'table-row';
-            } else {
-                ddContainer.style.display = 'none';
-            }
+            } else { ddContainer.style.display = 'none'; }
 
-            const pbody = document.getElementById('p_items');
-            pbody.innerHTML = '';
-            (inv.items || []).forEach(i => {
-                pbody.innerHTML += `<tr><td>${i.desc}</td><td>${i.qty}</td><td>${formatMoney(i.price)}</td><td>${formatMoney(i.qty * i.price)}</td></tr>`;
-            });
+            const pbody = document.getElementById('p_items'); pbody.innerHTML = '';
+            (inv.items || []).forEach(i => { pbody.innerHTML += `<tr><td>${i.desc}</td><td>${i.qty}</td><td>${formatMoney(i.price)}</td><td>${formatMoney(i.qty * i.price)}</td></tr>`; });
 
             document.getElementById('p_total').innerText = formatMoney(totalAmt);
             document.getElementById('p_paid_amt').innerText = formatMoney(paidAmt);
@@ -469,12 +464,13 @@
             else { pTxt.innerText = "Unpaid / Pending"; pTxt.style.color = "var(--unpaid-text)"; }
         }
 
-        async function downloadInvoicePDF() {
+        // 100% FIXED PDF BUTTON STATUS REVERT
+        window.downloadInvoicePDF = async function(btn) {
             if(!currentInvoice) return;
-            const originalBtnHtml = event.currentTarget.innerHTML;
-            event.currentTarget.innerHTML = '<svg class="animate-spin w-4 h-4" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Generating PDF...';
+            const originalBtnHtml = btn.innerHTML;
+            btn.innerHTML = '<svg class="animate-spin w-4 h-4 inline" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Generating PDF...';
+            btn.disabled = true;
             
-            // Cloning logic similar to index.html for correct CSS rendering without showing it
             const original = document.getElementById('print-area');
             const clone = original.cloneNode(true);
             clone.style.position = 'fixed'; clone.style.top = '0'; clone.style.left = '-9999px'; clone.style.transform = 'none'; clone.style.width = '794px'; clone.style.height = 'auto'; clone.style.margin = '0'; clone.style.display = 'block';
@@ -492,7 +488,8 @@
                 }).from(clone).save();
             } finally {
                 clone.remove();
-                event.currentTarget.innerHTML = originalBtnHtml;
+                btn.innerHTML = originalBtnHtml;
+                btn.disabled = false;
             }
         }
     </script>
