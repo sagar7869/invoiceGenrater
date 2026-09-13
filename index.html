@@ -232,7 +232,7 @@
         </div>
     </div>
 
-    <!-- CONFIRM MODAL (FIXED) -->
+    <!-- CONFIRM MODAL -->
     <div class="overlay" id="confirm-overlay" style="z-index: 9999999 !important;">
         <div class="modal-sm" style="text-align: center; max-width: 320px; padding: 30px 20px;">
             <i class="fas fa-exclamation-circle" style="font-size: 45px; color: #f59e0b; margin-bottom: 15px;"></i>
@@ -336,7 +336,7 @@
         </div>
     </div>
 
-    <!-- TABS BAR WITH NEW UTR TAB -->
+    <!-- TABS BAR WITH FIX ROUTING -->
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('create-tab')"><i class="fas fa-edit"></i> <span class="tab-text">Create</span></button>
         <button class="tab-btn" onclick="switchTab('preview-tab')"><i class="fas fa-eye"></i> <span class="tab-text">Preview</span></button>
@@ -501,9 +501,13 @@
     <!-- TAB 3: CUSTOMER LIST -->
     <div id="list-tab" class="tab-content container">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; gap:10px;">
-            <div style="flex:1; display:flex; align-items:center; gap:8px;">
+            <div style="flex:1; display:flex; align-items:center; gap:8px; position:relative;">
                 <label style="font-size:12px; font-weight:800; color:#475569; white-space:nowrap; text-transform:uppercase;">Filter Month:</label>
-                <input type="month" id="month-filter" class="search-bar" onchange="renderList(true)" style="margin-bottom:0; width:100%; cursor:pointer;">
+                <!-- VISUAL MASK FIX FOR DASHES -->
+                <div style="position:relative; width:100%;">
+                    <input type="month" id="month-filter" class="search-bar" onchange="document.getElementById('month-cover').style.display = this.value ? 'none' : 'flex'; renderList(true);" style="margin-bottom:0; width:100%;">
+                    <div id="month-cover" style="position:absolute; top:2px; left:2px; bottom:2px; right:40px; background:#f8fafc; border-radius:6px; display:flex; align-items:center; padding-left:8px; color:#64748b; pointer-events:none; font-size:13px; font-weight:500;">Select Month...</div>
+                </div>
             </div>
             <button onclick="openExportModal()" style="padding:10px 15px; background:#10b981; color:#fff; border-radius:8px; border:none; font-weight:bold; font-size:14px; cursor:pointer;"><i class="fas fa-file-excel"></i> Export</button>
         </div>
@@ -518,7 +522,7 @@
         <button id="btn-load-more" onclick="loadMore()" style="display:none; width:100%; padding:14px; margin-top:10px; cursor:pointer; background:#fff; border:1px solid #cbd5e1; border-radius:10px; font-weight:bold; color:#475569;">Load More History</button>
     </div>
 
-    <!-- NEW TAB 4: UTR REQUESTS -->
+    <!-- TAB 4: UTR REQUESTS -->
     <div id="utr-tab" class="tab-content container">
         <div class="form-panel" style="background:#f0fdf4; border:1px solid #bbf7d0;">
             <h2 style="margin:0 0 10px 0; color:#166534; font-size:16px; font-weight:800; text-transform:uppercase;"><i class="fas fa-university"></i> Pending UTR Requests</h2>
@@ -559,7 +563,7 @@
         let confirmActionCallback = null; let activeUtrInvoiceId = null; let itemMaster = [];
         let currentSuggestFocus = -1;
 
-        // GLOBAL ENTER TO BLUR (LOCK DATA & HIDE KEYBOARD)
+        // GLOBAL ENTER TO BLUR
         document.addEventListener('keydown', function(e) {
             if(e.key === 'Enter') {
                 const active = document.activeElement;
@@ -570,7 +574,6 @@
             }
         });
 
-        // CAPITALIZATION FUNCTION
         function capitalizeWords(str) {
             if(!str) return '';
             return str.replace(/\b\w/g, char => char.charAt(0).toUpperCase() + char.slice(1));
@@ -701,7 +704,7 @@
             setTimeout(() => { if(toast.parentNode) toast.parentNode.removeChild(toast); }, 3000);
         }
 
-        // CONFIRM MODAL FIXED NATIVELY
+        // --- NATIVE MODAL IMPLEMENTATION (PROFESSIONAL POPUP) ---
         function showCustomConfirm(message, callback) {
             document.getElementById('confirm-msg').innerText = message;
             confirmActionCallback = callback; document.getElementById('confirm-overlay').style.display = 'flex';
@@ -865,7 +868,8 @@
         }
 
         function switchTab(tabId) {
-            const allowed = ['create-tab','preview-tab','list-tab','alerts-tab','utr-tab'];
+            // FIX: Array mapped EXACTLY to HTML button positions
+            const allowed = ['create-tab','preview-tab','list-tab','utr-tab','alerts-tab'];
             if(!allowed.includes(tabId)) tabId = 'create-tab';
             document.querySelectorAll('.tab-content, .tab-btn').forEach(t => t.classList.remove('active'));
             const tab = document.getElementById(tabId);
@@ -1031,7 +1035,8 @@
             const invData = { 
                 id: currentInvId, from: document.getElementById('f_from').value, to: cxName, mobile: document.getElementById('f_mobile').value,
                 invNo: document.getElementById('f_inv').value, date: document.getElementById('f_cdate').value, dueDate: document.getElementById('f_ddate').value, 
-                discount: document.getElementById('f_discount').value, upiId: merchantUpiId, items: currentItems, payments: currentPayments, status: statusToSave 
+                discount: document.getElementById('f_discount').value, upiId: merchantUpiId, items: currentItems, payments: currentPayments, status: statusToSave,
+                lastReminded: existingInv ? existingInv.lastReminded : '' 
             };
             const idx = invoices.findIndex(i => String(i.id) === String(currentInvId));
             if(idx > -1) invoices[idx] = invData; else invoices.push(invData);
@@ -1083,7 +1088,6 @@
                     approveBtnHtml = `<button class="action-icon btn-request" onclick="openUtrModal('${inv.id}')" title="Approve UTR"><i class="fas fa-bell"></i><span>APPROVE</span></button>`;
                 }
 
-                // FIXED 100%: Replaced old custom confirm wrapper inline for safety
                 tbody.innerHTML += `<tr class="${trClass}">
                     <td data-label="Date" class="desktop-only">${inv.date ? inv.date.split('-').reverse().join('/') : '-'}</td>
                     <td data-label="Invoice #"><b>${inv.invNo}</b></td>
@@ -1106,7 +1110,7 @@
                         <button class="action-icon bg-pay" onclick="openQuickPayment('${inv.id}')" title="Manage Payments"><i class="fas fa-rupee-sign"></i><span>PAY</span></button>
                         <button class="action-icon bg-img" onclick="shareAsImageList('${inv.id}', this)" title="Share Image"><i class="fab fa-whatsapp"></i><span>IMG</span></button>
                         <button class="action-icon bg-pdf" onclick="generatePDFList('${inv.id}', this)" title="Download PDF"><i class="fas fa-file-pdf"></i><span>PDF</span></button>
-                        <button class="action-icon bg-del" onclick="deleteInvoiceNative('${inv.id}')" title="Delete"><i class="fas fa-trash"></i><span>DEL</span></button>
+                        <button class="action-icon bg-del" onclick="deleteInvoice('${inv.id}')" title="Delete"><i class="fas fa-trash"></i><span>DEL</span></button>
                     </td>
                 </tr>`;
             });
@@ -1162,12 +1166,13 @@
             }
         }
 
-        // --- ALERTS PANEL ---
+        // --- ALERTS PANEL WITH SMART BADGE (READ/UNREAD LOGIC) ---
         function renderAlerts() {
             const listEl = document.getElementById('alerts-list-body');
             const badgeEl = document.getElementById('badge-alerts');
             listEl.innerHTML = '';
             const todayObj = new Date(); todayObj.setHours(0,0,0,0);
+            const todayStr = new Date().toISOString().split('T')[0];
             let overdueCount = 0;
 
             invoices.forEach(inv => {
@@ -1180,16 +1185,20 @@
                 if(bal > 0 && inv.dueDate) {
                     const dueObj = new Date(inv.dueDate);
                     if(dueObj <= todayObj) {
-                        overdueCount++;
+                        const isRemindedToday = inv.lastReminded === todayStr;
+                        if(!isRemindedToday) overdueCount++; 
+                        
                         const diffTime = todayObj.getTime() - dueObj.getTime();
                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                         let dayText = diffDays === 0 ? "DUE TODAY" : `${diffDays} Day(s) Overdue`;
                         
+                        let remindStatus = isRemindedToday ? `<span style="background:#d1fae5; color:#065f46; padding:2px 6px; border-radius:4px; font-size:9px; font-weight:800; letter-spacing:0.5px; vertical-align:middle; margin-left:6px;">REMINDED TODAY</span>` : '';
+
                         listEl.innerHTML += `
-                            <div style="background:#fff; border:1px solid #f87171; border-left:4px solid #ef4444; border-radius:8px; padding:12px; box-shadow:0 2px 5px rgba(0,0,0,0.05); display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px;">
+                            <div style="background:${isRemindedToday ? '#f8fafc' : '#fff'}; border:1px solid ${isRemindedToday ? '#cbd5e1' : '#f87171'}; border-left:4px solid ${isRemindedToday ? '#94a3b8' : '#ef4444'}; border-radius:8px; padding:12px; box-shadow:0 2px 5px rgba(0,0,0,0.05); display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; opacity: ${isRemindedToday ? '0.7' : '1'}; transition: 0.3s;">
                                 <div>
-                                    <div style="font-weight:bold; font-size:15px; color:#1e293b; margin-bottom:2px;">${inv.to} <span style="font-size:12px; font-weight:normal; color:#64748b;">(#${inv.invNo})</span></div>
-                                    <div style="font-size:12px; font-weight:bold; color:#ef4444; margin-bottom:2px;">${dayText}</div>
+                                    <div style="font-weight:bold; font-size:15px; color:#1e293b; margin-bottom:2px;">${inv.to} <span style="font-size:12px; font-weight:normal; color:#64748b;">(#${inv.invNo})</span> ${remindStatus}</div>
+                                    <div style="font-size:12px; font-weight:bold; color:${isRemindedToday ? '#64748b' : '#ef4444'}; margin-bottom:2px;">${dayText}</div>
                                     <div style="font-size:12px; color:#334155; margin-top:4px; display:flex; gap:10px; flex-wrap:wrap;">
                                         <span style="background:#f1f5f9; padding:2px 6px; border-radius:4px;">Total: <b>₹${formatMoney(total)}</b></span>
                                         <span style="background:#ecfdf5; padding:2px 6px; border-radius:4px; color:#10b981;">Paid: <b>₹${formatMoney(paid)}</b></span>
@@ -1197,7 +1206,7 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <button onclick="sendReminderWhatsApp('${inv.id}')" style="background:#25D366; color:white; border:none; padding:8px 12px; border-radius:6px; font-weight:bold; font-size:12px; cursor:pointer; box-shadow:0 2px 4px rgba(37, 211, 102, 0.3);"><i class="fab fa-whatsapp"></i> Remind</button>
+                                    <button onclick="sendReminderWhatsApp('${inv.id}')" style="background:#25D366; color:white; border:none; padding:8px 12px; border-radius:6px; font-weight:bold; font-size:12px; cursor:pointer; box-shadow:0 2px 4px rgba(37, 211, 102, 0.3);"><i class="fab fa-whatsapp"></i> ${isRemindedToday ? 'Remind Again' : 'Remind'}</button>
                                 </div>
                             </div>
                         `;
@@ -1210,7 +1219,9 @@
                 badgeEl.style.display = 'block';
             } else {
                 badgeEl.style.display = 'none';
-                listEl.innerHTML = '<div style="text-align:center; padding:20px; color:#10b981; font-weight:bold;"><i class="fas fa-check-circle" style="font-size:30px; margin-bottom:10px;"></i><br>All Clear! No pending dues.</div>';
+                if(listEl.innerHTML === '') {
+                    listEl.innerHTML = '<div style="text-align:center; padding:20px; color:#10b981; font-weight:bold;"><i class="fas fa-check-circle" style="font-size:30px; margin-bottom:10px;"></i><br>All Clear! No pending dues.</div>';
+                }
             }
         }
 
@@ -1229,13 +1240,16 @@
         function checkAndNotifyDues() {
             if(!activeUserId) return;
             const todayObj = new Date(); todayObj.setHours(0,0,0,0);
+            const todayStr = new Date().toISOString().split('T')[0];
             let overdueCount = 0;
             invoices.forEach(inv => {
                 const subTotal = (inv.items||[]).reduce((s, i) => s + (i.qty * i.price), 0); 
                 const discPercent = parseFloat(inv.discount) || 0;
                 const total = subTotal - ((subTotal * discPercent)/100);
                 const paid = (inv.payments||[]).reduce((s, p) => s + parseFloat(p.amt), 0); 
-                if((total - paid) > 0 && inv.dueDate) { if(new Date(inv.dueDate) <= todayObj) overdueCount++; }
+                if((total - paid) > 0 && inv.dueDate && inv.lastReminded !== todayStr) { 
+                    if(new Date(inv.dueDate) <= todayObj) overdueCount++; 
+                }
             });
             if(overdueCount > 0) {
                 playNotificationSound();
@@ -1244,13 +1258,7 @@
             }
         }
 
-        function deleteInvoiceNative(id) {
-            if(confirm("Are you sure you want to permanently delete this invoice?")) {
-                invoices = invoices.filter(i => String(i.id) !== String(id)); 
-                syncToFirebase(); 
-                showToast("Invoice deleted.", "success");
-            }
-        }
+        function deleteInvoice(id) { showCustomConfirm("Permanently delete this invoice?", () => { invoices = invoices.filter(i => String(i.id) !== String(id)); syncToFirebase(); showToast("Invoice deleted.", "success"); }); }
 
         function openUtrModal(id) {
             const inv = invoices.find(i => String(i.id) === String(id)); if(!inv) return;
@@ -1273,9 +1281,8 @@
         function rejectUtr() {
             const inv = invoices.find(i => String(i.id) === String(activeUtrInvoiceId));
             if(!inv) return showToast('Invoice not found.', 'error');
-            if(!confirm('Reject this payment request? Customer will be able to submit payment again.')) return;
             delete inv.utrNumber; delete inv.submittedAmount; delete inv.paymentType; delete inv.submittedAt; delete inv.paymentCodeSubmitted;
-            inv.status = 'Unpaid'; recalcInvStatus(inv); syncToFirebase(); document.getElementById('utr-approve-modal').style.display = 'none'; activeUtrInvoiceId = null; renderList(); showToast('Payment request rejected.', 'success');
+            inv.status = 'Unpaid'; recalcInvStatus(inv); syncToFirebase(); document.getElementById('utr-approve-modal').style.display = 'none'; activeUtrInvoiceId = null; renderList(); renderUtrRequests(); showToast('Payment request rejected.', 'success');
         }
 
         function loadDataToForm(inv) {
@@ -1418,6 +1425,12 @@
         function sendReminderWhatsApp(id) {
             const inv = invoices.find(i => String(i.id) === String(id)); if(!inv) return;
             const amount = getInvoiceDue(inv); if(amount <= 0) return showToast("Amount already paid.", "info");
+            
+            // SMART BADGE UPDATE: Mark as reminded today
+            const todayStr = new Date().toISOString().split('T')[0];
+            inv.lastReminded = todayStr;
+            syncToFirebase(); // Updates DB which auto updates badges
+            
             const code = inv.paymentCode || saveNewPaymentCode(inv); const checkoutUrl = getCheckoutUrl(inv.id, code);
             const message = `Hello ${inv.to || 'Customer'} 👋\n\nThis is a friendly reminder that your payment of ₹${amount.toFixed(2)} for Invoice #${inv.invNo || inv.id} is DUE.\n\nPlease pay securely using this link:\n${checkoutUrl}\n\nThank you!`;
             let phoneParam = inv.mobile ? `phone=91${inv.mobile}&` : ''; window.open(`https://api.whatsapp.com/send?${phoneParam}text=${encodeURIComponent(message)}`, '_blank');
