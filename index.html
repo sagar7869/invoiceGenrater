@@ -402,7 +402,7 @@
                             <button class="btn-add" style="width:100%;" onclick="addItem()">Add Item</button>
                         </div>
                         
-                        <div style="flex:2; min-width:300px; max-height:210px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:8px; background:#fff;">
+                        <div id="item-table-wrapper" style="display:none; flex:2; min-width:300px; max-height:210px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:8px; background:#fff;">
                             <table class="editor-table" style="margin:0;">
                                 <thead><tr><th>Description</th><th>QTY</th><th>Price</th><th>Amount</th><th>Action</th></tr></thead>
                                 <tbody id="edit-items-body"></tbody>
@@ -973,6 +973,9 @@
             currentItems.forEach(i => { iBody.innerHTML += `<tr><td><input type="text" class="desc" placeholder="Desc" value="${i.desc}" onchange="updateItem(${i.id}, 'desc', this.value)"></td><td><input type="number" placeholder="Qty" value="${i.qty}" onchange="updateItem(${i.id}, 'qty', this.value)"></td><td><input type="number" placeholder="Price" value="${i.price}" onchange="updateItem(${i.id}, 'price', this.value)"></td><td>${formatMoney(i.qty * i.price)}</td><td><button class="btn-del" onclick="deleteItem(${i.id})"><i class="fas fa-trash"></i></button></td></tr>`; });
             currentPayments.forEach(p => { pBody.innerHTML += `<tr><td>${p.date}</td><td><select onchange="updatePayment(${p.id}, 'mode', this.value)"><option value="Cash" ${p.mode==='Cash'?'selected':''}>Cash</option><option value="Online" ${p.mode==='Online'?'selected':''}>Online</option></select></td><td><input type="number" value="${p.amt}" onchange="updatePayment(${p.id}, 'amt', this.value)"></td><td><button class="btn-del" onclick="deletePayment(${p.id})"><i class="fas fa-trash"></i></button></td></tr>`; });
             
+            if(currentItems.length > 0) { document.getElementById('item-table-wrapper').style.display = 'block'; }
+            else { document.getElementById('item-table-wrapper').style.display = 'none'; }
+
             if(currentPayments.length > 0) { document.getElementById('payment-table-wrapper').style.display = 'block'; } 
             else { document.getElementById('payment-table-wrapper').style.display = 'none'; }
             
