@@ -55,6 +55,7 @@
         .btn-add { background: #334155; color: white; border: none; padding: 10px; cursor: pointer; border-radius: 8px; font-weight: 600; transition: 0.2s; }
         .btn-add:active { transform: scale(0.96); }
         
+        .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .editor-table { width: 100%; border-collapse: collapse; }
         .editor-table th, .editor-table td { padding: 8px; text-align: left; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
         .editor-table th { background: #f8fafc; color: #475569; font-weight: 800 !important; position: sticky; top: 0; z-index: 2; font-size: 11px; text-transform: uppercase;}
@@ -68,7 +69,7 @@
         .btn:active { transform: scale(0.98); }
         .btn-save { background: #f59e0b; } .btn-print { background: #3b82f6; } .btn-pdf { background: #8b5cf6; } .btn-img { background: #ec4899; } .btn-new { background: #14b8a6; } .btn-close { background: #64748b; display: none; }
 
-        .preview-container { display: flex; justify-content: center; background: #fff; padding: 20px 0; border-radius: 12px; }
+        .preview-container { display: flex; justify-content: center; background: #fff; padding: 20px 0; border-radius: 12px; overflow: hidden; }
         .preview-box { background: white; padding: 20mm; width: 210mm; min-height: 297mm; margin: 0 auto; box-shadow: 0 5px 20px rgba(0,0,0,0.1); position: relative; box-sizing: border-box; overflow: hidden; border-top: 15px solid #1e293b; border-bottom: 15px solid #1e293b; border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0;}
         .header { display: flex; justify-content: space-between; margin-bottom: 30px; border-bottom: 2px solid #f1f5f9; padding-bottom: 20px; }
         .header h1 { font-size: 40px; margin: 0; color: #1e293b; letter-spacing: 2px; }
@@ -106,10 +107,6 @@
         .list-table td { padding: 15px; border: none; font-size: 14px; }
         .list-table td:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; border-left: 3px solid transparent; }
         .list-table td:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
-        
-        .list-table tbody tr.row-PAID td:first-child { border-left-color: #10b981; }
-        .list-table tbody tr.row-PARTIAL td:first-child { border-left-color: #f59e0b; }
-        .list-table tbody tr.row-UNPAID td:first-child { border-left-color: #ef4444; }
         
         .badge { padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: bold; text-transform: uppercase; display:inline-block; }
         .badge.PAID { background: #ecfdf5; color: var(--paid-text); }
@@ -155,48 +152,24 @@
             
             .btn-close, .btn-new { grid-column: span 2; }
             
-            /* ADD ITEM TABLE MOBILE FIX */
-            .editor-table { display: table; width: 100%; table-layout: fixed; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom:10px; }
-            .editor-table thead { display: table-header-group; }
-            .editor-table th { font-size: 8px !important; padding: 4px 2px !important; background: #f8fafc; text-transform: uppercase; word-wrap: break-word;}
-            .editor-table tbody tr { display: table-row; }
-            .editor-table tbody td { display: table-cell; padding: 4px 2px !important; border-bottom: 1px solid #f1f5f9; font-size: 10px !important; vertical-align: middle; overflow: hidden; text-overflow: ellipsis; }
-            .editor-table input, .editor-table select { padding: 4px 2px; font-size: 10px; width: 100%; min-width: 0 !important; box-sizing: border-box;}
-            .editor-table th:nth-child(1), .editor-table td:nth-child(1) { width: 35%; }
-            .editor-table th:nth-child(2), .editor-table td:nth-child(2) { width: 15%; }
-            .editor-table th:nth-child(3), .editor-table td:nth-child(3) { width: 22%; }
-            .editor-table th:nth-child(4), .editor-table td:nth-child(4) { width: 18%; font-size: 9px !important; font-weight: bold; color:var(--primary); }
-            .editor-table th:nth-child(5), .editor-table td:nth-child(5) { width: 10%; text-align: right; }
-            .desc { min-width: 0 !important; }
-            .btn-del { padding: 4px; font-size: 10px; width: 100%; margin: 0; display: block; text-align: center; }
-
-            .list-table { background: transparent !important; box-shadow: none !important; border-radius: 0 !important; border-spacing: 0 !important; }
+            /* ORIGINAL TABLE LAYOUT FOR MOBILE (Swipeable, line by line, no wrap crush) */
+            .table-responsive { border: 1px solid #e2e8f0; border-radius: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 10px; background: #fff; }
+            .editor-table { min-width: 450px; }
+            .editor-table th, .editor-table td { font-size: 12px; padding: 8px 6px; }
+            
+            /* CLEAN CARD LAYOUT FOR CX LIST */
             .list-table thead { display: none; }
-            .list-table, .list-table tbody { display: block; width: 100%; }
-            .list-table tr { display: grid !important; grid-template-columns: 1fr 1fr 1fr; grid-template-areas: "inv inv status" "customer customer customer" "total paid balance" "actions actions actions"; gap: 4px; background: #fff; margin-bottom: 8px; border-radius: 10px; border: 1px solid #e2e8f0; padding: 10px 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.03); transform: none !important;}
-            .list-table td { padding: 0 !important; border: none !important; text-align: left; }
-            .list-table td:nth-child(1) { display: none !important; }
-            .list-table td:nth-child(2) { grid-area: inv; font-size: 13px; font-weight: 800; color: #0f172a; margin-bottom: 2px;}
-            .list-table td:nth-child(3) { grid-area: customer; border-bottom: 1px solid #f1f5f9; padding-bottom: 6px !important; margin-bottom: 4px; }
+            .list-table, .list-table tbody, .list-table tr, .list-table td { display: block; width: 100%; box-sizing: border-box; }
+            .list-table tr { margin-bottom: 12px; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.03); }
+            .list-table td { padding: 6px 0 !important; text-align: right; border-bottom: 1px solid #f1f5f9 !important; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+            .list-table td:last-child { border-bottom: none !important; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px; padding-top: 12px !important; border-top: 1px dashed #cbd5e1 !important;}
+            .list-table td::before { content: attr(data-label); font-weight: 800; color: #64748b; text-transform: uppercase; font-size: 11px; }
+            .list-table td.actions-cell::before { display: none; }
+            .action-icon { width: 100%; height: 38px; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 14px; border-radius: 6px; }
+            .action-icon span { font-size: 8px; font-weight: 800; margin-top: 2px; }
             
-            .list-table td:nth-child(4) { grid-area: total; background: #f8fafc; padding: 4px !important; border-radius: 4px; font-size: 11px; font-weight: 700; text-align: center !important; }
-            .list-table td:nth-child(4)::before { content: 'Total'; font-weight: 600; color: #64748b; display: block; font-size: 9px; text-transform: uppercase; margin-bottom: 2px; }
-            
-            .list-table td:nth-child(5) { grid-area: paid; background: #ecfdf5; padding: 4px !important; border-radius: 4px; font-size: 11px; font-weight: 700; text-align: center !important; color:#047857;}
-            .list-table td:nth-child(5)::before { content: 'Paid'; font-weight: 600; color: #10b981; display: block; font-size: 9px; text-transform: uppercase; margin-bottom: 2px; }
-            
-            .list-table td:nth-child(6) { grid-area: balance; background: #fef2f2; padding: 4px !important; border-radius: 4px; font-size: 11px; font-weight: 800; text-align: center !important; color:#b91c1c;}
-            .list-table td:nth-child(6)::before { content: 'Due'; font-weight: 600; color: #ef4444; display: block; font-size: 9px; text-transform: uppercase; margin-bottom: 2px; }
-            
-            .list-table td:nth-child(7) { grid-area: status; display: flex; flex-wrap: wrap; gap: 4px; justify-content: flex-end; align-items: flex-start; }
-            .list-table td:nth-child(8) { grid-area: actions; display: grid !important; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 4px; border-top: 1px dashed #e2e8f0; padding-top: 8px !important; }
-            
-            .action-icon { width: 100% !important; height: 38px !important; margin: 0 !important; border-radius: 6px !important; display: flex !important; flex-direction: column !important; justify-content: center !important; align-items: center !important; gap: 2px !important; padding: 0 !important;}
-            .action-icon i { font-size: 13px !important; margin: 0 !important; }
-            .action-icon span { font-size: 8px !important; font-weight: 800 !important; }
-            
-            .preview-container { padding: 0; display: block; width: 100%; height: calc((100vw - 30px) * 1.414); overflow: hidden; position: relative; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); background: white; }
-            .preview-container .preview-box { position: absolute; top: 0; left: 0; width: 794px !important; min-height: 1123px !important; transform-origin: top left; transform: scale(calc((100vw - 30px) / 794)); border: none; box-shadow: none; }
+            .preview-container { padding: 0; display: block; width: 100%; overflow: hidden; background: white; }
+            .preview-container .preview-box { margin: 0; width: 794px !important; min-height: 1123px !important; transform-origin: top left; }
         }
 
         @media print {
@@ -213,7 +186,6 @@
     <div id="print-holder"></div>
     <div id="toast-container"></div> 
 
-    <!-- UTR APPROVE MODAL -->
     <div class="overlay" id="utr-approve-modal" style="z-index: 9999990;">
         <div class="modal-sm" style="padding:25px;">
             <h3 style="margin-top:0; color:#1e293b; font-weight:800;">Verify & Approve UTR</h3>
@@ -232,7 +204,6 @@
         </div>
     </div>
 
-    <!-- EXPORT MODAL -->
     <div class="overlay" id="export-modal" style="z-index: 9999990;">
         <div class="modal-sm" style="padding:25px;">
             <h3 style="margin-top:0; color:#1e293b; font-weight:800;"><i class="fas fa-file-excel" style="color:#10b981;"></i> Export to Excel</h3>
@@ -246,14 +217,12 @@
         </div>
     </div>
 
-    <!-- CONFIRM MODAL (FIXED) -->
+    <!-- 100% FIXED CONFIRM MODAL -->
     <div class="overlay" id="confirm-overlay" style="z-index: 9999999 !important;">
         <div class="modal-sm" style="text-align: center; max-width: 320px; padding: 30px 20px;">
             <i class="fas fa-exclamation-circle" style="font-size: 45px; color: #f59e0b; margin-bottom: 15px;"></i>
             <h3 id="confirm-title" style="margin-top:0; color:#1e293b; font-size:20px; font-weight:800;">Are you sure?</h3>
-            <!-- THIS LINE WAS MISSING CAUSING THE ERROR -->
             <p id="confirm-msg" style="font-size:14px; color:#64748b; margin-bottom:25px; line-height:1.5;"></p>
-            
             <div style="display:flex; gap:12px; margin-top:20px;">
                 <button onclick="closeConfirmModal()" style="flex:1; padding:12px; background:#f1f5f9; border:none; border-radius:8px; font-weight:bold; color:#475569; cursor:pointer;">Cancel</button>
                 <button onclick="executeConfirmAction()" style="flex:1; padding:12px; background:#ef4444; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer;">Yes, Confirm</button>
@@ -261,7 +230,6 @@
         </div>
     </div>
 
-    <!-- QUICK PAYMENT MODAL -->
     <div class="overlay" id="payment-modal" style="z-index: 9999990;">
         <div class="modal-sm" style="padding:25px;">
             <h3 style="margin-top:0; color:#1e293b; font-weight:800;">Manage Payments</h3>
@@ -287,7 +255,6 @@
         </div>
     </div>
 
-    <!-- LOGIN & PROFILE OVERLAYS -->
     <div class="overlay" id="login-overlay" style="background: rgba(244, 246, 249, 1); display:none; z-index: 9999995;">
         <div class="modal-sm" style="text-align: center; max-width:380px; padding:30px;">
             <i class="fas fa-file-invoice-dollar" style="font-size: 50px; color: var(--primary); margin-bottom: 15px;"></i>
@@ -353,7 +320,6 @@
         </div>
     </div>
 
-    <!-- TABS BAR -->
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('create-tab')"><i class="fas fa-edit"></i> <span class="tab-text">Create</span></button>
         <button class="tab-btn" onclick="switchTab('preview-tab')"><i class="fas fa-eye"></i> <span class="tab-text">Preview</span></button>
@@ -405,7 +371,7 @@
                             <button class="btn-add" style="width:100%;" onclick="addItem()">Add Item</button>
                         </div>
                         
-                        <div style="flex:2; min-width:300px; max-height:210px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:8px; background:#fff;">
+                        <div class="table-responsive" style="flex:2; background:#fff;">
                             <table class="editor-table" style="margin:0;">
                                 <thead><tr><th>Description</th><th>QTY</th><th>Price</th><th>Amount</th><th>Action</th></tr></thead>
                                 <tbody id="edit-items-body"></tbody>
@@ -719,6 +685,7 @@
             setTimeout(() => { if(toast.parentNode) toast.parentNode.removeChild(toast); }, 3000);
         }
 
+        // CONFIRM MODAL FIXED NATIVELY
         function showCustomConfirm(message, callback) {
             document.getElementById('confirm-msg').innerText = message;
             confirmActionCallback = callback; document.getElementById('confirm-overlay').style.display = 'flex';
@@ -900,11 +867,19 @@
         }
 
         function adjustPreviewScale() {
-            const wrapper = document.getElementById('preview-wrapper'); const box = document.getElementById('print-area');
+            const wrapper = document.getElementById('preview-wrapper'); 
+            const box = document.getElementById('print-area');
+            if(!wrapper || !box) return;
             if(window.innerWidth <= 768) {
-                const wrapperWidth = wrapper.clientWidth || (window.innerWidth - 30);
-                const scale = wrapperWidth / 794; box.style.transform = `scale(${scale})`; box.style.transformOrigin = 'top left'; wrapper.style.height = `${1123 * scale}px`; 
-            } else { box.style.transform = 'none'; wrapper.style.height = 'auto'; }
+                const containerWidth = document.getElementById('preview-tab').clientWidth - 30;
+                const scale = containerWidth / 794; 
+                box.style.transform = `scale(${scale})`; 
+                box.style.transformOrigin = 'top left'; 
+                wrapper.style.height = `${1123 * scale}px`; 
+            } else { 
+                box.style.transform = 'none'; 
+                wrapper.style.height = 'auto'; 
+            }
         }
 
         function startNewInvoice() {
@@ -1016,14 +991,11 @@
             
             const discountRow = document.getElementById('p_discount_row');
             if(calc.discountAmt > 0) {
-                document.getElementById('ui_after_discount').style.display = 'block';
-                document.getElementById('ui_after_discount').innerText = "New Total: " + formatMoney(calc.total);
                 if(discountRow) {
                     discountRow.style.display = 'flex';
                     document.getElementById('p_discount_amt').innerText = "- " + formatMoney(calc.discountAmt);
                 }
             } else {
-                document.getElementById('ui_after_discount').style.display = 'none';
                 if(discountRow) discountRow.style.display = 'none';
             }
 
@@ -1298,6 +1270,7 @@
         function rejectUtr() {
             const inv = invoices.find(i => String(i.id) === String(activeUtrInvoiceId));
             if(!inv) return showToast('Invoice not found.', 'error');
+            if(!confirm('Reject this payment request? Customer will be able to submit payment again.')) return;
             delete inv.utrNumber; delete inv.submittedAmount; delete inv.paymentType; delete inv.submittedAt; delete inv.paymentCodeSubmitted;
             inv.status = 'Unpaid'; recalcInvStatus(inv); syncToFirebase(); document.getElementById('utr-approve-modal').style.display = 'none'; activeUtrInvoiceId = null; renderList(); renderUtrRequests(); showToast('Payment request rejected.', 'success');
         }
