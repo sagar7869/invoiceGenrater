@@ -1,4 +1,4 @@
-const CACHE_NAME = 'invoice-app-v2'; // Naya version naam
+const CACHE_NAME = 'invoice-app-v3'; // Naya version naam
 
 self.addEventListener('install', event => {
     // Jab bhi code mein koi change hoga, ye automatically naya code install kar lega
