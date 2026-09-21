@@ -1297,7 +1297,7 @@
             });
             if(overdueCount > 0) {
                 playNotificationSound();
-                if(Notification.permission === 'granted') { new Notification("Smart Invoices Alert", { body: `You have ${overdueCount} customer(s) with pending dues today!`, icon: "icon.png" }); } 
+                if(Notification.permission === 'granted') { new Notification("Smart Invoices Alert", { body: `You have ${overdueCount} customer(s) with pending dues today!`, icon: "icon-192.png" }); } 
                 else { showToast(`Alert: ${overdueCount} customers have pending dues!`, 'error'); }
             }
         }
