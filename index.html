@@ -293,7 +293,7 @@
                 <input type="email" id="auth-email" placeholder="Email Address" style="margin-bottom:10px; width: 100%;">
                 <input type="password" id="auth-pass" placeholder="Password" style="margin-bottom:15px; width: 100%;">
                 <button onclick="loginWithEmail()" style="width:100%; padding:14px; background:var(--primary); color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer; font-size:16px; margin-bottom:15px;">Login</button>
-                <button onclick="loginWithGoogle()" style="width:100%; padding:12px; background:#ffffff; color:#334155; border:1px solid #cbd5e1; border-radius:10px; font-weight:700; cursor:pointer; font-size:15px; margin-bottom:15px; display:flex; align-items:center; justify-content:center; gap:10px;"><i class="fab fa-google" style="color:#DB4437;"></i> Sign in with Google</button>
+                <button onclick="loginWithGoogle()" style="width:100%; padding:12px; background:#fff; color:#334155; border:1px solid #cbd5e1; border-radius:10px; font-weight:700; cursor:pointer; font-size:15px; margin-bottom:15px; display:flex; align-items:center; justify-content:center; gap:10px;"><i class="fab fa-google" style="color:#DB4437;"></i> Continue with Google</button>
                 <div style="display:flex; justify-content:space-between; font-size:14px; padding:0 5px;"><a href="#" style="color:#64748b; text-decoration:none; font-weight:600;" onclick="forgotPassword()">Forgot Pass?</a><a href="#" style="color:#10b981; text-decoration:none; font-weight:bold;" onclick="openSignupModal()">Create Account</a></div>
             </div>
         </div>
@@ -882,17 +882,29 @@
 
         function autoGenerateInvoice() {
             const date = document.getElementById('f_cdate').value;
-            if(!date) return document.getElementById('f_inv').value = '';
-            
-            const day = date.split('-').reverse().join('').substring(0,6); 
-            const prefix = `INV-${day}-`;
-            
-            const used = invoices.map(x => String(x.invNo || '')).filter(x => x.startsWith(prefix));
+            const cxName = document.getElementById('f_to').value.trim();
+            const invEl = document.getElementById('f_inv');
+            if(isEditMode && invEl.value) return;
+            if(!date || !cxName) { invEl.value = ''; return; }
+
+            // Invoice format: first 4 characters of CX name + DDMMYYYY + serial.
+            // Serial increments only for the same CX on the same date.
+            const cxKey = cxName.replace(/\s+/g, ' ').trim().toLowerCase();
+            const sameCxDay = invoices.filter(inv =>
+                String(inv.to || '').replace(/\s+/g, ' ').trim().toLowerCase() === cxKey &&
+                String(inv.date || '') === String(date) &&
+                String(inv.id) !== String(currentInvId)
+            );
             let max = 0;
-            used.forEach(no => { const n = parseInt(no.split('-').pop(), 10); if(!isNaN(n)) max = Math.max(max, n); });
-            const current = document.getElementById('f_inv').value;
-            if(isEditMode && current) return;
-            document.getElementById('f_inv').value = prefix + String(max + 1).padStart(3, '0');
+            sameCxDay.forEach(inv => {
+                const match = String(inv.invNo || '').match(/-(\d+)$/);
+                if(match) max = Math.max(max, parseInt(match[1], 10) || 0);
+            });
+
+            const namePart = cxName.replace(/[^a-zA-Z0-9]/g, '').substring(0, 4).toUpperCase() || 'CX';
+            const parts = date.split('-');
+            const datePart = `${parts[2]}${parts[1]}${parts[0]}`;
+            invEl.value = `${namePart}-${datePart}-${max + 1}`;
         }
 
         function switchTab(tabId) {
@@ -923,6 +935,8 @@
         function startNewInvoice() {
             currentInvId = Date.now().toString(); currentItems = []; currentPayments = [];
             document.getElementById('f_to').value = ''; document.getElementById('f_mobile').value = ''; 
+            document.getElementById('i_desc').value = ''; document.getElementById('i_qty').value = ''; document.getElementById('i_price').value = '';
+            if(typeof hideItemSuggestions === 'function') hideItemSuggestions();
             document.getElementById('f_inv').value = ''; document.getElementById('f_ddate').value = ''; document.getElementById('pay_amt').value = ''; document.getElementById('f_discount').value = ''; document.getElementById('payment_controls').style.display = 'none';
             document.getElementById('i_total_temp').innerText = '₹0.00';
             isEditMode = false;
@@ -1480,6 +1494,8 @@
         async function doGeneratePDF(invNo) { 
             const canvas = await getCanvasFromPrintArea();
             await html2pdf().set({ margin: 0, filename: `${invNo}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { canvas: canvas }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }).from(canvas).save();
+            if ('Notification' in window && Notification.permission === 'granted') { try { new Notification('Invoice Downloaded', { body: `Invoice ${invNo} downloaded successfully.` }); } catch(e) {} }
+            showToast(`Invoice ${invNo} downloaded successfully.`, 'success');
         }
         
         async function generatePDFFromPreview(btn) { 
